@@ -95,8 +95,8 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 5.2 Decision Theory
-- **担当セクション**: 第5章 5.2 決定理論 (Decision Theory)
+- **現在実行中のタスク**: 5.3 Generative Classifiers
+- **担当セクション**: 第5章 5.3 生成的分類器 (Generative Classifiers)
 - **ステータス**: 実行中 (`[-]`)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
@@ -324,19 +324,19 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 5.1 〜 5.4)
   - テスト: `tests/test_ch5_discriminant_fu.py`
 
-- [-] **5.2 Decision Theory**
+- [x] **5.2 Decision Theory**
   - ノートブック: `5/5.2_Decision_Theory.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 5.2.1 Misclassification rate
-    - [ ] 5.2.2 Expected loss
-    - [ ] 5.2.3 The reject option
-    - [ ] 5.2.4 Inference and decision
-    - [ ] 5.2.5 Classifier accuracy
-    - [ ] 5.2.6 ROC curve
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 5.2.1 Misclassification rate
+    - [x] 5.2.2 Expected loss
+    - [x] 5.2.3 The reject option
+    - [x] 5.2.4 Inference and decision
+    - [x] 5.2.5 Classifier accuracy
+    - [x] 5.2.6 ROC curve
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 5.5 〜 5.11)
   - テスト: `tests/test_ch5_decision_theory.py`
 
-- [ ] **5.3 Generative Classifiers**
+- [-] **5.3 Generative Classifiers**
   - ノートブック: `5/5.3_Generative_Classifiers.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 5.3.1 Continuous inputs

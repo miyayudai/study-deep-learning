@@ -6,3 +6,4 @@ from . import decision_theory
 from . import bias_variance
 from . import exercises_ch4
 from . import discriminant_functions
+from . import classification_decision_theory

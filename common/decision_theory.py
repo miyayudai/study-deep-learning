@@ -203,3 +203,26 @@ def plot_figure_4_6_minkowski_loss(
     if show:
         plt.show()
     return fig, axes
+
+
+# =====================================================================
+# Classification Decision Theory (Chapter 5, Section 5.2) Re-exports
+# =====================================================================
+from common.classification_decision_theory import (
+    optimal_decision_rule_misclassification,
+    compute_expected_loss,
+    optimal_decision_rule_expected_loss,
+    decision_rule_with_reject,
+    compensate_for_class_priors,
+    ConfusionMatrix2Class,
+    compute_roc_curve,
+    plot_figure_5_5_joint_probabilities,
+    plot_figure_5_6_loss_matrix,
+    plot_figure_5_7_reject_option,
+    plot_figure_5_8_class_densities_posteriors,
+    plot_figure_5_9_confusion_matrix,
+    plot_figure_5_10_roc_regions,
+    plot_figure_5_11_roc_curve,
+    generate_all_section_5_2_figures,
+)
+
