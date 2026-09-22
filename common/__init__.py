@@ -8,3 +8,4 @@ from . import exercises_ch4
 from . import discriminant_functions
 from . import classification_decision_theory
 from . import generative_classifiers
+from . import discriminative_classifiers
