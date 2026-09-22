@@ -1483,6 +1483,12 @@ class BernoulliDistribution:
         """var[x] = mu * (1 - mu) (Eq 3.4)."""
         return self.mu * (1.0 - self.mu)
 
+    def entropy(self) -> float:
+        """Compute entropy H[x] = -mu ln(mu) - (1-mu) ln(1-mu) (Eq 3.194)."""
+        eps = 1e-15
+        mu_c = np.clip(self.mu, eps, 1.0 - eps)
+        return float(-mu_c * np.log(mu_c) - (1.0 - mu_c) * np.log(1.0 - mu_c))
+
     def sample(self, size: Union[int, Tuple[int, ...]] = 1, seed: Optional[int] = None) -> np.ndarray:
         """Draw random samples from Bern(x | mu)."""
         rng = np.random.default_rng(seed)
@@ -4433,3 +4439,229 @@ plot_figure_3_13 = plot_figure_3_13_histogram
 plot_figure_3_14 = plot_figure_3_14_kernel_density
 plot_figure_3_15 = plot_figure_3_15_knn_density
 plot_figure_3_16 = plot_figure_3_16_knn_classification
+
+
+# =====================================================================
+# Chapter 3 Exercises Mathematical Utilities & Validation Functions
+# =====================================================================
+
+def symmetric_bernoulli_pmf(x: np.ndarray, mu: float) -> np.ndarray:
+    """
+    PMF of symmetric Bernoulli distribution for x in {-1, +1}, Eq (3.195):
+    p(x | mu) = ((1 - mu)/2)^((1 - x)/2) * ((1 + mu)/2)^((1 + x)/2)
+    where mu in [-1, 1].
+    """
+    x = np.asarray(x)
+    p_plus = (1.0 + mu) / 2.0
+    p_minus = (1.0 - mu) / 2.0
+    # Evaluate according to Eq (3.195)
+    return np.where(x == 1, p_plus, np.where(x == -1, p_minus, 0.0))
+
+
+def symmetric_bernoulli_moments(mu: float) -> Tuple[float, float, float]:
+    """
+    Compute mean, variance, and differential entropy for symmetric Bernoulli (Eq 3.195).
+    Returns (mean, variance, entropy).
+    """
+    assert -1.0 <= mu <= 1.0, "mu must be in [-1, 1]"
+    p_plus = (1.0 + mu) / 2.0
+    p_minus = (1.0 - mu) / 2.0
+    
+    mean = mu
+    var = 1.0 - mu**2
+    
+    ent = 0.0
+    if p_plus > 1e-15:
+        ent -= p_plus * np.log(p_plus)
+    if p_minus > 1e-15:
+        ent -= p_minus * np.log(p_minus)
+        
+    return mean, var, ent
+
+
+def pascal_triangle_identity(n: int, m: int) -> Tuple[int, int, int]:
+    """
+    Verify Pascal's combination identity (Eq 3.196):
+    binom(N, m) + binom(N, m - 1) = binom(N + 1, m)
+    """
+    from math import comb
+    left1 = comb(n, m)
+    left2 = comb(n, m - 1)
+    right = comb(n + 1, m)
+    return left1, left2, right
+
+
+def multivariate_gaussian_entropy(Sigma: np.ndarray) -> float:
+    """
+    Differential entropy of a D-dimensional Gaussian N(x | mu, Sigma), Eq (3.204):
+    H[x] = 0.5 * ln|Sigma| + 0.5 * D * (1 + ln(2*pi))
+    """
+    Sigma = np.asarray(Sigma)
+    D = Sigma.shape[0]
+    sign, logdet = np.linalg.slogdet(Sigma)
+    if sign <= 0:
+        raise ValueError("Covariance matrix must be positive definite.")
+    return 0.5 * logdet + 0.5 * D * (1.0 + np.log(2.0 * np.pi))
+
+
+def multivariate_gaussian_kl(
+    mu_q: np.ndarray,
+    Sigma_q: np.ndarray,
+    mu_p: np.ndarray,
+    Sigma_p: np.ndarray
+) -> float:
+    """
+    Kullback-Leibler divergence KL(q || p) between two D-dimensional Gaussians:
+    q(x) = N(x | mu_q, Sigma_q) and p(x) = N(x | mu_p, Sigma_p), Eq (3.199):
+    KL(q || p) = 0.5 * [ ln(|Sigma_p| / |Sigma_q|) - D + Tr(Sigma_p^-1 * Sigma_q) + (mu_p - mu_q)^T Sigma_p^-1 (mu_p - mu_q) ]
+    """
+    mu_q = np.asarray(mu_q, dtype=float)
+    mu_p = np.asarray(mu_p, dtype=float)
+    Sigma_q = np.asarray(Sigma_q, dtype=float)
+    Sigma_p = np.asarray(Sigma_p, dtype=float)
+    
+    D = len(mu_q)
+    sign_q, logdet_q = np.linalg.slogdet(Sigma_q)
+    sign_p, logdet_p = np.linalg.slogdet(Sigma_p)
+    if sign_q <= 0 or sign_p <= 0:
+        raise ValueError("Covariance matrices must be positive definite.")
+        
+    inv_p = np.linalg.inv(Sigma_p)
+    trace_term = np.trace(inv_p @ Sigma_q)
+    diff = mu_p - mu_q
+    quad_term = float(diff.T @ inv_p @ diff)
+    
+    kl = 0.5 * (logdet_p - logdet_q - D + trace_term + quad_term)
+    return kl
+
+
+def woodbury_matrix_identity(
+    A: np.ndarray,
+    B: np.ndarray,
+    C: np.ndarray,
+    D: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Woodbury matrix inversion identity (Eq 3.210):
+    (A + B C D)^-1 = A^-1 - A^-1 B (C^-1 + D A^-1 B)^-1 D A^-1
+    Returns (LHS, RHS) for verification.
+    """
+    inv_A = np.linalg.inv(A)
+    inv_C = np.linalg.inv(C)
+    
+    lhs = np.linalg.inv(A + B @ C @ D)
+    inner_inv = np.linalg.inv(inv_C + D @ inv_A @ B)
+    rhs = inv_A - inv_A @ B @ inner_inv @ D @ inv_A
+    return lhs, rhs
+
+
+def partitioned_matrix_inverse(
+    A: np.ndarray,
+    B: np.ndarray,
+    C: np.ndarray,
+    D: np.ndarray
+) -> np.ndarray:
+    """
+    Partitioned matrix inverse using Schur complement (Eq 3.60 - 3.61):
+    M = [[A, B], [C, D]]
+    M^-1 = [[M_A, M_B], [M_C, M_D]]
+    where M_A = (A - B D^-1 C)^-1, M_B = - M_A B D^-1, etc.
+    """
+    inv_D = np.linalg.inv(D)
+    schur_A = np.linalg.inv(A - B @ inv_D @ C)
+    M_A = schur_A
+    M_B = -schur_A @ B @ inv_D
+    M_C = -inv_D @ C @ schur_A
+    M_D = inv_D + inv_D @ C @ schur_A @ B @ inv_D
+    
+    top = np.hstack([M_A, M_B])
+    bottom = np.hstack([M_C, M_D])
+    return np.vstack([top, bottom])
+
+
+def mahalanobis_hyperellipsoid_volume(Sigma: np.ndarray, Delta: float) -> float:
+    """
+    Volume contained within hyperellipsoid of constant Mahalanobis distance Delta, Eq (3.207):
+    Vol = V_D * |Sigma|^(1/2) * Delta^D
+    where V_D = pi^(D/2) / Gamma(D/2 + 1) is unit sphere volume.
+    """
+    Sigma = np.asarray(Sigma)
+    D = Sigma.shape[0]
+    V_D = (np.pi ** (D / 2.0)) / special.gamma(D / 2.0 + 1.0)
+    det_sigma = np.linalg.det(Sigma)
+    return V_D * np.sqrt(det_sigma) * (Delta ** D)
+
+
+def gaussian_three_block_marginal_conditional(
+    mu: np.ndarray,
+    Sigma: np.ndarray,
+    dim_a: int,
+    dim_b: int,
+    dim_c: int,
+    x_b: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Exercise 3.19: Conditional distribution p(x_a | x_b) with x_c marginalized out.
+    For x = (x_a, x_b, x_c)^T ~ N(mu, Sigma), marginalizing x_c simply takes
+    the subvector mu_ab and submatrix Sigma_ab = [[Sigma_aa, Sigma_ab], [Sigma_ba, Sigma_bb]].
+    Then p(x_a | x_b) has mean and covariance:
+    mu_a|b = mu_a + Sigma_ab * Sigma_bb^-1 * (x_b - mu_b)
+    Sigma_a|b = Sigma_aa - Sigma_ab * Sigma_bb^-1 * Sigma_ba
+    """
+    mu_a = mu[:dim_a]
+    mu_b = mu[dim_a:dim_a + dim_b]
+    
+    Sigma_aa = Sigma[:dim_a, :dim_a]
+    Sigma_ab = Sigma[:dim_a, dim_a:dim_a + dim_b]
+    Sigma_ba = Sigma[dim_a:dim_a + dim_b, :dim_a]
+    Sigma_bb = Sigma[dim_a:dim_a + dim_b, dim_a:dim_a + dim_b]
+    
+    inv_Sigma_bb = np.linalg.inv(Sigma_bb)
+    mu_cond = mu_a + Sigma_ab @ inv_Sigma_bb @ (x_b - mu_b)
+    Sigma_cond = Sigma_aa - Sigma_ab @ inv_Sigma_bb @ Sigma_ba
+    return mu_cond, Sigma_cond
+
+
+def von_mises_mle_estimation(theta_samples: np.ndarray) -> Tuple[float, float, float]:
+    """
+    Maximum likelihood estimator for von Mises distribution (Eq 3.134, Eq 3.136, Ex 3.32, 3.34):
+    r_bar = (1/N) sum [cos theta_n, sin theta_n]^T
+    theta_0_ML = atan2(r_bar_2, r_bar_1) mod 2*pi
+    m_ML satisfies A(m) = I_1(m) / I_0(m) = r
+    Returns (theta_0_ML, m_ML, r).
+    """
+    thetas = np.asarray(theta_samples)
+    s = np.mean(np.sin(thetas))
+    c = np.mean(np.cos(thetas))
+    r = np.sqrt(s**2 + c**2)
+    
+    theta_0 = np.arctan2(s, c) % (2.0 * np.pi)
+    
+    # Invert A(m) = r numerically using Brent's method or approximation
+    if r < 1e-7:
+        m_est = 0.0
+    elif r >= 0.9999:
+        m_est = 100.0
+    else:
+        from scipy.optimize import root_scalar
+        def obj(m):
+            return (special.i1(m) / special.i0(m)) - r
+        sol = root_scalar(obj, bracket=[1e-5, 100.0])
+        m_est = sol.root
+        
+    return theta_0, m_est, r
+
+
+def histogram_density_lagrange_mle(counts: np.ndarray, bin_widths: np.ndarray) -> np.ndarray:
+    """
+    Exercise 3.37: Maximum likelihood estimator for histogram densities h_i under
+    normalization constraint sum_i h_i * Delta_i = 1 using Lagrange multipliers:
+    L = sum_i n_i ln h_i + lambda * (1 - sum_i h_i * Delta_i)
+    dL/dh_i = n_i / h_i - lambda * Delta_i = 0 ==> h_i = n_i / (lambda * Delta_i)
+    sum_i h_i Delta_i = sum_i n_i / lambda = N / lambda = 1 ==> lambda = N
+    Therefore: h_i = n_i / (N * Delta_i) (Eq 3.175).
+    """
+    counts = np.asarray(counts, dtype=float)
+    widths = np.asarray(bin_widths, dtype=float)
+    N = np.sum(counts)
+    return counts / (N * widths)
