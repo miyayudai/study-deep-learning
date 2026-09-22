@@ -663,7 +663,7 @@ plt.show()"""))
 このように、事前確率（事前信念）が検査というデータ（証拠）を得ることで事後確率（事後信念）へと大きく更新されており、不確実性の削減に決定的な役割を果たしています。
 """))
 
-    cells.append(nbf.v4.new_code_cell("""# 事前確率 vs 陽性事後確率 vs 陰性事後確率の比較可視化
+    cells.append(nbf.v4.new_code_cell(r"""# 事前確率 vs 陽性事後確率 vs 陰性事後確率の比較可視化
 prob_comparison = [
     med_results['p_cancer'],
     med_results['p_cancer_given_pos'],
@@ -795,6 +795,7 @@ print(f"Case 2 (がんスクリーニング): 独立判定 = {is_dep}, 最大偏
 今後の章で学ぶニューラルネットワークの学習（最尤推定、交差エントロピー誤差関数、事後分布の推定、変分推論、拡散モデルなど）は、**すべてこの加法定理・乗法定理・ベイズの定理の上に構築** されています。基礎となる確率の規則を直感と数式の双方で完全に把握しておくことが、以後の高度な深層生成モデルやベイズ深層学習を習得する決定的な土台となります。
 """))
 
+    nb.cells = cells
     os.makedirs("2", exist_ok=True)
     nb_path = "2/2.1_The_Rules_of_Probability.ipynb"
     with open(nb_path, "w", encoding="utf-8") as f:
