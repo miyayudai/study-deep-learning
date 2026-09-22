@@ -9,7 +9,9 @@ import matplotlib
 matplotlib.use('Agg')
 
 from common.probability import (
+    VonMises,
     VonMisesDistribution,
+    VonMisesMixture,
     plot_figure_3_9,
     plot_figure_3_10,
     plot_figure_3_11,
@@ -147,3 +149,65 @@ def test_figures_3_9_to_3_12_execution(tmp_path):
     
     f12, (ax12_1, ax12_2) = plot_figure_3_12(save_paths=[str(tmp_path / 'fig3_12.png')])
     assert os.path.exists(tmp_path / 'fig3_12.png')
+
+
+def test_von_mises_alias():
+    """Verify VonMises is an alias for VonMisesDistribution."""
+    assert VonMises is VonMisesDistribution
+    vm = VonMises(theta_0=1.0, m=2.0)
+    assert isinstance(vm, VonMisesDistribution)
+
+
+def test_von_mises_mixture():
+    """Verify VonMisesMixture normalization, log_pdf, responsibilities, and sampling."""
+    weights = [0.4, 0.6]
+    theta_0s = [np.pi / 4, 5 * np.pi / 4]
+    ms = [3.0, 5.0]
+    mix = VonMisesMixture(weights=weights, theta_0s=theta_0s, ms=ms)
+
+    # 1. Normalization
+    integral, _ = integrate.quad(lambda t: mix.pdf(t), 0, 2 * np.pi)
+    assert np.isclose(integral, 1.0, atol=1e-5)
+
+    # 2. Periodicity
+    thetas = np.array([0.2, 1.5, 3.8, 5.5])
+    assert np.allclose(mix.pdf(thetas + 2 * np.pi), mix.pdf(thetas), atol=1e-10)
+    assert np.allclose(mix.log_pdf(thetas + 2 * np.pi), mix.log_pdf(thetas), atol=1e-10)
+
+    # 3. Log PDF consistency
+    pdf_vals = mix.pdf(thetas)
+    log_pdf_vals = mix.log_pdf(thetas)
+    assert np.allclose(np.log(pdf_vals), log_pdf_vals, atol=1e-7)
+
+    # 4. Responsibilities
+    resp = mix.responsibilities(thetas)
+    assert resp.shape == (len(thetas), 2)
+    assert np.allclose(np.sum(resp, axis=1), 1.0)
+    assert np.all(resp >= 0.0)
+
+    # 5. Sampling
+    samples = mix.sample(size=100, seed=42)
+    assert len(samples) == 100
+    assert np.all((samples >= 0.0) & (samples < 2 * np.pi))
+
+    # 6. Scalar evaluation
+    single_pdf = mix.pdf(np.pi / 4)
+    assert isinstance(single_pdf, float)
+    single_log = mix.log_pdf(np.pi / 4)
+    assert isinstance(single_log, float)
+
+
+def test_saved_figures_exist():
+    """Verify that Figures 3.9 through 3.12 exist in both 3/result/ and result/."""
+    expected_files = [
+        'fig3_09_periodic_variables_mean.png',
+        'fig3_10_gaussian_conditioned_unit_circle.png',
+        'fig3_11_von_mises_cartesian_polar.png',
+        'fig3_12_bessel_and_ratio_function.png'
+    ]
+    for fn in expected_files:
+        assert os.path.exists(os.path.join('3', 'result', fn)), f"Missing 3/result/{fn}"
+        assert os.path.exists(os.path.join('result', fn)), f"Missing result/{fn}"
+        assert os.path.getsize(os.path.join('3', 'result', fn)) > 1000
+        assert os.path.getsize(os.path.join('result', fn)) > 1000
+
