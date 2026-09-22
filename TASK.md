@@ -74,8 +74,8 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 完了 (`[x]`) |
 | **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 完了 (`[x]`) |
 | **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 完了 (`[x]`) |
-| **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 進行中 (4/5 ユニット完了) |
-| **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 4 | 14 | Figure 6.1 〜 6.13 (全13枚) | 全17問 | 未着手 |
+| **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 完了 (`[x]`) |
+| **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 進行中 (0/6 ユニット完了) |
 | **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 未着手 |
 | **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 未着手 |
 | **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 未着手 |
@@ -90,14 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **24 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **25 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 第5章 演習問題 (Exercises 5.1 〜 5.24)
-- **担当セクション**: 第5章 演習問題 (Exercises 5.1 〜 5.24, 全24問)
+- **現在実行中のタスク**: 6.1 Limitations of Fixed Basis Functions
+- **担当セクション**: 第6章 6.1 固定基底関数の限界 (Limitations of Fixed Basis Functions)
 - **ステータス**: 実行中 (`[-]`)
+- **獲得ロックタイムスタンプ**: 2026-09-23T07:55:00+09:00
+- **直前完了タスク**: 第5章 演習問題 (Exercises 5.1 〜 5.24) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -356,9 +358,9 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
     - [x] 5.4.5 Probit regression
     - [x] 5.4.6 Canonical link functions
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 5.15 〜 5.17)
-  - テスト: `tests/test_ch5_discriminative_.py`
+  - テスト: `tests/test_ch5_discriminative_classifiers.py`
 
-- [-] **第5章 演習問題 (Exercises 5.1 〜 5.24, 全24問)**
+- [x] **第5章 演習問題 (Exercises 5.1 〜 5.24, 全24問)**
   - ノートブック: `5/5_Exercises.ipynb`
   - 形式: 理論問題は証明ロジック＋穴埋め・選択式、実装問題はコード穴埋め＋自己採点アサーション
   - テスト: `tests/test_ch5_exercises.py`
@@ -370,7 +372,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `6/`
 - 再現図版目標: Figure 6.1 〜 6.19 (全19枚)
 
-- [ ] **6.1 Limitations of Fixed Basis Functions**
+- [-] **6.1 Limitations of Fixed Basis Functions**
   - ノートブック: `6/6.1_Limitations_of_Fixed_Basis_Functions.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 6.1.1 The curse of dimensionality
@@ -378,7 +380,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
     - [ ] 6.1.3 Data manifolds
     - [ ] 6.1.4 Data-dependent basis functions
   - 図版再現: `result/` への該当Figureプロット保存
-  - テスト: `tests/test_ch6_limitations_of_.py`
+  - テスト: `tests/test_ch6_limitations_of_fixed_basis_functions.py`
 
 - [ ] **6.2 Multilayer Networks**
   - ノートブック: `6/6.2_Multilayer_Networks.ipynb`
