@@ -1100,3 +1100,151 @@ class BivariateTransformation2DExample:
         y1_samples, y2_samples = self.forward(x1_samples, x2_samples)
         return x1_samples, x2_samples, y1_samples, y2_samples
 
+
+# ==============================================================================
+# Section 2.5: Information Theory Utilities
+# ==============================================================================
+
+def discrete_entropy(p: np.ndarray, base: str = 'e') -> float:
+    """
+    Compute discrete Shannon entropy H[p] = - sum_i p_i log(p_i) (Eq 2.81, 2.86).
+    Handles p_i = 0 with lim_{p -> 0} p log p = 0.
+    
+    Parameters
+    ----------
+    p : np.ndarray
+        1D probability mass array (must sum to ~1 and be non-negative).
+    base : str, default='e'
+        Logarithm base: 'e' for nats, '2' for bits.
+    """
+    p = np.asarray(p, dtype=float)
+    if not np.all(p >= -1e-9):
+        raise ValueError("Probabilities must be non-negative.")
+    p = np.clip(p, 0.0, 1.0)
+    total = np.sum(p)
+    if total <= 0:
+        return 0.0
+    p = p / total
+    
+    pos_mask = p > 0.0
+    if not np.any(pos_mask):
+        return 0.0
+    
+    if base == '2':
+        return float(-np.sum(p[pos_mask] * np.log2(p[pos_mask])))
+    elif base == 'e':
+        return float(-np.sum(p[pos_mask] * np.log(p[pos_mask])))
+    else:
+        raise ValueError(f"Unsupported log base '{base}'. Choose 'e' or '2'.")
+
+
+def differential_entropy_gaussian(sigma2: float) -> float:
+    """
+    Differential entropy of a 1D Gaussian distribution N(mu, sigma2) (Eq 2.99):
+    H[x] = 0.5 * (1 + ln(2 * pi * sigma2))
+    """
+    if sigma2 <= 0:
+        raise ValueError("Variance sigma2 must be strictly positive.")
+    return 0.5 * (1.0 + np.log(2.0 * np.pi * sigma2))
+
+
+def differential_entropy_1d(
+    pdf_func: Callable[[np.ndarray], np.ndarray],
+    a: float,
+    b: float,
+    n_points: int = 4000
+) -> float:
+    """
+    Numerical approximation of 1D differential entropy H[x] = - int p(x) ln p(x) dx (Eq 2.91).
+    """
+    x = np.linspace(a, b, n_points)
+    dx = (b - a) / (n_points - 1)
+    p = pdf_func(x)
+    p = np.clip(p, 0.0, None)
+    pos_mask = p > 1e-15
+    integrand = np.zeros_like(p)
+    integrand[pos_mask] = -p[pos_mask] * np.log(p[pos_mask])
+    return float(np.trapezoid(integrand, x)) if hasattr(np, 'trapezoid') else float(np.trapz(integrand, x))
+
+
+def kl_divergence_discrete(p: np.ndarray, q: np.ndarray, base: str = 'e') -> float:
+    """
+    Kullback-Leibler divergence KL(p || q) for discrete distributions (Eq 2.100):
+    KL(p || q) = sum_i p_i log(p_i / q_i).
+    """
+    p = np.asarray(p, dtype=float)
+    q = np.asarray(q, dtype=float)
+    p = np.clip(p, 0.0, 1.0)
+    q = np.clip(q, 0.0, 1.0)
+    p = p / np.sum(p)
+    q = q / np.sum(q)
+    
+    pos_mask = p > 0.0
+    if np.any((q == 0.0) & pos_mask):
+        return float('inf')
+    
+    ratio = p[pos_mask] / q[pos_mask]
+    if base == '2':
+        return float(np.sum(p[pos_mask] * np.log2(ratio)))
+    elif base == 'e':
+        return float(np.sum(p[pos_mask] * np.log(ratio)))
+    else:
+        raise ValueError(f"Unsupported log base '{base}'. Choose 'e' or '2'.")
+
+
+def kl_divergence_gaussian_1d(mu1: float, sigma1_sq: float, mu2: float, sigma2_sq: float) -> float:
+    """
+    Exact analytical KL divergence KL(N(mu1, sigma1_sq) || N(mu2, sigma2_sq)):
+    KL(p || q) = 0.5 * (ln(sigma2_sq / sigma1_sq) + (sigma1_sq + (mu1 - mu2)^2) / sigma2_sq - 1)
+    """
+    if sigma1_sq <= 0 or sigma2_sq <= 0:
+        raise ValueError("Variances must be strictly positive.")
+    return 0.5 * (
+        np.log(sigma2_sq / sigma1_sq)
+        + (sigma1_sq + (mu1 - mu2) ** 2) / sigma2_sq
+        - 1.0
+    )
+
+
+def conditional_entropy_discrete(p_xy: np.ndarray) -> float:
+    """
+    Conditional entropy H[Y|X] = - sum_{x,y} p(x,y) ln p(y|x) (Eq 2.107).
+    Satisfies H[X,Y] = H[Y|X] + H[X] (Eq 2.108).
+    """
+    p_xy = np.asarray(p_xy, dtype=float)
+    p_xy = p_xy / np.sum(p_xy)
+    p_x = np.sum(p_xy, axis=1)  # Marginal p(x)
+    
+    h_xy = discrete_entropy(p_xy.ravel(), base='e')
+    h_x = discrete_entropy(p_x, base='e')
+    return float(h_xy - h_x)
+
+
+def mutual_information_discrete(p_xy: np.ndarray) -> float:
+    """
+    Mutual information I[X, Y] = KL(p(x,y) || p(x)p(y)) (Eq 2.109).
+    I[X, Y] = H[X] - H[X|Y] = H[Y] - H[Y|X] = H[X] + H[Y] - H[X, Y] (Eq 2.110).
+    """
+    p_xy = np.asarray(p_xy, dtype=float)
+    p_xy = p_xy / np.sum(p_xy)
+    p_x = np.sum(p_xy, axis=1)  # marginal p(x)
+    p_y = np.sum(p_xy, axis=0)  # marginal p(y)
+    
+    p_prod = np.outer(p_x, p_y)
+    return kl_divergence_discrete(p_xy.ravel(), p_prod.ravel(), base='e')
+
+
+def mutual_information_gaussian(cov_matrix: np.ndarray) -> float:
+    """
+    Mutual information for a 2D bivariate Gaussian N(mu, Sigma):
+    I[X, Y] = -0.5 * ln(1 - rho^2) where rho = Sigma_xy / sqrt(Sigma_xx * Sigma_yy).
+    """
+    cov = np.asarray(cov_matrix, dtype=float)
+    sigma_x = np.sqrt(cov[0, 0])
+    sigma_y = np.sqrt(cov[1, 1])
+    cov_xy = cov[0, 1]
+    rho = cov_xy / (sigma_x * sigma_y)
+    rho = np.clip(rho, -0.99999999, 0.99999999)
+    return float(-0.5 * np.log(1.0 - rho ** 2))
+
+
