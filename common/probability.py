@@ -1248,3 +1248,85 @@ def mutual_information_gaussian(cov_matrix: np.ndarray) -> float:
     return float(-0.5 * np.log(1.0 - rho ** 2))
 
 
+# ==============================================================================
+# Section 2.6: Bayesian Probabilities & Non-Transitive Dice Utilities
+# ==============================================================================
+
+class BayesianLinearRegression:
+    """
+    Bayesian Linear (Polynomial) Regression (Eq 2.111 - 2.118).
+    Prior: p(w) = N(w | 0, alpha^{-1} I)
+    Likelihood: p(t | x, w) = N(t | w^T phi(x), beta^{-1})
+    Posterior: p(w | D) = N(w | m_N, S_N)
+    Predictive: p(t | x, D) = N(t | m_N^T phi(x), beta^{-1} + phi(x)^T S_N phi(x))
+    """
+    def __init__(self, degree: int = 3, alpha: float = 0.005, beta: float = 11.1):
+        self.degree = degree
+        self.alpha = float(alpha)
+        self.beta = float(beta)
+        self.m_N: Optional[np.ndarray] = None
+        self.S_N: Optional[np.ndarray] = None
+        self.S_N_inv: Optional[np.ndarray] = None
+
+    def _design_matrix(self, x: np.ndarray) -> np.ndarray:
+        x_flat = np.asarray(x, dtype=float).ravel()
+        return np.vstack([x_flat ** i for i in range(self.degree + 1)]).T
+
+    def fit(self, x: np.ndarray, t: np.ndarray) -> "BayesianLinearRegression":
+        Phi = self._design_matrix(x)
+        t_arr = np.asarray(t, dtype=float).ravel()
+        M_dim = self.degree + 1
+        
+        # S_N^{-1} = alpha * I + beta * Phi^T Phi
+        self.S_N_inv = self.alpha * np.eye(M_dim) + self.beta * (Phi.T @ Phi)
+        self.S_N = np.linalg.inv(self.S_N_inv)
+        
+        # m_N = beta * S_N * Phi^T * t
+        self.m_N = self.beta * (self.S_N @ Phi.T @ t_arr)
+        return self
+
+    def predict(self, x: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Compute predictive mean and variance (Eq 2.118).
+        Returns (mean, variance).
+        """
+        if self.m_N is None or self.S_N is None:
+            raise RuntimeError("Model must be fitted before predict.")
+        Phi = self._design_matrix(x)
+        mean = Phi @ self.m_N
+        # Var[t|x, D] = 1/beta + phi(x)^T S_N phi(x)
+        variance = (1.0 / self.beta) + np.sum((Phi @ self.S_N) * Phi, axis=1)
+        return mean, variance
+
+    def sample_weights(self, size: int = 5, seed: Optional[int] = None) -> np.ndarray:
+        """Sample weight vectors w ~ N(m_N, S_N) from posterior."""
+        if self.m_N is None or self.S_N is None:
+            raise RuntimeError("Model must be fitted before sampling weights.")
+        rng = np.random.default_rng(seed)
+        return rng.multivariate_normal(mean=self.m_N, cov=self.S_N, size=size)
+
+
+# Efron Dice definitions from Bishop Figure 2.16
+EFRON_DICE = {
+    'Yellow': np.array([3, 3, 3, 3, 3, 3]),
+    'Blue': np.array([0, 4, 4, 4, 0, 4]),     # four 4s, two 0s
+    'Green': np.array([5, 1, 5, 1, 5, 1]),    # three 5s, three 1s
+    'Red': np.array([2, 2, 6, 2, 2, 6]),      # four 2s, two 6s
+}
+
+def efron_dice_win_probability(die_a: np.ndarray, die_b: np.ndarray) -> float:
+    """
+    Calculate exact win probability P(die_a > die_b) for two 6-sided dice.
+    """
+    wins = 0
+    total = len(die_a) * len(die_b)
+    for v_a in die_a:
+        for v_b in die_b:
+            if v_a > v_b:
+                wins += 1
+            elif v_a == v_b:
+                wins += 0.5  # Tie
+    return wins / total
+
+
+

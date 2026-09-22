@@ -71,7 +71,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | Chapter | タイトル | 節数 | 小節数 | 教科書図版 | 演習問題 (Exercises) | 状態 |
 |---|---|:---:|:---:|:---:|:---:|:---:|
 | **第1章** | 深層学習革命 (The Deep Learning Revolution) | 3 | 13 | Figure 1.1 〜 1.16 (全16枚) | なし (Tutorial) | 完了 (`[x]`) |
-| **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 進行中 (5/6節完了) |
+| **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 進行中 (6/6節完了, 演習問題待機) |
 | **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 未着手 |
 | **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 未着手 |
 | **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 未着手 |
@@ -90,14 +90,14 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **8 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **9 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 2.6 Bayesian Probabilities
-- **担当セクション**: 2.6.1 〜 2.6.3
-- **ステータス**: 実行中 (`[-]` ロック中)
+- **現在実行中のタスク**: なし
+- **担当セクション**: なし
+- **ステータス**: アイドル (`-`)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -197,13 +197,13 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 2.14, 2.15)
   - テスト: `tests/test_ch2_information_the.py`
 
-- [-] **2.6 Bayesian Probabilities**
+- [x] **2.6 Bayesian Probabilities**
   - ノートブック: `2/2.6_Bayesian_Probabilities.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 2.6.1 Model parameters
-    - [ ] 2.6.2 Regularization
-    - [ ] 2.6.3 Bayesian machine learning
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 2.6.1 Model parameters
+    - [x] 2.6.2 Regularization
+    - [x] 2.6.3 Bayesian machine learning
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 2.16)
   - テスト: `tests/test_ch2_bayesian_probab.py`
 
 - [ ] **第2章 演習問題 (Exercises 2.1 〜 2.41, 全41問)**
