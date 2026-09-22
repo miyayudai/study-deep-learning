@@ -6,8 +6,10 @@ Bayes' theorem, medical screening problem, and uncertainty demonstrations.
 import os
 from typing import Dict, Tuple, Optional, Callable, Union, List, Any
 import numpy as np
+import scipy.linalg as la
 from scipy import special
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def compute_joint_marginal_conditional(
@@ -1789,3 +1791,882 @@ def plot_figure_3_1(
         plt.show()
 
     return fig, ax
+
+
+# ==============================================================================
+# Chapter 3.2: The Multivariate Gaussian
+# ==============================================================================
+
+class MultivariateGaussian:
+    """
+    Multivariate Gaussian distribution N(x | mu, Sigma) in D dimensions (Section 3.2).
+    
+    Formulas:
+      p(x | mu, Sigma) = 1 / ((2pi)^(D/2) |Sigma|^(1/2)) * exp(-1/2 * (x - mu)^T Sigma^-1 (x - mu))  (Eq 3.26)
+      Delta^2 = (x - mu)^T Sigma^-1 (x - mu)                                                           (Eq 3.27)
+      E[x] = mu                                                                                        (Eq 3.48)
+      cov[x] = E[(x - mu)(x - mu)^T] = Sigma                                                          (Eq 3.54)
+    """
+    def __init__(
+        self,
+        mu: Union[List[float], np.ndarray],
+        sigma: Union[List[List[float]], np.ndarray],
+        allow_singular: bool = False
+    ):
+        self.mu = np.asarray(mu, dtype=np.float64).flatten()
+        self.sigma = np.asarray(sigma, dtype=np.float64)
+        self.D = len(self.mu)
+
+        if self.sigma.shape != (self.D, self.D):
+            raise ValueError(
+                f"Dimension mismatch: mu has dimension {self.D}, but sigma has shape {self.sigma.shape}"
+            )
+
+        # Check symmetry
+        if not np.allclose(self.sigma, self.sigma.T, atol=1e-8):
+            raise ValueError("Covariance matrix Sigma must be symmetric")
+
+        # Eigendecomposition Sigma * u_i = lambda_i * u_i (Eq 3.28, 3.30)
+        eigvals, eigvecs = la.eigh(self.sigma)
+        sort_idx = np.argsort(eigvals)[::-1]
+        self.eigenvalues = eigvals[sort_idx]
+        self.eigenvectors = eigvecs[:, sort_idx]  # Columns are u_i
+
+        if not allow_singular and np.any(self.eigenvalues <= 0):
+            raise ValueError(
+                f"Covariance matrix Sigma must be strictly positive definite, got eigenvalues: {self.eigenvalues}"
+            )
+
+        # Precision matrix Lambda = Sigma^-1 (Eq 3.31)
+        self.precision = la.inv(self.sigma)
+
+        # Log-determinant and normalization constant: ln |Sigma| = sum ln(lambda_i) (Eq 3.38)
+        self.log_det = float(np.sum(np.log(np.maximum(self.eigenvalues, 1e-300))))
+        self.log_norm_const = -0.5 * (self.D * np.log(2.0 * np.pi) + self.log_det)
+
+        # Cholesky factor for fast sampling Sigma = L @ L.T
+        try:
+            self._chol_L = la.cholesky(self.sigma, lower=True)
+        except la.LinAlgError:
+            self._chol_L = None
+
+    @property
+    def mean(self) -> np.ndarray:
+        """Mean vector mu (Eq 3.48)."""
+        return self.mu.copy()
+
+    @property
+    def covariance(self) -> np.ndarray:
+        """Covariance matrix Sigma (Eq 3.54)."""
+        return self.sigma.copy()
+
+    def mahalanobis_distance_squared(self, x: Union[List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """
+        Compute squared Mahalanobis distance Delta^2 = (x - mu)^T Sigma^-1 (x - mu) (Eq 3.27).
+        """
+        x_arr = np.asarray(x, dtype=np.float64)
+        if x_arr.ndim == 1:
+            diff = x_arr - self.mu
+            return float(diff.T @ self.precision @ diff)
+        else:
+            diff = x_arr - self.mu
+            return np.sum(diff * (diff @ self.precision), axis=-1)
+
+    def log_pdf(self, x: Union[List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute log probability density ln N(x | mu, Sigma)."""
+        dist_sq = self.mahalanobis_distance_squared(x)
+        log_prob = self.log_norm_const - 0.5 * dist_sq
+        if np.isscalar(dist_sq):
+            return float(log_prob)
+        return log_prob
+
+    def pdf(self, x: Union[List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute probability density N(x | mu, Sigma) (Eq 3.26)."""
+        return np.exp(self.log_pdf(x))
+
+    def transform_to_eigen_basis(self, x: np.ndarray) -> np.ndarray:
+        """
+        Transform x to coordinate system defined by eigenvectors of Sigma:
+          y_i = u_i^T (x - mu), or y = U^T (x - mu) (Eq 3.32)
+        """
+        x_arr = np.asarray(x, dtype=np.float64)
+        diff = x_arr - self.mu
+        if diff.ndim == 1:
+            return self.eigenvectors.T @ diff
+        return diff @ self.eigenvectors
+
+    def transform_from_eigen_basis(self, y: np.ndarray) -> np.ndarray:
+        """
+        Transform from eigenvector basis back to original coordinates:
+          x = mu + U y
+        """
+        y_arr = np.asarray(y, dtype=np.float64)
+        if y_arr.ndim == 1:
+            return self.mu + self.eigenvectors @ y_arr
+        return self.mu + y_arr @ self.eigenvectors.T
+
+    def covariance_type(self) -> str:
+        """
+        Determine if covariance is 'spherical' (isotropic), 'diagonal', or 'full' (Figure 3.4).
+        """
+        off_diag = self.sigma - np.diag(np.diag(self.sigma))
+        if np.allclose(off_diag, 0.0, atol=1e-7):
+            diag_vals = np.diag(self.sigma)
+            if np.allclose(diag_vals, diag_vals[0], atol=1e-7):
+                return 'spherical'
+            return 'diagonal'
+        return 'full'
+
+    def sample(self, size: int = 1, seed: Optional[int] = None) -> np.ndarray:
+        """Draw samples from N(x | mu, Sigma) using Cholesky factor."""
+        rng = np.random.default_rng(seed)
+        z = rng.standard_normal(size=(size, self.D))
+        if self._chol_L is not None:
+            samples = self.mu + z @ self._chol_L.T
+        else:
+            U = self.eigenvectors
+            L = U * np.sqrt(np.maximum(self.eigenvalues, 0.0))
+            samples = self.mu + z @ L.T
+        if size == 1:
+            return samples[0]
+        return samples
+
+    def condition_on(
+        self,
+        indices_a: List[int],
+        indices_b: List[int],
+        x_b: Union[List[float], np.ndarray]
+    ) -> "MultivariateGaussian":
+        """
+        Compute conditional distribution p(x_a | x_b) = N(x_a | mu_{a|b}, Sigma_{a|b}) (Section 3.2.4).
+        
+        Formulas:
+          mu_{a|b} = mu_a + Sigma_{ab} Sigma_{bb}^-1 (x_b - mu_b)       (Eq 3.80)
+          Sigma_{a|b} = Sigma_{aa} - Sigma_{ab} Sigma_{bb}^-1 Sigma_{ba} (Eq 3.79)
+          Sigma_{a|b} = Lambda_{aa}^-1                                  (Eq 3.73)
+        """
+        idx_a = np.asarray(indices_a, dtype=int)
+        idx_b = np.asarray(indices_b, dtype=int)
+        x_b_arr = np.asarray(x_b, dtype=np.float64).flatten()
+
+        if len(x_b_arr) != len(idx_b):
+            raise ValueError(f"Length of x_b ({len(x_b_arr)}) must match indices_b ({len(idx_b)})")
+
+        mu_a = self.mu[idx_a]
+        mu_b = self.mu[idx_b]
+
+        sigma_aa = self.sigma[np.ix_(idx_a, idx_a)]
+        sigma_ab = self.sigma[np.ix_(idx_a, idx_b)]
+        sigma_ba = self.sigma[np.ix_(idx_b, idx_a)]
+        sigma_bb = self.sigma[np.ix_(idx_b, idx_b)]
+
+        sigma_bb_inv_sigma_ba = la.solve(sigma_bb, sigma_ba)
+        mu_a_cond = mu_a + (sigma_ab @ la.solve(sigma_bb, x_b_arr - mu_b))
+        sigma_a_cond = sigma_aa - (sigma_ab @ sigma_bb_inv_sigma_ba)
+        sigma_a_cond = 0.5 * (sigma_a_cond + sigma_a_cond.T)
+
+        return MultivariateGaussian(mu=mu_a_cond, sigma=sigma_a_cond)
+
+    def marginalize(self, indices_a: List[int]) -> "MultivariateGaussian":
+        """
+        Compute marginal distribution p(x_a) = N(x_a | mu_a, Sigma_{aa}) (Section 3.2.5, Eq 3.82).
+        """
+        idx_a = np.asarray(indices_a, dtype=int)
+        mu_a = self.mu[idx_a]
+        sigma_aa = self.sigma[np.ix_(idx_a, idx_a)]
+        return MultivariateGaussian(mu=mu_a, sigma=sigma_aa)
+
+    @staticmethod
+    def bayes_linear_gaussian(
+        prior: "MultivariateGaussian",
+        A: np.ndarray,
+        b: np.ndarray,
+        L_cov: np.ndarray,
+        y_obs: Optional[np.ndarray] = None
+    ) -> Tuple["MultivariateGaussian", Optional["MultivariateGaussian"]]:
+        """
+        Bayes' theorem for linear-Gaussian models (Section 3.2.6):
+          Prior:       p(x) = N(x | mu, Lambda^-1)                (Eq 3.83)
+          Conditional: p(y | x) = N(y | A x + b, L^-1)             (Eq 3.84)
+          Marginal:    p(y) = N(y | A mu + b, L^-1 + A Sigma A^T)  (Eq 3.93, 3.94)
+          Posterior:   p(x | y) = N(x | Sigma^* (A^T L (y - b) + Lambda mu), Sigma^*) (Eq 3.97, 3.98)
+          where Sigma^* = (Lambda + A^T L A)^-1
+        """
+        A = np.asarray(A, dtype=np.float64)
+        b = np.asarray(b, dtype=np.float64).flatten()
+        L_cov = np.asarray(L_cov, dtype=np.float64)
+        
+        mu_y = A @ prior.mu + b
+        sigma_y = L_cov + A @ prior.sigma @ A.T
+        sigma_y = 0.5 * (sigma_y + sigma_y.T)
+        marginal_y = MultivariateGaussian(mu=mu_y, sigma=sigma_y)
+
+        posterior_x = None
+        if y_obs is not None:
+            y_arr = np.asarray(y_obs, dtype=np.float64).flatten()
+            L_prec = la.inv(L_cov)
+            sigma_star = la.inv(prior.precision + A.T @ L_prec @ A)
+            sigma_star = 0.5 * (sigma_star + sigma_star.T)
+            mu_star = sigma_star @ (A.T @ L_prec @ (y_arr - b) + prior.precision @ prior.mu)
+            posterior_x = MultivariateGaussian(mu=mu_star, sigma=sigma_star)
+
+        return marginal_y, posterior_x
+
+    @staticmethod
+    def fit_mle(X: np.ndarray, unbiased_cov: bool = False) -> "MultivariateGaussian":
+        """
+        Compute Maximum Likelihood Estimator for Multivariate Gaussian (Section 3.2.7):
+          mu_ML = 1/N sum_{n=1}^N x_n                                 (Eq 3.106)
+          Sigma_ML = 1/N sum_{n=1}^N (x_n - mu_ML)(x_n - mu_ML)^T     (Eq 3.108)
+          Sigma_unbiased = 1/(N - 1) sum (x_n - mu_ML)(x_n - mu_ML)^T (Eq 3.109)
+        """
+        X_arr = np.asarray(X, dtype=np.float64)
+        if X_arr.ndim != 2:
+            raise ValueError(f"Data matrix X must be 2D of shape (N, D), got {X_arr.shape}")
+        N, D = X_arr.shape
+        if N <= 0:
+            raise ValueError("Data matrix cannot be empty")
+
+        mu_ml = np.mean(X_arr, axis=0)
+        diff = X_arr - mu_ml
+        denom = (N - 1) if (unbiased_cov and N > 1) else N
+        sigma_ml = (diff.T @ diff) / denom
+        sigma_ml = 0.5 * (sigma_ml + sigma_ml.T)
+
+        return MultivariateGaussian(mu=mu_ml, sigma=sigma_ml)
+
+    @staticmethod
+    def sequential_mean_update(mu_old: np.ndarray, x_new: np.ndarray, N: int) -> np.ndarray:
+        """
+        Sequential estimation of the mean (Section 3.2.8, Eq 3.110):
+          mu^{(N)} = mu^{(N-1)} + 1/N (x_N - mu^{(N-1)})
+        """
+        if N <= 0:
+            raise ValueError("Iteration count N must be strictly positive")
+        return mu_old + (1.0 / N) * (x_new - mu_old)
+
+
+class GaussianMixtureModel:
+    """
+    Gaussian Mixture Model (GMM) with K components (Section 3.2.9):
+      p(x) = sum_{k=1}^K pi_k N(x | mu_k, Sigma_k)  (Eq 3.111)
+      sum_{k=1}^K pi_k = 1,  0 <= pi_k <= 1          (Eq 3.112, 3.113)
+      gamma_k(x) = pi_k N(x | mu_k, Sigma_k) / sum_j pi_j N(x | mu_j, Sigma_j) (Eq 3.119)
+    """
+    def __init__(self, pi: Union[List[float], np.ndarray], components: List[MultivariateGaussian]):
+        self.pi = np.asarray(pi, dtype=np.float64)
+        self.components = components
+        self.K = len(self.pi)
+
+        if len(self.components) != self.K:
+            raise ValueError(f"Number of mixing weights ({self.K}) must match components ({len(self.components)})")
+        if np.any(self.pi < 0.0):
+            raise ValueError("Mixing coefficients must be non-negative")
+        if not np.isclose(np.sum(self.pi), 1.0, atol=1e-5):
+            raise ValueError(f"Mixing coefficients must sum to 1.0, got sum {np.sum(self.pi)}")
+
+        self.pi = self.pi / np.sum(self.pi)
+        self.D = self.components[0].D
+        for k, comp in enumerate(self.components):
+            if comp.D != self.D:
+                raise ValueError(f"Component {k} dimension {comp.D} does not match model dimension {self.D}")
+
+    def log_pdf(self, x: Union[List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute log probability density ln p(x) using log-sum-exp for numerical stability."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        is_single = (x_arr.ndim == 1)
+        orig_shape = x_arr.shape
+
+        if is_single:
+            x_eval = x_arr.reshape(1, self.D)
+        elif x_arr.ndim > 2:
+            x_eval = x_arr.reshape(-1, self.D)
+        else:
+            x_eval = x_arr
+
+        N_eval = x_eval.shape[0]
+        comp_log_probs = np.zeros((N_eval, self.K))
+        for k in range(self.K):
+            comp_log_probs[:, k] = np.log(self.pi[k] + 1e-300) + self.components[k].log_pdf(x_eval)
+
+        max_log = np.max(comp_log_probs, axis=1, keepdims=True)
+        log_prob = np.squeeze(max_log + np.log(np.sum(np.exp(comp_log_probs - max_log), axis=1, keepdims=True)))
+
+        if is_single:
+            return float(log_prob)
+        if len(orig_shape) > 2:
+            return log_prob.reshape(orig_shape[:-1])
+        return log_prob
+
+    def pdf(self, x: Union[List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute probability density p(x) = sum_k pi_k N(x | mu_k, Sigma_k) (Eq 3.111)."""
+        return np.exp(self.log_pdf(x))
+
+    def responsibilities(self, x: Union[List[float], np.ndarray]) -> np.ndarray:
+        """
+        Compute responsibilities gamma_k(x) = p(k | x) (Eq 3.119).
+        Returns array of shape (N, K) or (K,) for single observation.
+        """
+        x_arr = np.asarray(x, dtype=np.float64)
+        is_single = (x_arr.ndim == 1)
+        orig_shape = x_arr.shape
+
+        if is_single:
+            x_eval = x_arr.reshape(1, self.D)
+        elif x_arr.ndim > 2:
+            x_eval = x_arr.reshape(-1, self.D)
+        else:
+            x_eval = x_arr
+
+        N_eval = x_eval.shape[0]
+        weighted_log = np.zeros((N_eval, self.K))
+        for k in range(self.K):
+            weighted_log[:, k] = np.log(self.pi[k] + 1e-300) + self.components[k].log_pdf(x_eval)
+
+        max_log = np.max(weighted_log, axis=1, keepdims=True)
+        weighted_p = np.exp(weighted_log - max_log)
+        gamma = weighted_p / np.sum(weighted_p, axis=1, keepdims=True)
+
+        if is_single:
+            return gamma[0]
+        if len(orig_shape) > 2:
+            return gamma.reshape(orig_shape[:-1] + (self.K,))
+        return gamma
+
+    def sample(self, size: int = 1, seed: Optional[int] = None) -> Tuple[np.ndarray, np.ndarray]:
+        """Draw samples from GMM. Returns (samples, component_assignments)."""
+        rng = np.random.default_rng(seed)
+        k_indices = rng.choice(self.K, size=size, p=self.pi)
+        samples = np.zeros((size, self.D))
+        for i, k in enumerate(k_indices):
+            samples[i] = self.components[k].sample(size=1, seed=None)
+        if size == 1:
+            return samples[0], int(k_indices[0])
+        return samples, k_indices
+
+    @classmethod
+    def fit_em(
+        cls,
+        X: np.ndarray,
+        K: int,
+        max_iter: int = 100,
+        tol: float = 1e-5,
+        reg_cov: float = 1e-6,
+        seed: Optional[int] = None
+    ) -> "GaussianMixtureModel":
+        """
+        Fit GMM using Expectation-Maximization (EM) algorithm (Section 3.2.9).
+        """
+        rng = np.random.default_rng(seed)
+        X_arr = np.asarray(X, dtype=np.float64)
+        N, D = X_arr.shape
+
+        means = np.zeros((K, D))
+        init_idx = rng.choice(N)
+        means[0] = X_arr[init_idx]
+        for k in range(1, K):
+            dists = np.min([np.sum((X_arr - means[j])**2, axis=1) for j in range(k)], axis=0)
+            probs = dists / np.sum(dists)
+            means[k] = X_arr[rng.choice(N, p=probs)]
+
+        pi = np.full(K, 1.0 / K)
+        base_cov = np.cov(X_arr, rowvar=False)
+        if base_cov.ndim == 0:
+            base_cov = np.array([[float(base_cov)]])
+        covariances = np.array([base_cov.copy() + reg_cov * np.eye(D) for _ in range(K)])
+
+        components = [MultivariateGaussian(mu=means[k], sigma=covariances[k]) for k in range(K)]
+        model = cls(pi=pi, components=components)
+
+        prev_ll = -np.inf
+        for it in range(max_iter):
+            gamma = model.responsibilities(X_arr)
+            N_k = np.sum(gamma, axis=0)
+            pi_new = N_k / N
+            means_new = np.zeros((K, D))
+            covs_new = np.zeros((K, D, D))
+
+            for k in range(K):
+                means_new[k] = np.sum(gamma[:, k:k+1] * X_arr, axis=0) / (N_k[k] + 1e-15)
+                diff = X_arr - means_new[k]
+                covs_new[k] = (gamma[:, k:k+1] * diff).T @ diff / (N_k[k] + 1e-15) + reg_cov * np.eye(D)
+                covs_new[k] = 0.5 * (covs_new[k] + covs_new[k].T)
+
+            components = [MultivariateGaussian(mu=means_new[k], sigma=covs_new[k]) for k in range(K)]
+            model = cls(pi=pi_new, components=components)
+
+            current_ll = np.sum(model.log_pdf(X_arr))
+            if np.abs(current_ll - prev_ll) < tol:
+                break
+            prev_ll = current_ll
+
+        return model
+
+
+def plot_figure_3_2(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """
+    Faithfully reproduce Figure 3.2 from Bishop & Bishop (2024), page 71:
+    Histogram plots of the mean of N uniformly distributed numbers for N = 1, 2, 10.
+    """
+    np.random.seed(42)
+    fig, axes = plt.subplots(1, 3, figsize=(12, 3.8), dpi=300, sharey=True)
+    N_values = [1, 2, 10]
+    num_samples = 200000
+
+    for ax, N in zip(axes, N_values):
+        samples = np.mean(np.random.uniform(0.0, 1.0, size=(num_samples, N)), axis=1)
+        ax.hist(
+            samples, bins=50, range=(0.0, 1.0), density=True,
+            color='#E8BA3A', edgecolor='black', linewidth=0.5
+        )
+        ax.set_xlim(0.0, 1.0)
+        ax.set_ylim(0.0, 3.5)
+        ax.set_xticks([0.0, 0.5, 1.0])
+        ax.set_yticks([0, 1, 2, 3])
+        ax.text(0.5, 3.1, f"$N = {N}$", ha='center', fontsize=12, fontweight='bold')
+        ax.tick_params(axis='both', which='major', direction='in', top=True, right=True, labelsize=10)
+        for spine in ax.spines.values():
+            spine.set_color('black')
+            spine.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.2 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, axes
+
+
+def plot_figure_3_3(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, plt.Axes]:
+    """
+    Faithfully reproduce Figure 3.3 from Bishop & Bishop (2024), page 72:
+    Elliptical surface of constant probability density with eigenvectors and eigenvalues.
+    """
+    fig, ax = plt.subplots(figsize=(6, 5.5), dpi=300)
+    mu = np.array([2.5, 2.5])
+    theta = np.radians(35)
+    R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    lambda1, lambda2 = 2.2, 0.6
+    Sigma = R @ np.diag([lambda1, lambda2]) @ R.T
+
+    eigvals, eigvecs = la.eigh(Sigma)
+    idx = np.argsort(eigvals)[::-1]
+    eigvals = eigvals[idx]
+    eigvecs = eigvecs[:, idx]
+    u1, u2 = eigvecs[:, 0], eigvecs[:, 1]
+    l1, l2 = eigvals[0], eigvals[1]
+
+    t = np.linspace(0, 2*np.pi, 200)
+    circle = np.array([np.cos(t), np.sin(t)])
+    ellipse = mu[:, None] + eigvecs @ (np.diag(np.sqrt(eigvals)) @ circle)
+
+    ax.plot(ellipse[0], ellipse[1], color='#E02020', linewidth=2.0, zorder=4)
+
+    axis_len1 = 2.0 * np.sqrt(l1)
+    axis_len2 = 2.0 * np.sqrt(l2)
+    ax.plot([mu[0] - axis_len1*u1[0], mu[0] + axis_len1*u1[0]],
+            [mu[1] - axis_len1*u1[1], mu[1] + axis_len1*u1[1]],
+            color='gray', linestyle='--', linewidth=1.0, zorder=2)
+    ax.plot([mu[0] - axis_len2*u2[0], mu[0] + axis_len2*u2[0]],
+            [mu[1] - axis_len2*u2[1], mu[1] + axis_len2*u2[1]],
+            color='gray', linestyle='--', linewidth=1.0, zorder=2)
+
+    ax.annotate('', xy=mu + np.sqrt(l1)*u1, xytext=mu,
+                arrowprops=dict(arrowstyle='->', color='black', lw=1.5))
+    ax.annotate('', xy=mu + np.sqrt(l2)*u2, xytext=mu,
+                arrowprops=dict(arrowstyle='->', color='black', lw=1.5))
+
+    ax.scatter([mu[0]], [mu[1]], color='black', s=30, zorder=5)
+    ax.text(mu[0] - 0.25, mu[1] - 0.35, r'$\boldsymbol{\mu}$', fontsize=13)
+
+    p1 = mu + 0.65 * np.sqrt(l1)*u1
+    ax.text(p1[0] + 0.1, p1[1] - 0.25, r'$\lambda_1^{1/2}\mathbf{u}_1$', fontsize=12)
+    p2 = mu + 0.65 * np.sqrt(l2)*u2
+    ax.text(p2[0] - 0.55, p2[1] + 0.15, r'$\lambda_2^{1/2}\mathbf{u}_2$', fontsize=12)
+
+    end1 = mu + axis_len1 * u1
+    ax.text(end1[0] + 0.1, end1[1], r'$\mathbf{u}_1$', fontsize=12, fontweight='bold')
+    end2 = mu + axis_len2 * u2
+    ax.text(end2[0], end2[1] + 0.1, r'$\mathbf{u}_2$', fontsize=12, fontweight='bold')
+
+    ax.set_xlim(0, 5)
+    ax.set_ylim(0, 5)
+    ax.set_xlabel(r'$x_1$', fontsize=12)
+    ax.set_ylabel(r'$x_2$', fontsize=12)
+    ax.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    ax.set_aspect('equal')
+    for spine in ax.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.3 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, ax
+
+
+def plot_figure_3_4(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """
+    Faithfully reproduce Figure 3.4 from Bishop & Bishop (2024), page 76:
+    Contours of constant probability density for (a) General, (b) Diagonal, (c) Isotropic covariance.
+    """
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4.0), dpi=300)
+    titles = [
+        "(a) General form\n(arbitrary covariance)",
+        "(b) Diagonal\n(axis-aligned)",
+        "(c) Spherical / Isotropic\n" + r"($\mathbf{\Sigma} = \sigma^2 \mathbf{I}$)"
+    ]
+
+    x = np.linspace(-3, 3, 200)
+    y = np.linspace(-3, 3, 200)
+    X, Y = np.meshgrid(x, y)
+    pos = np.dstack((X, Y))
+
+    cov_general = np.array([[1.5, 0.9], [0.9, 1.0]])
+    cov_diag = np.array([[1.8, 0.0], [0.0, 0.6]])
+    cov_spherical = np.array([[1.0, 0.0], [0.0, 1.0]])
+    covs = [cov_general, cov_diag, cov_spherical]
+
+    for ax, cov, title in zip(axes, covs, titles):
+        inv_cov = la.inv(cov)
+        quad = np.einsum('...i,ij,...j->...', pos, inv_cov, pos)
+        density = np.exp(-0.5 * quad) / (2 * np.pi * np.sqrt(la.det(cov)))
+
+        levels = np.linspace(0.02, density.max() * 0.9, 6)
+        ax.contour(X, Y, density, levels=levels, colors='#E02020', linewidths=1.5)
+        ax.set_xlim(-3, 3)
+        ax.set_ylim(-3, 3)
+        ax.set_xlabel(r'$x_1$', fontsize=11)
+        ax.set_ylabel(r'$x_2$', fontsize=11)
+        ax.set_title(title, fontsize=11, pad=10)
+        ax.set_aspect('equal')
+        ax.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+        for spine in ax.spines.values():
+            spine.set_color('black')
+            spine.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.4 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, axes
+
+
+def plot_figure_3_5(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """
+    Faithfully reproduce Figure 3.5 from Bishop & Bishop (2024), page 82:
+    Joint Gaussian contours, marginal distribution p(xa), and conditional distribution p(xa | xb = 0.7).
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.8), dpi=300)
+    
+    mu = np.array([0.5, 0.5])
+    sigma = np.array([[0.04, 0.032], [0.032, 0.04]])
+    inv_sigma = la.inv(sigma)
+
+    xa = np.linspace(0.0, 1.0, 200)
+    xb = np.linspace(0.0, 1.0, 200)
+    XA, XB = np.meshgrid(xa, xb)
+    pos = np.dstack((XA - mu[0], XB - mu[1]))
+    quad = np.einsum('...i,ij,...j->...', pos, inv_sigma, pos)
+    density = np.exp(-0.5 * quad) / (2 * np.pi * np.sqrt(la.det(sigma)))
+
+    # (a) Contours of p(xa, xb)
+    levels = np.linspace(0.5, density.max() * 0.95, 7)
+    ax1.contour(XA, XB, density, levels=levels, colors='#E02020', linewidths=1.4)
+    xb_val = 0.7
+    ax1.axhline(xb_val, color='gray', linestyle='--', linewidth=1.2)
+    ax1.text(0.1, xb_val + 0.03, r'$x_b = 0.7$', fontsize=11)
+    ax1.text(0.65, 0.35, r'$p(x_a, x_b)$', fontsize=12, color='#E02020')
+
+    ax1.set_xlim(0, 1)
+    ax1.set_ylim(0, 1)
+    ax1.set_xlabel(r'$x_a$', fontsize=12)
+    ax1.set_ylabel(r'$x_b$', fontsize=12)
+    ax1.set_title('(a) Joint distribution contours', fontsize=12)
+    ax1.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax1.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    # (b) Marginal and Conditional
+    mu_a = mu[0]
+    var_a = sigma[0, 0]
+    p_xa_marginal = (1.0 / np.sqrt(2 * np.pi * var_a)) * np.exp(-0.5 * (xa - mu_a)**2 / var_a)
+
+    mu_cond = mu_a + (sigma[0, 1] / sigma[1, 1]) * (xb_val - mu[1])
+    var_cond = sigma[0, 0] - (sigma[0, 1]**2 / sigma[1, 1])
+    p_xa_conditional = (1.0 / np.sqrt(2 * np.pi * var_cond)) * np.exp(-0.5 * (xa - mu_cond)**2 / var_cond)
+
+    ax2.plot(xa, p_xa_marginal, color='#1E56A0', linewidth=2.0, label=r'$p(x_a)$ (marginal)')
+    ax2.plot(xa, p_xa_conditional, color='#E02020', linewidth=2.0, label=r'$p(x_a | x_b = 0.7)$ (conditional)')
+
+    ax2.set_xlim(0, 1)
+    ax2.set_ylim(0, 7)
+    ax2.set_xlabel(r'$x_a$', fontsize=12)
+    ax2.set_ylabel('Density', fontsize=12)
+    ax2.set_title('(b) Marginal and conditional distributions', fontsize=12)
+    ax2.legend(frameon=True, facecolor='white', framealpha=0.9, fontsize=10)
+    ax2.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax2.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.5 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, (ax1, ax2)
+
+
+def plot_figure_3_6(
+    data_path: str = 'common/data/faithful.csv',
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """
+    Faithfully reproduce Figure 3.6 from Bishop & Bishop (2024), page 86:
+    Old Faithful data with (a) Single Gaussian fit (MLE), and (b) Two-component GMM (EM).
+    """
+    if not os.path.exists(data_path):
+        candidates = [
+            os.path.join('..', data_path),
+            os.path.join(os.path.dirname(__file__), 'data', os.path.basename(data_path)),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), '..', data_path)),
+            os.path.join(os.getcwd(), data_path),
+            os.path.join(os.getcwd(), '..', data_path),
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                data_path = c
+                break
+
+    df = pd.read_csv(data_path)
+    X = df[['duration', 'waiting']].values
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.8), dpi=300, sharex=True, sharey=True)
+
+    x_grid = np.linspace(1.2, 5.8, 200)
+    y_grid = np.linspace(35, 100, 200)
+    XX, YY = np.meshgrid(x_grid, y_grid)
+    grid_pos = np.dstack((XX, YY))
+
+    # (a) Single Gaussian MLE fit
+    single_gauss = MultivariateGaussian.fit_mle(X)
+    dens_mle = single_gauss.pdf(grid_pos)
+
+    ax1.scatter(X[:, 0], X[:, 1], s=25, facecolors='none', edgecolors='#1E56A0', linewidth=0.9, alpha=0.8)
+    levels1 = np.linspace(0.0005, dens_mle.max() * 0.9, 6)
+    ax1.contour(XX, YY, dens_mle, levels=levels1, colors='#E02020', linewidths=1.4)
+    ax1.set_xlabel('Eruption duration (min)', fontsize=11)
+    ax1.set_ylabel('Waiting time to next eruption (min)', fontsize=11)
+    ax1.set_title('(a) Single Gaussian fit (MLE)', fontsize=12)
+
+    # (b) 2-Component GMM fit (EM)
+    gmm = GaussianMixtureModel.fit_em(X, K=2, max_iter=100, seed=42)
+    dens_gmm = gmm.pdf(grid_pos)
+
+    ax2.scatter(X[:, 0], X[:, 1], s=25, facecolors='none', edgecolors='#1E56A0', linewidth=0.9, alpha=0.8)
+    levels2 = np.linspace(0.0005, dens_gmm.max() * 0.9, 7)
+    ax2.contour(XX, YY, dens_gmm, levels=levels2, colors='#E02020', linewidths=1.4)
+    ax2.set_xlabel('Eruption duration (min)', fontsize=11)
+    ax2.set_title('(b) Two-component Gaussian mixture (EM)', fontsize=12)
+
+    for ax in (ax1, ax2):
+        ax.set_xlim(1.2, 5.8)
+        ax.set_ylim(35, 100)
+        ax.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+        for spine in ax.spines.values():
+            spine.set_color('black')
+            spine.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.6 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, (ax1, ax2)
+
+
+def plot_figure_3_7(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, plt.Axes]:
+    """
+    Faithfully reproduce Figure 3.7 from Bishop & Bishop (2024), page 87:
+    Example of a Gaussian mixture distribution in 1D showing 3 Gaussians in blue and sum in red.
+    """
+    fig, ax = plt.subplots(figsize=(7, 4.2), dpi=300)
+    x = np.linspace(-4, 6, 500)
+    means = [-1.5, 0.5, 3.0]
+    variances = [0.4, 0.25, 0.7]
+    weights = [0.35, 0.40, 0.25]
+
+    mixture = np.zeros_like(x)
+    for k, (mu, var, pi) in enumerate(zip(means, variances, weights)):
+        comp = pi * (1.0 / np.sqrt(2 * np.pi * var)) * np.exp(-0.5 * (x - mu)**2 / var)
+        mixture += comp
+        ax.plot(x, comp, color='#1E56A0', linestyle='--', linewidth=1.5,
+                label=f'Component {k+1}')
+
+    ax.plot(x, mixture, color='#E02020', linewidth=2.2, label=r'Sum $p(x) = \sum \pi_k \mathcal{N}_k$')
+
+    ax.set_xlim(-4, 6)
+    ax.set_ylim(0, 0.6)
+    ax.set_xlabel(r'$x$', fontsize=12)
+    ax.set_ylabel(r'$p(x)$', fontsize=12)
+    ax.set_title('Gaussian mixture distribution in one dimension', fontsize=12)
+    ax.legend(frameon=True, facecolor='white', framealpha=0.9, fontsize=10)
+    ax.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.7 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, ax
+
+
+def plot_figure_3_8(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """
+    Faithfully reproduce Figure 3.8 from Bishop & Bishop (2024), page 88:
+    2D mixture of three Gaussians: (a) Component contours, (b) Mixture contours, (c) 3D surface plot.
+    """
+    fig = plt.figure(figsize=(15, 4.5), dpi=300)
+
+    pi = [0.5, 0.3, 0.2]
+    mu1 = np.array([-1.0, -0.8])
+    Sigma1 = np.array([[0.6, 0.3], [0.3, 0.5]])
+
+    mu2 = np.array([1.2, 0.2])
+    Sigma2 = np.array([[0.4, -0.2], [-0.2, 0.6]])
+
+    mu3 = np.array([-0.5, 1.5])
+    Sigma3 = np.array([[0.5, 0.1], [0.1, 0.4]])
+
+    mus = [mu1, mu2, mu3]
+    Sigmas = [Sigma1, Sigma2, Sigma3]
+    colors = ['#E02020', '#1E56A0', '#2CA02C']
+
+    x = np.linspace(-3.5, 3.5, 200)
+    y = np.linspace(-3.0, 3.5, 200)
+    X, Y = np.meshgrid(x, y)
+    pos = np.dstack((X, Y))
+
+    # (a) Component contours
+    ax1 = fig.add_subplot(1, 3, 1)
+    for k in range(3):
+        diff = pos - mus[k]
+        inv = la.inv(Sigmas[k])
+        quad = np.einsum('...i,ij,...j->...', diff, inv, diff)
+        comp_dens = np.exp(-0.5 * quad) / (2 * np.pi * np.sqrt(la.det(Sigmas[k])))
+        levels = np.linspace(comp_dens.max() * 0.15, comp_dens.max() * 0.95, 4)
+        ax1.contour(X, Y, comp_dens, levels=levels, colors=colors[k], linewidths=1.4)
+        ax1.text(mus[k][0], mus[k][1] - 0.9, rf'$\pi_{k+1} = {pi[k]}$',
+                 ha='center', fontsize=11, color=colors[k], fontweight='bold')
+
+    ax1.set_xlim(-3.5, 3.5)
+    ax1.set_ylim(-3.0, 3.5)
+    ax1.set_xlabel(r'$x_1$', fontsize=11)
+    ax1.set_ylabel(r'$x_2$', fontsize=11)
+    ax1.set_title('(a) Component contours', fontsize=12)
+    ax1.set_aspect('equal')
+    ax1.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax1.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    # (b) Marginal density contours
+    ax2 = fig.add_subplot(1, 3, 2)
+    mixture_dens = np.zeros_like(X)
+    for k in range(3):
+        diff = pos - mus[k]
+        inv = la.inv(Sigmas[k])
+        quad = np.einsum('...i,ij,...j->...', diff, inv, diff)
+        comp_dens = np.exp(-0.5 * quad) / (2 * np.pi * np.sqrt(la.det(Sigmas[k])))
+        mixture_dens += pi[k] * comp_dens
+
+    levels_mix = np.linspace(0.015, mixture_dens.max() * 0.95, 8)
+    ax2.contour(X, Y, mixture_dens, levels=levels_mix, colors='#E02020', linewidths=1.4)
+    ax2.set_xlim(-3.5, 3.5)
+    ax2.set_ylim(-3.0, 3.5)
+    ax2.set_xlabel(r'$x_1$', fontsize=11)
+    ax2.set_ylabel(r'$x_2$', fontsize=11)
+    ax2.set_title(r'(b) Marginal density $p(\mathbf{x})$ contours', fontsize=12)
+    ax2.set_aspect('equal')
+    ax2.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax2.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    # (c) 3D Surface
+    ax3 = fig.add_subplot(1, 3, 3, projection='3d')
+    surf = ax3.plot_surface(X, Y, mixture_dens, cmap='viridis', edgecolor='none', alpha=0.9, antialiased=True)
+    ax3.set_xlabel(r'$x_1$', fontsize=10, labelpad=5)
+    ax3.set_ylabel(r'$x_2$', fontsize=10, labelpad=5)
+    ax3.set_zlabel(r'$p(\mathbf{x})$', fontsize=10, labelpad=5)
+    ax3.set_title(r'(c) 3D surface of $p(\mathbf{x})$', fontsize=12)
+    ax3.view_init(elev=40, azim=-60)
+    ax3.tick_params(labelsize=8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.8 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, (ax1, ax2, ax3)

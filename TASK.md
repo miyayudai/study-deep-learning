@@ -72,7 +72,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 |---|---|:---:|:---:|:---:|:---:|:---:|
 | **第1章** | 深層学習革命 (The Deep Learning Revolution) | 3 | 13 | Figure 1.1 〜 1.16 (全16枚) | なし (Tutorial) | 完了 (`[x]`) |
 | **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 完了 (`[x]`) |
-| **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 進行中 (1/6 ユニット完了) |
+| **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 進行中 (2/6 ユニット完了) |
 | **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 未着手 |
 | **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 未着手 |
 | **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 未着手 |
@@ -90,12 +90,12 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **11 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **12 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: なし
+- **現在実行中のタスク**: なし (アイドル)
 - **担当セクション**: なし
 - **ステータス**: アイドル (`[ ]`)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
@@ -227,19 +227,19 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 3.1)
   - テスト: `tests/test_ch3_discrete_variab.py`
 
-- [ ] **3.2 The Multivariate Gaussian**
+- [x] **3.2 The Multivariate Gaussian**
   - ノートブック: `3/3.2_The_Multivariate_Gaussian.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 3.2.1 Geometry of the Gaussian
-    - [ ] 3.2.2 Moments
-    - [ ] 3.2.3 Limitations
-    - [ ] 3.2.4 Conditional distribution
-    - [ ] 3.2.5 Marginal distribution
-    - [ ] 3.2.6 Bayes’ theorem
-    - [ ] 3.2.7 Maximum likelihood
-    - [ ] 3.2.8 Sequential estimation
-    - [ ] 3.2.9 Mixtures of Gaussians
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 3.2.1 Geometry of the Gaussian
+    - [x] 3.2.2 Moments
+    - [x] 3.2.3 Limitations
+    - [x] 3.2.4 Conditional distribution
+    - [x] 3.2.5 Marginal distribution
+    - [x] 3.2.6 Bayes’ theorem
+    - [x] 3.2.7 Maximum likelihood
+    - [x] 3.2.8 Sequential estimation
+    - [x] 3.2.9 Mixtures of Gaussians
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 3.2 〜 3.8)
   - テスト: `tests/test_ch3_the_multivariat.py`
 
 - [ ] **3.3 Periodic Variables**
