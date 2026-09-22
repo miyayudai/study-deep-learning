@@ -1,0 +1,464 @@
+166
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+
+Exercises
+
+5.1 (?) Consider a classification problem with K classes and a target vector t that uses a
+1-of-K binary coding scheme. Show that the conditional expectation E[t|x] is given
+by the posterior probability p(Ck |x).
+5.2 (? ?) Given a set of data points {xn }, we can define the convex hull to be the set of
+all points x given by
+X
+x=
+αn xn
+(5.96)
+n
+
+P
+
+where αn ⩾ 0 and n αn = 1. Consider a second set of points {yn } together with
+their corresponding convex hull. By definition, the two sets of points will be linearly
+b and a scalar w0 such that w
+b T xn + w0 > 0 for all
+separable if there exists a vector w
+T
+b yn + w0 < 0 for all yn . Show that if their convex hulls intersect, the two
+xn and w
+sets of points cannot be linearly separable, and conversely that if they are linearly
+separable, their convex hulls do not intersect.
+5.3 (? ?) Consider the minimization of a sum-of-squares error function (5.14), and suppose that all the target vectors in the training set satisfy a linear constraint
+aT t n + b = 0
+
+(5.97)
+
+where tn corresponds to the nth row of the matrix T in (5.14). Show that as a
+consequence of this constraint, the elements of the model prediction y(x) given by
+the least-squares solution (5.16) also satisfy this constraint, so that
+aT y(x) + b = 0.
+
+(5.98)
+
+To do so, assume that one of the basis functions φ0 (x) = 1 so that the corresponding
+parameter w0 plays the role of a bias.
+5.4 (? ?) Extend the result of Exercise 5.3 to show that if multiple linear constraints are
+satisfied simultaneously by the target vectors, then the same constraints will also be
+satisfied by the least-squares prediction of a linear model.
+5.5 (?) Use the definition (5.38), along with (5.30) and (5.31) to derive the result (5.39)
+for the F-score.
+5.6 (? ?) Consider two non-negative numbers a and b, and show that, if a ⩽ b, then
+a ⩽ (ab)1/2 . Use this result to show that, if the decision regions of a two-class
+classification problem are chosen to minimize the probability of misclassification,
+this probability will satisfy
+Z
+1/2
+p(mistake) ⩽ {p(x, C1 )p(x, C2 )}
+dx.
+(5.99)
+5.7 (?) Given a loss matrix with elements Lkj , the expected risk is minimized if, for
+each x, we choose the class that minimizes (5.23). Verify that, when the loss matrix
+
+Exercises
+
+167
+
+is given by Lkj = 1 − Ikj , where Ikj are the elements of the identity matrix, this
+reduces to the criterion of choosing the class having the largest posterior probability.
+What is the interpretation of this form of loss matrix?
+5.8 (?) Derive the criterion for minimizing the expected loss when there is a general loss
+matrix and general prior probabilities for the classes.
+5.9 (?) Consider the average of the posterior probabilities over a set of N data points in
+the form
+N
+1 X
+p(Ck |xn ).
+(5.100)
+N
+N =1
+
+By taking the limit N → ∞, show that this quantity approaches the prior class
+probability p(Ck ).
+5.10 (? ?) Consider a classification problem in which the loss incurred when an input
+vector from class Ck is classified as belonging to class Cj is given by the loss matrix
+Lkj and for which the loss incurred in selecting the reject option is λ. Find the
+decision criterion that will give the minimum expected loss. Verify that this reduces
+to the reject criterion discussed in Section 5.2.3 when the loss matrix is given by
+Lkj = 1 − Ikj . What is the relationship between λ and the rejection threshold θ?
+5.11 (?) Show that the logistic sigmoid function (5.42) satisfies the property σ(−a) =
+1 − σ(a) and that its inverse is given by σ −1 (y) = ln {y/(1 − y)}.
+5.12 (?) Using (5.40) and (5.41), derive the result (5.48) for the posterior class probability
+in the two-class generative model with Gaussian densities, and verify the results
+(5.49) and (5.50) for the parameters w and w0 .
+5.13 (?) Consider a generative classification model for K classes defined by prior class
+probabilities p(Ck ) = πk and general class-conditional densities p(φ|Ck ) where φ
+is the input feature vector. Suppose we are given a training data set {φn , tn } where
+n = 1, . . . , N , and tn is a binary target vector of length K that uses the 1-of-K
+coding scheme, so that it has components tnj = Ijk if data point n is from class Ck .
+Assuming that the data points are drawn independently from this model, show that
+the maximum-likelihood solution for the prior probabilities is given by
+πk =
+
+Nk
+N
+
+(5.101)
+
+where Nk is the number of data points assigned to class Ck .
+5.14 (? ?) Consider the classification model of Exercise 5.13 and now suppose that the
+class-conditional densities are given by Gaussian distributions with a shared covariance matrix, so that
+p(φ|Ck ) = N (φ|µk , Σ).
+(5.102)
+
+168
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+Show that the maximum likelihood solution for the mean of the Gaussian distribution
+for class Ck is given by
+N
+1 X
+µk =
+tnk φn ,
+(5.103)
+Nk n=1
+which represents the mean of those feature vectors assigned to class Ck . Similarly,
+show that the maximum likelihood solution for the shared covariance matrix is given
+by
+K
+X
+Nk
+Sk
+(5.104)
+Σ=
+N
+k=1
+
+where
+
+N
+
+Sk =
+
+1 X
+tnk (φn − µk )(φn − µk )T .
+Nk n=1
+
+(5.105)
+
+Thus, Σ is given by a weighted average of the covariances of the data associated with
+each class, in which the weighting coefficients are given by the prior probabilities of
+the classes.
+5.15 (? ?) Derive the maximum likelihood solution for the parameters {µki } of the probabilistic naive Bayes classifier with discrete binary features described in Section 5.3.3.
+5.16 (? ?) Consider a classification problem with K classes for which the feature vector
+φ has M components each of which can take L discrete states. Let the values of the
+components be represented by a 1-of-L binary coding scheme. Further suppose that,
+conditioned on the class Ck , the M components of φ are independent, so that the
+class-conditional density factorizes with respect to the feature vector components.
+Show that the quantities ak given by (5.46), which appear in the argument to the
+softmax function describing the posterior class probabilities, are linear functions of
+Section 11.2.3
+the components of φ. Note that this represents an example of a naive Bayes model.
+5.17 (? ?) Derive the maximum likelihood solution for the parameters of the probabilistic
+naive Bayes classifier described in Exercise 5.16.
+5.18 (?) Verify the relation (5.72) for the derivative of the logistic sigmoid function defined by (5.42).
+5.19 (?) By making use of the result (5.72) for the derivative of the logistic sigmoid, show
+that the derivative of the error function (5.74) for the logistic regression model is
+given by (5.75).
+5.20 (?) Show that for a linearly separable data set, the maximum likelihood solution
+for the logistic regression model is obtained by finding a vector w whose decision
+boundary wT φ(x) = 0 separates the classes and then taking the magnitude of w to
+infinity.
+5.21 (?) Show that the derivatives of the softmax activation function (5.76), where the ak
+are defined by (5.77), are given by (5.78).
+
+Exercises
+
+169
+
+5.22 (?) Using the result (5.78) for the derivatives of the softmax activation function, show
+that the gradients of the cross-entropy error (5.80) are given by (5.81).
+5.23 (?) Show that the probit function (5.86) and the erf function (5.87) are related by
+(5.88).
+5.24 (? ?) Suppose we wish to approximate the logistic sigmoid σ(a) defined by (5.42)
+by a scaled probit function Φ(λa), where Φ(a) is defined by (5.86). Show that if λ is
+chosen so that the derivatives of the two functions are equal at a = 0, then λ2 = π/8.
+
+6
+Deep Neural
+Networks
+
+Chapter 4
+Chapter 5
+
+In recent years, neural networks have emerged as, by far, the most important machine learning technology for practical applications, and we therefore devote a large
+fraction of this book to studying them. Previous chapters have already laid many
+of the foundations we will need. In particular, we have seen that linear regression
+models that comprise linear combinations of fixed nonlinear basis functions can be
+expressed as neural networks having a single layer of weight and bias parameters.
+Likewise, classification models based on linear combinations of basis functions can
+also be viewed as single-layer neural networks. These allowed us to introduce several
+important concepts before we embark on a discussion of more complex multilayered
+networks in this chapter.
+Given a sufficient number of suitably chosen basis functions, such linear models
+can approximate any given nonlinear transformation from inputs to outputs to any
+desired accuracy and might therefore appear to be sufficient to tackle any practical
+
+© The Author(s), under exclusive license to Springer Nature Switzerland AG 2024
+C. M. Bishop, H. Bishop, Deep Learning, https://doi.org/10.1007/978-3-031-45468-4_6
+
+171
+
+172
+
+6. DEEP NEURAL NETWORKS
+
+Section 6.3.6
+
+application. However, these models have some severe limitations, and so we will
+begin our discussion of neural networks by exploring these limitations and understanding why it is necessary to use basis functions that are themselves learned from
+data. This leads naturally to a discussion of neural networks having more than one
+layer of learnable parameters. These are known as feed-forward networks or multilayer perceptrons. We will also discuss the benefits of having many such layers of
+processing, leading to the key concept of deep neural networks that now dominate
+the field of machine learning.
+
+6.1. Limitations of Fixed Basis Functions
+Chapter 5
+
+Linear basis function models for classification are based on linear combinations of
+basis functions φj (x) and take the form
+
+
+M
+X
+y(x, w) = f 
+wj φj (x) + w0 
+(6.1)
+j =1
+
+Chapter 4
+
+where f (·) is a nonlinear output activation function. Linear models for regression
+take the same form but with f (·) replaced by the identity. These models allow for
+an arbitrary set of nonlinear basis functions {φi (x)}, and because of the generality
+of these basis functions, such models can in principle provide a solution to any regression or classification problem. This is true in a trivial sense in that if one of the
+basis functions corresponds to the desired input-to-output transformation, then the
+learnable linear layer simply has to copy the value of this basis function to the output
+of the model.
+More generally, we would expect that a sufficiently large and rich set of basis
+functions would allow any desired function to be approximated to arbitrary accuracy. It would seem therefore that such linear models constitute a general purpose
+framework for solving problems in machine learning. Unfortunately, there are some
+significant shortcomings with linear models, which arise from the assumption that
+the basis functions φj (x) are fixed and independent of the training data. To understand these limitations, we start by looking at the behaviour of linear models as the
+number of input variables is increased.
+
+6.1.1
+Section 1.2
+
+The curse of dimensionality
+
+Consider a simple regression model for a single input variable given by a polynomial of order M in the form
+y(x, w) = w0 + w1 x + w2 x2 + . . . + wM xM
+
+(6.2)
+
+and let us see what happens if we increase the number of inputs. If we have D input
+variables {x1 , . . . , xD }, then a general polynomial with coefficients up to order 3
+
+Figure 6.1
+
+Plot of the Iris data in which red,
+green, and blue points denote
+three species of iris flower and the
+axes represent measurements of
+the length and width of the sepal,
+respectively. Our goal is to classify a new test point such as the
+one denoted by ×.
+
+173
+
+sepal width
+
+6.1. Limitations of Fixed Basis Functions
+
+sepal length
+
+would take the form
+y(x, w) = w0 +
+
+D
+X
+i=1
+
+w i xi +
+
+D X
+D
+X
+i=1 j =1
+
+wij xi xj +
+
+D X
+D X
+D
+X
+
+wijk xi xj xk .
+
+(6.3)
+
+i=1 j =1 k=1
+
+As D increases, the growth in the number of independent coefficients is O(D3 ),
+whereas for a polynomial of order M , the growth in the number of coefficients is
+O(DM ) (Bishop, 2006). We see that in spaces of higher dimensionality, polynomials
+can rapidly become unwieldy and of little practical utility.
+The severe difficulties that can arise in spaces of many dimensions is sometimes
+called the curse of dimensionality (Bellman, 1961). It is not limited to polynomial
+regression but is in fact quite general. Consider the use of linear models for solving classification problems. Figure 6.1 shows a plot of data from the Iris data set
+comprising 50 observations taken from each of three species of iris flowers. Each
+observation has four variables representing measurements of the sepal length, sepal
+width, petal length, and petal width. For this illustration, we consider only the sepal
+length and sepal width variables. Given these 150 observations as training data, our
+goal is to classify a new test point, such as the one denoted by the cross in Figure 6.1,
+by assigning it to one of the three species. We observe that the cross is close to several red points, and so we might suppose that it belongs to the red class. However,
+there are also some green points nearby, so we might think that it could instead belong to the green class. It seems less likely that it belongs to the blue class. The
+intuition here is that the identity of the cross should be determined more strongly by
+nearby points from the training set and less strongly by more distant points, and this
+intuition turns out to be reasonable.
+One very simple way of converting this intuition into a learning algorithm would
+be to divide the input space into regular cells, as indicated in Figure 6.2. When we
+are given a test point and we wish to predict its class, we first decide which cell it
+
+6. DEEP NEURAL NETWORKS
+Figure 6.2
+
+Illustration of a simple approach
+for solving classification problems
+in which the input space is divided into cells and any new test
+point is assigned to the class that
+has the most representatives in
+the same cell as the test point.
+As we shall see shortly, this simplistic approach has some severe
+shortcomings.
+
+sepal width
+
+174
+
+sepal length
+
+belongs to, and then we find all the training data points that fall in the same cell. The
+identity of the test point is predicted to be the same as the class having the largest
+number of training points in the same cell as the test point (with ties being broken
+at random). We can view this as a basis function model in which there is a basis
+function φi (x) for each grid cell, which simply returns zero if x lies outside the
+grid cell, and otherwise returns the majority class of the training data points that fall
+inside the cell. The output of the model is then given by the sum of the outputs of all
+the basis functions.
+There are numerous problems with this naive approach, but one of the most
+severe becomes apparent when we consider its extension to problems having larger
+numbers of input variables, corresponding to input spaces of higher dimensionality.
+The origin of the problem is illustrated in Figure 6.3, which shows that, if we divide a
+region of a space into regular cells, then the number of such cells grows exponentially
+with the dimensionality of the space. The challenge with an exponentially large
+number of cells is that we would need an exponentially large quantity of training
+Figure 6.3 Illustration of the curse
+of dimensionality, showing how the
+number of regions of a regular grid
+grows exponentially with the dimensionality D of the space. For clarity,
+only a subset of the cubical regions
+are shown for D = 3.
+
+x2
+x2
+
+x1
+x1
+D=1
+
+x1
+D=2
+
+x3
+D=3
+
+175
+
+6.1. Limitations of Fixed Basis Functions
+1
+
+Plot of the fraction of the volume
+of a hypersphere of radius r = 1
+lying in the range r = 1 −  to
+r = 1 for various values of the dimensionality D.
+
+D = 20
+
+0.8
+volume fraction
+
+Figure 6.4
+
+D =5
+D =2
+
+0.6
+
+D =1
+
+0.4
+0.2
+0
+
+0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1
+
+²
+
+Section 6.1.4
+
+data to ensure that the cells are not empty. We have already seen in Figure 6.2 that
+some cells contain no training points. Hence, a test point in such cells cannot be
+classified. Clearly, we have no hope of applying such a technique in a space of more
+than a few variables. The difficulties with both the polynomial regression example
+and the Iris data classification example arise because the basis functions were chosen
+independently of the problem being solved. We will need to be more sophisticated
+in our choice of basis functions if we are to circumvent the curse of dimensionality.
+
+6.1.2
+
+High-dimensional spaces
+
+First, however, we will look more closely at the properties of spaces with higher
+dimensionality where our geometrical intuitions, formed through a life spent in a
+space of three dimensions, can fail badly. As a simple example, consider a hypersphere of radius r = 1 in a space of D dimensions, and ask what is the fraction of
+the volume of the hypersphere that lies between radius r = 1 −  and r = 1. We can
+evaluate this fraction by noting that the volume VD (r) of a hypersphere of radius r
+in D dimensions must scale as rD , and so we write
+VD (r) = KD rD
+Exercise 6.1
+
+(6.4)
+
+where the constant KD depends only on D. Thus, the required fraction is given by
+VD (1) − VD (1 − )
+= 1 − (1 − )D ,
+VD (1)
+
+(6.5)
+
+which is plotted as a function of  for various values of D in Figure 6.4. We see that,
+for large D, this fraction tends to 1 even for small values of . Thus, we arrive at
+the remarkable result that, in spaces of high dimensionality, most of the volume of a
+hypersphere is concentrated in a thin shell near the surface!
+
+

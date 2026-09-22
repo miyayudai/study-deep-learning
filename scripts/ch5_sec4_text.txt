@@ -1,0 +1,620 @@
+k x + ln g(λk ) + ln p(Ck )
+
+(5.68)
+
+and so again is a linear function of x.
+
+5.4. Discriminative Classifiers
+For the two-class classification problem, we have seen that the posterior probability of class C1 can be written as a logistic sigmoid acting on a linear function of
+x, for a wide choice of class-conditional distributions p(x|Ck ) from the exponential
+family. Similarly, for the multi-class case, the posterior probability of class Ck is
+given by a softmax transformation of linear functions of x. For specific choices of
+the class-conditional densities p(x|Ck ), we have used maximum likelihood to determine the parameters of the densities as well as the class priors p(Ck ) and then used
+Bayes’ theorem to find the posterior class probabilities. This represents an example
+of generative modelling, because we could take such a model and generate synthetic
+data by drawing values of x from the marginal distribution p(x) or from any of the
+class-conditional densities p(x|Ck ).
+However, an alternative approach is to use the functional form of the generalized linear model explicitly and to determine its parameters directly by using maximum likelihood. In this direct approach, we maximize a likelihood function defined
+through the conditional distribution p(Ck |x), which represents a form of discriminative probabilistic modelling. One advantage of the discriminative approach is that
+there will typically be fewer learnable parameters to be determined, as we will see
+shortly. It may also lead to improved predictive performance, particularly when the
+assumed forms for the class-conditional densities represent a poor approximation to
+the true distributions.
+
+158
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+
+5.4.1
+Chapter 4
+
+Activation functions
+
+In linear regression, the model prediction y(x, w) is given by a linear function
+of the parameters
+y(x, w) = wT x + w0 ,
+(5.69)
+which gives a continuous-valued output in the range (−∞, ∞). For classification
+problems, however, we wish to predict discrete class labels, or more generally posterior probabilities that lie in the range (0, 1). To achieve this, we consider a generalization of this model in which we transform the linear function of w and w0 using
+a nonlinear function f ( · ) so that
+
+y(x, w) = f wT w + w + 0 .
+(5.70)
+In the machine learning literature, f ( · ) is known as an activation function, whereas
+its inverse is called a link function in the statistics literature. The decision surfaces
+correspond to y(x) = constant, so that wT x = constant, and hence the decision
+surfaces are linear functions of x, even if the function f (·) is nonlinear. For this
+reason, the class of models described by (5.70) are called generalized linear models
+(McCullagh and Nelder, 1989). However, in contrast to the models used for regression, they are no longer linear in the parameters due to the nonlinear function f (·).
+This will lead to more complex analytical and computational properties than for
+linear regression models. Nevertheless, these models are still relatively simple compared to the much more flexible nonlinear models that will be studied in subsequent
+chapters.
+
+5.4.2
+
+Section 5.2
+
+Section 6.1
+
+Fixed basis functions
+
+So far in this chapter, we have considered classification models that work directly with the original input vector x. However, all the algorithms are equally applicable if we first make a fixed nonlinear transformation of the inputs using a vector
+of basis functions φ(x). The resulting decision boundaries will be linear in the feature space φ, and these correspond to nonlinear decision boundaries in the original x
+space, as illustrated in Figure 5.15. Classes that are linearly separable in the feature
+space φ(x) need not be linearly separable in the original observation space x.
+Note that as in our discussion of linear models for regression, one of the basis
+functions is typically set to a constant, say φ0 (x) = 1, so that the corresponding
+parameter w0 plays the role of a bias.
+For many problems of practical interest, there is significant overlap in x-space
+between the class-conditional densities p(x|Ck ). This corresponds to posterior probabilities p(Ck |x), which, for at least some values of x, are not 0 or 1. In such cases,
+the optimal solution is obtained by modelling the posterior probabilities accurately
+and then applying standard decision theory. Note that nonlinear transformations
+φ(x) cannot remove such a class overlap, although they can increase the level of
+overlap or create an overlap where none existed in the original observation space.
+However, suitable choices of nonlinearity can make the process of modelling the
+posterior probabilities easier. However, such fixed basis function models have important limitations, and these will be resolved in later chapters by allowing the basis
+functions themselves to adapt to the data.
+
+159
+
+5.4. Discriminative Classifiers
+
+1
+1
+φ2
+
+x2
+0
+
+0.5
+
+−1
+0
+−1
+
+0
+
+x1
+
+1
+
+0
+
+0.5
+
+φ1
+
+1
+
+Figure 5.15 Illustration of the role of nonlinear basis functions in linear classification models. The left-hand
+plot shows the original input space (x1 , x2 ) together with data points from two classes labelled red and blue.
+Two ‘Gaussian’ basis functions φ1 (x) and φ2 (x) are defined in this space with centres shown by the green
+crosses and with contours shown by the green circles. The right-hand plot shows the corresponding feature
+space (φ1 , φ2 ) together with the linear decision boundary obtained given by a logistic regression model of the
+form discussed in Section 5.4.3. This corresponds to a nonlinear decision boundary in the original input space,
+shown by the black curve in the left-hand plot.
+
+5.4.3
+
+Logistic regression
+
+We first consider the problem of two-class classification. In our discussion of
+generative approaches in Section 5.3, we saw that under rather general assumptions,
+the posterior probability of class C1 can be written as a logistic sigmoid acting on a
+linear function of the feature vector φ so that
+
+p(C1 |φ) = y(φ) = σ wT φ
+(5.71)
+with p(C2 |φ) = 1 − p(C1 |φ). Here σ(·) is the logistic sigmoid function defined by
+(5.42). In the terminology of statistics, this model is known as logistic regression,
+although it should be emphasized that this is a model for classification rather than
+for continuous variable.
+For an M -dimensional feature space φ, this model has M adjustable parameters.
+By contrast, if we had fitted Gaussian class-conditional densities using maximum
+likelihood, we would have used 2M parameters for the means and M (M + 1)/2
+parameters for the (shared) covariance matrix. Together with the class prior p(C1 ),
+this gives a total of M (M +5)/2+1 parameters, which grows quadratically with M ,
+in contrast to the linear dependence on M of the number of parameters in logistic
+regression. For large values of M , there is a clear advantage in working with the
+logistic regression model directly.
+
+160
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+
+Exercise 5.18
+
+We now use maximum likelihood to determine the parameters of the logistic
+regression model. To do this, we will make use of the derivative of the logistic sigmoid function, which can conveniently be expressed in terms of the sigmoid function
+itself:
+dσ
+= σ(1 − σ).
+(5.72)
+da
+For a data set {φn , tn }, where φn = φ(xn ) and tn ∈ {0, 1}, with n = 1, . . . , N ,
+the likelihood function can be written
+p(t|w) =
+
+N
+Y
+n=1
+
+yntn {1 − yn }
+
+1−tn
+
+(5.73)
+
+where t = (t1 , . . . , tN )T and yn = p(C1 |φn ). As usual, we can define an error
+function by taking the negative logarithm of the likelihood, which gives the crossentropy error function:
+E(w) = − ln p(t|w) = −
+
+Exercise 5.19
+
+N
+X
+n=1
+
+{tn ln yn + (1 − tn ) ln(1 − yn )}
+
+where yn = σ(an ) and an = wT φn . Taking the gradient of the error function with
+respect to w, we obtain
+∇E(w) =
+
+Section 4.1.3
+
+Chapter 7
+
+(5.74)
+
+N
+X
+n=1
+
+(yn − tn )φn
+
+(5.75)
+
+where we have made use of (5.72). We see that the factor involving the derivative
+of the logistic sigmoid has cancelled, leading to a simplified form for the gradient
+of the log likelihood. In particular, the contribution to the gradient from data point
+n is given by the ‘error’ yn − tn between the target value and the prediction of
+the model times the basis function vector φn . Furthermore, comparison with (4.12)
+shows that this takes precisely the same form as the gradient of the sum-of-squares
+error function for the linear regression model.
+The maximum likelihood solution corresponds to ∇E(w) = 0. However, from
+(5.75) we see that this no longer corresponds to a set of linear equations, due to
+the nonlinearity in y(·), and so this equation does not have a closed-form solution.
+One approach to finding a maximum likelihood solution would be to use stochastic
+gradient descent, in which ∇En is the nth term on the right-hand side of (5.75).
+Stochastic gradient descent will be the principal approach to training the highly nonlinear neural networks discussed in later chapters. However, the maximum likelihood
+equation is only ‘slightly’ nonlinear, and in fact the error function (5.74), in which the
+model is defined by (5.71), is a convex function of the parameters, which allows the
+error function to be minimized using a simple algorithm called iterative reweighted
+least squares or IRLS (Bishop, 2006). However, this does not easily generalize to
+more complex models such as deep neural networks.
+
+5.4. Discriminative Classifiers
+
+Exercise 5.20
+
+Chapter 9
+
+Note that maximum likelihood can exhibit severe over-fitting for data sets that
+are linearly separable. This arises because the maximum likelihood solution occurs
+when the hyperplane corresponding to σ = 0.5, equivalent to wT φ = 0, separates
+the two classes and the magnitude of w goes to infinity. In this case, the logistic sigmoid function becomes infinitely steep in feature space, corresponding to a
+Heaviside step function, so that every training point from each class k is assigned a
+posterior probability p(Ck |x) = 1. Furthermore, there is typically a continuum of
+such solutions because any separating hyperplane will give rise to the same posterior
+probabilities at the training data points. Maximum likelihood provides no way to
+favour one such solution over another, and which solution is found in practice will
+depend on the choice of optimization algorithm and on the parameter initialization.
+Note that the problem will arise even if the number of data points is large compared
+with the number of parameters in the model, so long as the training data set is linearly separable. The singularity can be avoided by adding a regularization term to
+the error function.
+
+5.4.4
+Section 5.3
+
+161
+
+Multi-class logistic regression
+
+In our discussion of generative models for multi-class classification, we have
+seen that, for a large class of distributions from the exponential family, the posterior
+probabilities are given by a softmax transformation of linear functions of the feature
+variables, so that
+exp(ak )
+p(Ck |φ) = yk (φ) = P
+(5.76)
+j exp(aj )
+where the pre-activations ak are given by
+ak = wkT φ.
+
+Exercise 5.21
+
+(5.77)
+
+There we used maximum likelihood to determine separately the class-conditional
+densities and the class priors and then found the corresponding posterior probabilities
+using Bayes’ theorem, thereby implicitly determining the parameters {wk }. Here we
+consider the use of maximum likelihood to determine the parameters {wk } of this
+model directly. To do this, we will require the derivatives of yk with respect to all
+the pre-activations aj . These are given by
+∂yk
+= yk (Ikj − yj )
+∂aj
+
+(5.78)
+
+where Ikj are the elements of the identity matrix.
+Next we write down the likelihood function. This is most easily done using
+the 1-of-K coding scheme in which the target vector tn for a feature vector φn
+belonging to class Ck is a binary vector with all elements zero except for element k,
+which equals one. The likelihood function is then given by
+p(T|w1 , . . . , wK ) =
+
+N Y
+K
+Y
+n=1 k=1
+
+p(Ck |φn )
+
+tnk
+
+=
+
+N Y
+K
+Y
+n=1 k=1
+
+tnk
+ynk
+
+(5.79)
+
+162
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+φM −1 (x)
+
+yK (x, w)
+
+...
+
+Representation of a multi-class linear classification model as a neural network having a single layer
+of connections. Each basis function is represented by a node,
+with the solid node representing the ‘bias’ basis function φ0 ,
+whereas each output y1 , . . . , yN is
+also represented by a node. The
+links between the nodes represent
+the corresponding weight and bias
+parameters.
+
+...
+
+Figure 5.16
+
+φ1 (x)
+
+y1 (x, w)
+
+φ0 (x)
+
+where ynk = yk (φn ), and T is an N × K matrix of target variables with elements
+tnk . Taking the negative logarithm then gives
+E(w1 , . . . , wK ) = − ln p(T|w1 , . . . , wK ) = −
+
+Exercise 5.22
+
+Section 5.4.6
+
+tnk ln ynk ,
+
+(5.80)
+
+n=1 k=1
+
+which is known as the cross-entropy error function for the multi-class classification
+problem.
+We now take the gradient of the error function with respect to one of the parameter vectors wj . Making use of the result (5.78) for the derivatives of the softmax
+function, we obtain
+∇wj E(w1 , . . . , wK ) =
+
+Chapter 7
+
+N X
+K
+X
+
+N
+X
+n=1
+
+(ynj − tnj ) φn
+
+(5.81)
+
+P
+where we have made use of k tnk = 1. Again, we could optimize the parameters
+through stochastic gradient descent.
+Once again, we see the same form arising for the gradient as was found for the
+sum-of-squares error function with the linear model and for the cross-entropy error
+with the logistic regression model, namely the product of the error (ynj − tnj ) times
+the basis function activation φn . These are examples of a more general result that
+we will explore later.
+Linear classification models can be represented as single-layer neural networks
+as shown in Figure 5.16. If we consider the derivative of the error function with
+respect to a weight wik , which links basis function φi (x) to output unit tk , we have
+from (5.81)
+N
+∂E(w1 , . . . , wK ) X
+=
+(ynk − tnk ) φi (xn ).
+(5.82)
+∂wij
+n=1
+Comparing this with Figure 5.16, we see that, for each data point n this gradient
+takes the form of the output of the basis function at the input end of the weight link
+with the ‘error’ (ynk − tnk ) at the output end.
+
+5.4. Discriminative Classifiers
+Figure 5.17 Schematic example of a probability density p(θ) shown by the blue curve, given in this example
+by a mixture of two Gaussians, along with its cumulative
+distribution function f (a), shown by the red curve. Note
+that the value of the blue curve at any point, such as
+that indicated by the vertical green line, corresponds to
+the slope of the red curve at the same point. Conversely,
+the value of the red curve at this point corresponds to the
+area under the blue curve indicated by the shaded green
+region. In the stochastic threshold model, the class label
+takes the value t = 1 if the value of a = wT φ exceeds
+a threshold, otherwise it takes the value t = 0. This is
+equivalent to an activation function given by the cumulative distribution function f (a).
+
+163
+
+1
+0.8
+0.6
+0.4
+0.2
+0
+
+0
+
+1
+
+2
+
+3
+
+4
+
+5.4.5 Probit regression
+We have seen that, for a broad range of class-conditional distributions described
+by the exponential family, the resulting posterior class probabilities are given by a
+logistic (or softmax) transformation acting on a linear function of the feature variables. However, not all choices of class-conditional density give rise to such a simple
+form for the posterior probabilities, which suggests that it might be worth exploring
+other types of discriminative probabilistic model. Consider the two-class case, again
+remaining within the framework of generalized linear models, so that
+p(t = 1|a) = f (a)
+
+(5.83)
+
+where a = wT φ, and f (·) is the activation function.
+One way to motivate an alternative choice for the link function is to consider a
+noisy threshold model, as follows. For each input φn , we evaluate an = wT φn and
+then we set the target value according to
+(
+tn = 1, if an ⩾ θ,
+(5.84)
+tn = 0, otherwise.
+If the value of θ is drawn from a probability density p(θ), then the corresponding
+activation function will be given by the cumulative distribution function
+Z a
+f (a) =
+p(θ) dθ
+(5.85)
+−∞
+
+as illustrated in Figure 5.17.
+As a specific example, suppose that the density p(θ) is given by a zero-mean,
+unit-variance Gaussian. The corresponding cumulative distribution function is given
+by
+Z
+a
+
+Φ(a) =
+−∞
+
+N (θ|0, 1) dθ,
+
+(5.86)
+
+164
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+which is known as the probit function. It has a sigmoidal shape and is compared
+with the logistic sigmoid function in Figure 5.12. Note that the use of a Gaussian
+distribution with general mean and variances does not change the model because this
+is equivalent to a re-scaling of the linear coefficients w. Many numerical packages
+can evaluate a closely related function defined by
+Z a
+2
+exp(−θ 2 /2) dθ
+(5.87)
+erf(a) = √
+π 0
+
+Exercise 5.23
+
+and known as the erf function or error function (not to be confused with the error
+function of a machine learning model). It is related to the probit function by
+
+
+1
+1
+1 + √ erf(a) .
+Φ(a) =
+(5.88)
+2
+2
+The generalized linear model based on a probit activation function is known as probit
+regression. We can determine the parameters of this model using maximum likelihood by a straightforward extension of the ideas discussed earlier. In practice, the
+results found using probit regression tend to be like those of logistic regression.
+One issue that can occur in practical applications is that of outliers, which can
+arise for instance through errors in measuring the input vector x or through mislabelling of the target value t. Because such points can lie a long way to the wrong side
+of the ideal decision boundary, they can seriously distort the classifier. The logistic
+and probit regression models behave differently in this respect because the tails of
+the logistic sigmoid decay asymptotically like exp(−x) for |x| → ∞, whereas for
+the probit activation function, they decay like exp(−x2 ), and so the probit model
+can be significantly more sensitive to outliers.
+
+5.4.6
+
+Canonical link functions
+
+For the linear regression model with a Gaussian noise distribution, the error
+function, corresponding to the negative log likelihood, is given by (4.11). If we
+take the derivative with respect to the parameter vector w of the contribution to the
+error function from a data point n, this takes the form of the ‘error’ yn − tn times the
+feature vector φn , where yn = wT φn . Similarly, for the combination of the logisticsigmoid activation function and the cross-entropy error function (5.74) and for the
+softmax activation function with the multi-class cross-entropy error function (5.80),
+we again obtain this same simple form. We now show that this is a general result
+of assuming a conditional distribution for the target variable from the exponential
+family along with a corresponding choice for the activation function known as the
+canonical link function.
+We again make use of the restricted form (3.169) of exponential family distributions. Note that here we are applying the assumption of exponential family distribution to the target variable t, in contrast to Section 5.3.4 where we applied it to the
+input vector x. We therefore consider conditional distributions of the target variable
+of the form
+ 
+ 
+t
+1
+ηt
+g(η) exp
+.
+(5.89)
+p(t|η, s) = h
+s
+s
+s
+
+5.4. Discriminative Classifiers
+
+165
+
+Using the same line of argument as led to the derivation of the result (3.172), we see
+that the conditional mean of t, which we denote by y, is given by
+y ≡ E[t|η] = −s
+
+d
+ln g(η).
+dη
+
+(5.90)
+
+Thus, y and η must related, and we denote this relation through η = ψ(y).
+Following Nelder and Wedderburn (1972), we define a generalized linear model
+to be one for which y is a nonlinear function of a linear combination of the input (or
+feature) variables so that
+y = f (wT φ)
+(5.91)
+where f (·) is known as the activation function in the machine learning literature, and
+f −1 (·) is known as the link function in statistics.
+Now consider the log likelihood function for this model, which, as a function of
+η, is given by
+N
+X
+
+
+N 
+X
+η n tn
++ const
+ln p(t|η, s) =
+ln p(tn |η, s) =
+ln g(ηn ) +
+s
+n=1
+n=1
+
+(5.92)
+
+where we are assuming that all observations share a common scale parameter (which
+corresponds to the noise variance for a Gaussian distribution, for instance) and so s
+is independent of n. The derivative of the log likelihood with respect to the model
+parameters w is then given by
+∇w ln p(t|η, s) =
+=
+
+
+N 
+X
+d
+tn dη n dy n
+∇w a n
+ln g(ηn ) +
+dη n
+s
+dy n dan
+n=1
+N
+X
+1
+
+s
+n=1
+
+{tn − yn } ψ 0 (yn )f 0 (an )φn
+
+(5.93)
+
+where an = wT φn , and we have used yn = f (an ) together with the result (5.90)
+for E[t|η]. We now see that there is a considerable simplification if we choose a
+particular form for the link function f −1 (y) given by
+f −1 (y) = ψ(y),
+
+(5.94)
+
+which gives f (ψ(y)) = y and hence f 0 (ψ)ψ 0 (y) = 1. Also, because a = f −1 (y),
+we have a = ψ and hence f 0 (a)ψ 0 (y) = 1. In this case, the gradient of the error
+function reduces to
+N
+1X
+∇ ln E(w) =
+{yn − tn }φn .
+(5.95)
+s n=1
+We have seen that there is a natural pairing between the choice of error function
+and the choice of output-unit activation function. Although we have derived this
+result in the context of single-layer network models, the same considerations apply
+to deep neural networks discussed in later chapters.
+
+166
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
