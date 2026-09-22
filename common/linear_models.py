@@ -24,15 +24,19 @@ from common.plot_utils import setup_style
 # =====================================================================
 
 class PolynomialBasis:
-    """Polynomial basis functions: phi_j(x) = x^j for j = 0, ..., M-1."""
-    def __init__(self, degree: int):
+    """Polynomial basis functions: phi_j(x) = x^j for j = 0, ..., M-1 (Eq 4.2)."""
+    def __init__(self, degree: int, include_bias: bool = True):
         self.degree = int(degree)
-        self.n_features = self.degree + 1
+        self.include_bias = include_bias
+        self.n_features = self.degree + (1 if include_bias else 0)
 
     def __call__(self, x: np.ndarray) -> np.ndarray:
         x_arr = np.asarray(x, dtype=np.float64).ravel()
-        # Shape: (N, degree + 1)
-        return np.column_stack([x_arr ** j for j in range(self.degree + 1)])
+        start = 0 if self.include_bias else 1
+        cols = [x_arr ** j for j in range(start, self.degree + 1)]
+        return np.column_stack(cols)
+
+    transform = __call__
 
 
 class GaussianBasis:
@@ -59,6 +63,8 @@ class GaussianBasis:
             return np.hstack([bias, phi])
         return phi
 
+    transform = __call__
+
 
 class SigmoidalBasis:
     """
@@ -84,6 +90,8 @@ class SigmoidalBasis:
             return np.hstack([bias, phi])
         return phi
 
+    transform = __call__
+
 
 # =====================================================================
 # 2. Linear Regression Models (Section 4.1.2 - 4.1.7)
@@ -97,10 +105,11 @@ class LinearRegression:
         w_ML = (Phi^T Phi)^(-1) Phi^T t = Phi^dagger t
         sigma_ML^2 = (1 / N) sum_{n=1}^N { t_n - w_ML^T phi(x_n) }^2
     """
-    def __init__(self, basis_func: Optional[Callable[[np.ndarray], np.ndarray]] = None):
-        self.basis_func = basis_func
+    def __init__(self, basis_func: Optional[Callable[[np.ndarray], np.ndarray]] = None, basis: Optional[Callable] = None):
+        self.basis_func = basis if basis is not None else basis_func
         self.w: Optional[np.ndarray] = None
         self.sigma2: Optional[float] = None
+        self.noise_variance: Optional[float] = None
         self.Phi: Optional[np.ndarray] = None
         self.N: int = 0
         self.M: int = 0
@@ -130,6 +139,7 @@ class LinearRegression:
         # Residual variance sigma_ML^2 (Eq 4.20)
         residuals = t_arr - (self.Phi @ self.w)
         self.sigma2 = float(np.mean(residuals ** 2))
+        self.noise_variance = self.sigma2
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -145,6 +155,12 @@ class LinearRegression:
             Phi_query = np.hstack([np.ones((len(X_arr), 1)), X_arr])
         return Phi_query @ self.w
 
+    def predict_distribution(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Return predictive mean and predictive standard deviation."""
+        mean = self.predict(X)
+        std = np.full_like(mean, np.sqrt(self.sigma2) if self.sigma2 > 0 else 0.0)
+        return mean, std
+
     def log_likelihood(self, X: np.ndarray, t: np.ndarray) -> float:
         """Compute Gaussian log-likelihood ln p(t | X, w, sigma^2) (Eq 4.10)."""
         t_arr = np.asarray(t, dtype=np.float64).ravel()
@@ -159,22 +175,57 @@ class SequentialLinearRegression:
     Sequential / Online Linear Regression via LMS Algorithm (Section 4.1.5, Eq 4.21 - 4.22):
         w^(tau + 1) = w^(tau) + eta * (t_n - w^(tau)^T phi_n) * phi_n
     """
-    def __init__(self, n_features: int, learning_rate: float = 0.01, w_init: Optional[np.ndarray] = None):
+    def __init__(self, n_features: Optional[int] = None, learning_rate: float = 0.01, eta: Optional[float] = None,
+                 basis: Optional[Callable] = None, basis_func: Optional[Callable] = None, w_init: Optional[np.ndarray] = None):
+        self.basis = basis if basis is not None else basis_func
+        lr = eta if eta is not None else learning_rate
+        self.learning_rate = float(lr)
+        self.eta = self.learning_rate
         self.n_features = n_features
-        self.learning_rate = float(learning_rate)
         if w_init is not None:
             self.w = np.asarray(w_init, dtype=np.float64).copy()
-        else:
+        elif n_features is not None:
             self.w = np.zeros(n_features, dtype=np.float64)
-        self.trajectory = [self.w.copy()]
+        else:
+            self.w = None
+        self.trajectory = [self.w.copy()] if self.w is not None else []
 
     def update(self, phi_n: np.ndarray, t_n: float) -> np.ndarray:
         """Perform one LMS update step with single sample (phi_n, t_n)."""
         phi_n = np.asarray(phi_n, dtype=np.float64).ravel()
+        if self.w is None:
+            self.w = np.zeros(len(phi_n), dtype=np.float64)
+            self.trajectory = [self.w.copy()]
         error = float(t_n - np.dot(self.w, phi_n))
         self.w += self.learning_rate * error * phi_n
         self.trajectory.append(self.w.copy())
         return self.w
+
+    def fit(self, X: np.ndarray, t: np.ndarray, epochs: int = 100) -> "SequentialLinearRegression":
+        X_arr = np.asarray(X, dtype=np.float64)
+        t_arr = np.asarray(t, dtype=np.float64).ravel()
+        Phi = self.basis(X_arr) if self.basis is not None else (
+            np.hstack([np.ones((len(X_arr), 1)), X_arr if X_arr.ndim > 1 else X_arr[:, None]])
+        )
+        N, M = Phi.shape
+        if self.w is None or len(self.w) != M:
+            self.w = np.zeros(M, dtype=np.float64)
+            self.trajectory = [self.w.copy()]
+
+        for _ in range(epochs):
+            indices = np.random.permutation(N)
+            for i in indices:
+                self.update(Phi[i], t_arr[i])
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        if self.w is None:
+            raise ValueError("Model must be fitted before predict")
+        X_arr = np.asarray(X, dtype=np.float64)
+        Phi = self.basis(X_arr) if self.basis is not None else (
+            np.hstack([np.ones((len(X_arr), 1)), X_arr if X_arr.ndim > 1 else X_arr[:, None]])
+        )
+        return Phi @ self.w
 
 
 class RidgeRegression:
@@ -183,11 +234,15 @@ class RidgeRegression:
         Total Error: E_D(w) + 0.5 * lambda * w^T w
         Solution: w = (lambda * I + Phi^T Phi)^(-1) Phi^T t
     """
-    def __init__(self, alpha: float = 1.0, basis_func: Optional[Callable[[np.ndarray], np.ndarray]] = None):
-        if alpha < 0:
-            raise ValueError("Regularization coefficient alpha must be non-negative")
-        self.alpha = float(alpha)
-        self.basis_func = basis_func
+    def __init__(self, alpha: float = 1.0, l2_reg: Optional[float] = None, basis_func: Optional[Callable] = None,
+                 basis: Optional[Callable] = None, regularize_bias: bool = True):
+        self.basis_func = basis if basis is not None else basis_func
+        reg = l2_reg if l2_reg is not None else alpha
+        if reg < 0:
+            raise ValueError("Regularization coefficient must be non-negative")
+        self.alpha = float(reg)
+        self.l2_reg = self.alpha
+        self.regularize_bias = regularize_bias
         self.w: Optional[np.ndarray] = None
 
     def fit(self, X: np.ndarray, t: np.ndarray) -> "RidgeRegression":
@@ -204,7 +259,9 @@ class RidgeRegression:
 
         M = Phi.shape[1]
         reg_matrix = self.alpha * np.eye(M)
-        # Solve (alpha * I + Phi^T Phi) w = Phi^T t
+        if not self.regularize_bias and M > 0:
+            reg_matrix[0, 0] = 0.0
+        # Solve (reg_matrix + Phi^T Phi) w = Phi^T t
         self.w = la.solve(reg_matrix + Phi.T @ Phi, Phi.T @ t_arr, assume_a='pos')
         return self
 
@@ -227,10 +284,12 @@ class MultipleOutputLinearRegression:
         y(x, W) = W^T phi(x)
         W_ML = (Phi^T Phi)^(-1) Phi^T T = Phi^dagger T
     """
-    def __init__(self, basis_func: Optional[Callable[[np.ndarray], np.ndarray]] = None):
-        self.basis_func = basis_func
+    def __init__(self, basis_func: Optional[Callable] = None, basis: Optional[Callable] = None):
+        self.basis_func = basis if basis is not None else basis_func
         self.W: Optional[np.ndarray] = None
         self.sigma2: Optional[float] = None
+        self.noise_variance: Optional[float] = None
+        self.cov: Optional[np.ndarray] = None
 
     def fit(self, X: np.ndarray, T: np.ndarray) -> "MultipleOutputLinearRegression":
         X_arr = np.asarray(X, dtype=np.float64)
@@ -250,6 +309,8 @@ class MultipleOutputLinearRegression:
         self.W = la.pinv(Phi) @ T_arr
         residuals = T_arr - (Phi @ self.W)
         self.sigma2 = float(np.mean(residuals ** 2))
+        self.noise_variance = self.sigma2
+        self.cov = (residuals.T @ residuals) / N
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -457,11 +518,11 @@ def plot_figure_4_3_least_squares_geometry(
     ax.text(y_end[0] - 0.05, y_end[1] + 0.02, r"$\mathbf{y}$", fontsize=13, color='black', zorder=4)
 
     # Draw target vector t (black arrow)
-    draw_arrow(origin, t_end, 'black', lw=1.8)
+    draw_arrow(origin, t_end, '#00C000', lw=1.8)
     ax.text(t_end[0] + 0.02, t_end[1] - 0.04, r"$\mathbf{t}$", fontsize=13, zorder=4)
 
     # Draw error vector t - y (green line perpendicular to S)
-    ax.plot([y_end[0], t_end[0]], [y_end[1], t_end[1]], color='#00C000', linewidth=1.8, zorder=3)
+    ax.plot([y_end[0], t_end[0]], [y_end[1], t_end[1]], color='black', linewidth=1.8, zorder=3)
 
     # Draw right-angle symbol at y
     # Vector along y -> t
@@ -561,3 +622,150 @@ def plot_figure_4_4_multiple_outputs_diagram(
     if show:
         plt.show()
     return fig, ax
+
+
+# =====================================================================
+# 4. Decision Theory for Regression (Section 4.2)
+# =====================================================================
+
+class MinkowskiLoss:
+    """
+    Minkowski Loss Function (Section 4.2, Eq 4.40):
+        L_q(y, t) = |y - t|^q
+    Special cases:
+        q = 2: Squared loss (optimal prediction is conditional mean)
+        q = 1: Absolute loss (optimal prediction is conditional median)
+        q -> 0: 0-1 loss (optimal prediction is conditional mode)
+    """
+    def __init__(self, q: float = 2.0):
+        if q <= 0:
+            raise ValueError(f"Parameter q must be positive, got {q}")
+        self.q = float(q)
+
+    def __call__(self, y: Union[float, np.ndarray], t: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        diff = np.abs(np.asarray(y, dtype=np.float64) - np.asarray(t, dtype=np.float64))
+        return diff ** self.q
+
+    def expected_loss(self, y: float, t_samples: np.ndarray) -> float:
+        """Monte Carlo estimate of expected loss E[L_q] = (1 / N) sum |y - t_n|^q."""
+        t_arr = np.asarray(t_samples, dtype=np.float64)
+        return float(np.mean(np.abs(y - t_arr) ** self.q))
+
+
+def plot_figure_4_5_conditional_distribution(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, plt.Axes]:
+    """
+    Faithfully reproduce Figure 4.5 from Bishop & Bishop (2024), page 121:
+    The regression function f^*(x) = E[t | x] minimizing expected squared loss,
+    along with conditional distribution p(t | x_0) shown as a vertical Gaussian profile.
+    """
+    fig, ax = plt.subplots(figsize=(5.5, 4.5), dpi=300)
+
+    # Nonlinear regression curve f^*(x): smooth sigmoid-like curve
+    x_grid = np.linspace(0.05, 0.95, 300)
+    # Sigmoidal curve: f^*(x) = 0.2 + 0.6 / (1 + exp(-8 * (x - 0.5)))
+    f_star = 0.2 + 0.6 / (1.0 + np.exp(-9.0 * (x_grid - 0.5)))
+
+    # Specific input x_0
+    x0 = 0.65
+    f_star_x0 = 0.2 + 0.6 / (1.0 + np.exp(-9.0 * (x0 - 0.5)))
+
+    # Draw regression curve (red)
+    ax.plot(x_grid, f_star, color='#E00000', linewidth=2.0, zorder=2)
+    ax.text(0.92, 0.88, r"$f^\ast(x)$", fontsize=12, ha='center', va='bottom')
+
+    # Draw vertical line at x_0 from axis level to top
+    ax.plot([x0, x0], [0.05, 0.95], color='#406080', linewidth=1.2, zorder=1)
+    ax.text(x0, 0.01, r"$x_0$", fontsize=11, ha='center', va='top')
+
+    # Conditional Gaussian distribution p(t | x_0) plotted horizontally along x
+    sigma = 0.08
+    t_profile = np.linspace(f_star_x0 - 0.28, f_star_x0 + 0.28, 200)
+    # Gaussian density centered at f^*(x0)
+    dens = np.exp(-0.5 * ((t_profile - f_star_x0) / sigma) ** 2)
+    # Scale density horizontally to the right
+    scale_factor = 0.08
+    x_profile = x0 + dens * scale_factor
+
+    # Draw conditional distribution profile (blue)
+    ax.plot(x_profile, t_profile, color='#0044FF', linewidth=1.8, zorder=3)
+    ax.text(x0 + 0.02, f_star_x0 - 0.22, r"$p(t \mid x_0, \mathbf{w}, \sigma^2)$",
+            fontsize=10.5, ha='left', va='center')
+
+    # Axes styling with arrows
+    ax.set_xlim(0, 1.05)
+    ax.set_ylim(0, 1.05)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    # Axis labels
+    ax.set_xlabel(r"$x$", fontsize=12, loc='right')
+    ax.set_ylabel(r"$t$", fontsize=12, loc='top', rotation=0, labelpad=8)
+
+    # Spine positions
+    ax.spines['left'].set_position(('data', 0.05))
+    ax.spines['bottom'].set_position(('data', 0.05))
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.plot(1.03, 0.05, ">k", clip_on=False, markersize=6)
+    ax.plot(0.05, 1.03, "^k", clip_on=False, markersize=6)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 4.5 saved to: {p}")
+    if show:
+        plt.show()
+    return fig, ax
+
+
+def plot_figure_4_6_minkowski_loss(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, np.ndarray]:
+    """
+    Faithfully reproduce Figure 4.6 from Bishop & Bishop (2024), page 123:
+    Plots of Minkowski loss L_q = |f - t|^q for q in {0.3, 1, 2, 10}.
+    """
+    fig, axes = plt.subplots(2, 2, figsize=(6.5, 5.5), dpi=300)
+    diff = np.linspace(-2.0, 2.0, 500)
+
+    q_configs = [
+        (axes[0, 0], 0.3, r"$q = 0.3$", r"$|f - t|^{0.3}$"),
+        (axes[0, 1], 1.0, r"$q = 1$", r"$|f - t|^1$"),
+        (axes[1, 0], 2.0, r"$q = 2$", r"$|f - t|^2$"),
+        (axes[1, 1], 10.0, r"$q = 10$", r"$|f - t|^{10}$")
+    ]
+
+    for ax, q_val, title_text, y_label_text in q_configs:
+        loss_curve = np.abs(diff) ** q_val
+        ax.plot(diff, loss_curve, color='#E00000', linewidth=1.5)
+
+        ax.set_xlim(-2.0, 2.0)
+        ax.set_ylim(0.0, 2.05)
+        ax.set_xticks([-2, -1, 0, 1, 2])
+        ax.set_yticks([0, 1, 2])
+        ax.set_xlabel(r"$f - t$", fontsize=10.5)
+        ax.set_ylabel(y_label_text, fontsize=10.5)
+        ax.set_title(title_text, fontsize=11, y=0.82)
+        ax.tick_params(direction='in', top=True, right=True)
+        for s in ax.spines.values():
+            s.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 4.6 saved to: {p}")
+    if show:
+        plt.show()
+    return fig, axes
