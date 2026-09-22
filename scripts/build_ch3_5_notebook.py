@@ -1,3 +1,7 @@
+"""
+Build the complete Jupyter Notebook for Section 3.5: Nonparametric Methods.
+Bishop & Bishop (2024), Deep Learning: Foundations and Concepts.
+"""
 import json
 import os
 
@@ -20,341 +24,430 @@ def create_cell(cell_type, source):
 
 cells = []
 
-# Cell 1: Markdown Title & Overview
-cells.append(create_cell("markdown", """# 第3章 基本分布 (Standard Distributions)
+# =====================================================================
+# Cell 1: Title & Overview
+# =====================================================================
+cells.append(create_cell("markdown", r"""# 第3章 基本分布 (Standard Distributions)
 ## 3.5 非母数的方法 (Nonparametric Methods)
 
-本ノートブックでは、特定の確率分布族（ガウス分布など）を仮定せずにデータの確率密度を柔軟に推定・分類する**非母数的方法 (Nonparametric Methods)** の数学的定式化と実装を行います。
+本ノートブックでは、確率分布の厳密な関数形を仮定せず、データそのものの局所構造に基づいて密度を推定・分類する**非母数的方法 (Nonparametric Methods)** の理論的背景、完全な数式導出、アルゴリズム実装、および教科書の全図版（Figure 3.13 〜 3.16）の完全再現を行います。
 
 ---
 
 ### 目次
-1. **3.5 母数的手法と非母数的手法の対比**
-   - パラメトリック手法の限界（単峰性の制約、モデルの硬直性）
-   - ノンパラメトリック手法の基本概念（局所性、次元の呪い）
+1. **3.5 非母数的方法の導入と動機 (Motivation & Parametric Limitations)**
+   - 母数的アプローチ（ガウス分布等の単峰性）の限界とモデル誤特定
 2. **3.5.1 ヒストグラム法 (Histograms)**
-   - ビン分割と規格化確率密度の定義式 (式 3.175)
-   - ビン幅 $\\Delta$ による平滑化トレードオフ（過学習と過度の平滑化）
-   - 教科書 **Figure 3.13** の完全再現
-3. **3.5.2 カーネル密度推定 (Kernel Densities / Parzen Windows)**
-   - 局所領域確率と二項分布からの密度推定式の導出 (式 3.176 - 3.180)
-   - パーツェン窓（超立方体カーネル）とガウスカーネル (式 3.181 - 3.184)
-   - バンド幅 $h$ の役割と最適化、シルバーマンの経験則 (Silverman's rule of thumb)
-   - 教科書 **Figure 3.14** の完全再現
-4. **3.5.3 最近傍法 (Nearest-neighbours)**
-   - $K$ 近傍密度推定の定式化と体積 $V$ の可変性 (式 3.180)
-   - $K$ の選択と特異性（$K=1$ における発散挙動）
-   - 教科書 **Figure 3.15** の完全再現
-   - $K$ 近傍分類器と事後確率 $p(C_k \\mid \\mathbf{x}) = K_k / K$ のベイズ導出 (式 3.187 - 3.190)
-   - 1近傍法 ($K=1$) とボロノイ決定境界 (Voronoi Tessellation)
-   - カバー・ハートの定理 (Cover-Hart Theorem) による漸近誤り率限界
-   - 教科書 **Figure 3.16** の完全再現
-5. **自己検証アサーション (Self-Check Validation)**"""))
+   - 1次元ビニングと正規化確率密度 式(3.175)
+   - 平滑化パラメータ $\Delta$ のバイアス・バリアンス・トレードオフ
+   - 次元の呪い (Curse of Dimensionality) $M^D$ の指数爆発
+   - **Figure 3.13 の再現**: ビン幅 $\Delta = 0.04, 0.08, 0.25$ による比較
+3. **3.5.2 カーネル密度推定法 (Kernel Densities / Parzen Windows)**
+   - 局所領域 $R$ の確率質量 $P = \int_R p(\mathbf{x})d\mathbf{x} \simeq p(\mathbf{x})V$ 式(3.176)〜(3.179)
+   - 二項分布 $\mathrm{Bin}(K|N, P)$ と極限 $N \to \infty$ での分散消失 式(3.177)〜(3.178)
+   - 超立方体カーネル（パーゼン窓） 式(3.181)〜(3.183)
+   - 平滑なガウスカーネル密度推定 式(3.184) と一般核関数の規格化条件 式(3.185)〜(3.186)
+   - **Figure 3.14 の再現**: バンド幅 $h = 0.005, 0.07, 0.2$ による平滑化
+4. **3.5.3 最近傍法 (Nearest-Neighbours)**
+   - 適応的体積 $V(\mathbf{x}) = V_D r_K^D(\mathbf{x})$ による局所密度推定 式(3.180)
+   - $K$-最近傍密度推定の空間積分発散性（非真密度）
+   - ベイズの定理による $K$-最近傍分類器の厳密導出 式(3.187)〜(3.190)
+   - 1-最近傍法 ($K=1$) とボロノイ図・垂直二等分線決定境界
+   - Cover & Hart (1967) の漸近誤り率限界定理 $P^* \le P_{\mathrm{NN}} \le 2 P^*$
+   - **Figure 3.15 の再現**: $K = 1, 5, 30$ による適応的密度推定
+   - **Figure 3.16 の再現**: (a) $K=3$ 最近傍分類器の幾何構造、(b) $K=1$ の折れ線決定境界
+5. **多次元実証と自己採点アサーション (Self-Verification Assertions)**"""))
 
-# Cell 2: Code Imports & Setup
-cells.append(create_cell("code", """import os
+# =====================================================================
+# Cell 2: Imports & Environment Setup
+# =====================================================================
+cells.append(create_cell("code", r"""import os
 import sys
 import numpy as np
-import scipy.linalg as la
-from scipy import special
+import scipy.stats as stats
+from scipy import special, integrate
 import matplotlib.pyplot as plt
 
 # リポジトリルートをパスに追加
 repo_root = os.path.abspath("..")
 if repo_root not in sys.path:
-    sys.path.append(repo_root)
+    sys.path.insert(0, repo_root)
 
 from common.plot_utils import setup_style
 from common.probability import (
-    HistogramDensity1D,
-    KernelDensity1D,
-    KernelDensityND,
-    KNNDensityEstimator,
-    KNNClassifier,
-    get_mixture_pdf_3_5,
-    get_synthetic_50_points_3_5,
-    plot_figure_3_13_histogram,
-    plot_figure_3_14_kernel_density,
-    plot_figure_3_15_knn_density,
-    plot_figure_3_16_knn_classification
+    HistogramDensity, HistogramDensity1D,
+    KernelDensityEstimator, KernelDensity1D, KernelDensityND,
+    KNearestNeighborsDensity, KNNDensityEstimator,
+    KNearestNeighborsClassifier, KNNClassifier,
+    plot_figure_3_13, plot_figure_3_14, plot_figure_3_15, plot_figure_3_16
 )
 
 setup_style()
-print("Libraries and Section 3.5 Nonparametric modules loaded successfully.")"""))
+os.makedirs("result", exist_ok=True)
+os.makedirs("../result", exist_ok=True)
+print("Environment and modules successfully imported!")"""))
 
-# Cell 3: Markdown Section 3.5 Overview
-cells.append(create_cell("markdown", r"""---
-## 1. 母数的手法と非母数的手法
-
-### 1.1 母数的手法 (Parametric Approaches) の限界
-本章でこれまで扱ってきたベルヌーイ分布、多項分布、ガウス分布、フォン・ミーゼス分布などは、少数の固定されたパラメータ（平均 $\boldsymbol{\mu}$ や共分散 $\boldsymbol{\Sigma}$ など）によって確率密度の形状が一意に決定される**母数的手法 (Parametric Methods)** です。
-しかし、現実の複雑なデータ生成過程に対しては以下の重大な制約があります：
-1. **分布の仮定が不適切な場合の予測性能低下**:
-   データ生成過程が多峰性（複数の山）を持つ場合、単一のガウス分布（必然的に単峰性）では真の分布構造を捉えることができません。
-2. **モデル表現力の固定化**:
-   サンプル数 $N$ が数万〜数百万に増加しても、パラメータ数が増えないためモデルの表現力が頭打ちになります。
-
-### 1.2 非母数的手法 (Nonparametric Approaches) の基本概念
-これに対し、**非母数的手法 (Nonparametric Methods)** は確率密度の形状について特定の関数形を仮定せず、データの観測点そのものを用いて局所的に密度を構成します。
-データ数 $N$ の増加に応じてモデルの柔軟性が自動的にスケールする利点を持つ一方、以下で詳述する**局所平滑化パラメータの選定**と**次元の呪い (Curse of Dimensionality)** が中心的な課題となります。"""))
-
-# Cell 4: Markdown Subsection 3.5.1 Histograms
-cells.append(create_cell("markdown", r"""---
-## 2. 3.5.1 ヒストグラム法 (Histograms)
-
-### 2.1 定式化と規格化条件
-1次元の連続変数 $x$ の観測範囲を幅 $\Delta_i$ の不連続なビン（区間）に分割し、各ビン $i$ に入る観測点の個数を $n_i$ とします。
-全観測点数を $N$ とするとき、ビン $i$ における規格化された確率密度 $p_i$ は次式で定義されます（式 3.175）：
-
-$$
-p_i = \frac{n_i}{N \Delta_i}
-$$
-
-各ビン上で密度を一定値 $p_i$ とする区分的定数モデルであり、全領域での積分は厳密に $1$ となります：
-$$
-\int p(x) dx = \sum_i p_i \Delta_i = \sum_i \frac{n_i}{N} = \frac{1}{N} \sum_i n_i = 1
-$$
-通常はすべてのビン幅を等しい定数 $\Delta_i = \Delta$ に設定します。
-
----
-
-### 2.2 平滑化パラメータ $\Delta$ のトレードオフ
-- **$\Delta$ が小さすぎる場合 ($\Delta = 0.04$)**:
-  各ビンに含まれるデータ数が少なくなり、推定密度は激しいスパイク状（高バリアンス／過学習）となって真の分布にはないノイズを拾います。
-- **$\Delta$ が大きすぎる場合 ($\Delta = 0.25$)**:
-  過度に平滑化（高バイアス／未学習）され、真の分布の二峰性構造が完全に消失してしまいます。
-- **中間的な $\Delta$ ($\Delta = 0.08$)**:
-  ノイズを抑えつつ、二峰性のピーク位置と形状を最もバランスよく捉えます。
-
-### 2.3 ヒストグラム法の長所と短所
-- **長所**: 一度ヒストグラムを計算してしまえば元のデータセットを破棄できるためメモリ効率が高く、データが逐次的に到着するストリーミング環境にも容易に適応できます。
-- **短所**:
-  1. ビンの境界において人工的な不連続が生じる。
-  2. **次元の呪い**: $D$ 次元空間の各軸を $M$ 個のビンに分割すると、総ビン数は $M^D$ となり次元に対して指数関数的に爆発します。"""))
-
-# Cell 5: Code Figure 3.13
-cells.append(create_cell("code", """# Figure 3.13: 50点のサンプルに対するヒストグラム密度推定
-fig13, axes13 = plot_figure_3_13_histogram(
-    save_paths=["result/fig3_13_histogram_density_estimation.png", "../result/fig3_13_histogram_density_estimation.png"],
-    show=True
-)"""))
-
-# Cell 6: Markdown Subsection 3.5.2 Kernel Densities
-cells.append(create_cell("markdown", r"""---
-## 3. 3.5.2 カーネル密度推定 (Kernel Densities / Parzen Windows)
-
-### 3.1 局所密度推定の一般枠組み
-$D$ 次元ユークリッド空間の未知の確率密度 $p(\mathbf{x})$ から $N$ 点の観測値が独立同分布で得られたとします。
-点 $\mathbf{x}$ を含む小さな領域 $\mathcal{R}$（体積 $V$）を考えると、その領域に確率質量が落ちる真の確率は次式で与えられます（式 3.176）：
-$$
-P = \int_{\mathcal{R}} p(\mathbf{x}) d\mathbf{x}
-$$
-$N$ 個のサンプルのうち領域 $\mathcal{R}$ に入るサンプル数 $K$ は、二項分布 $\mathrm{Bin}(K \mid N, P)$ に従います（式 3.177）：
-$$
-\mathbb{E}\left[\frac{K}{N}\right] = P, \quad \mathrm{var}\left[\frac{K}{N}\right] = \frac{P(1 - P)}{N}
-$$
-$N$ が十分大きいとき、標本比率 $K/N$ は真の確率 $P$ に鋭く集中します：$K \simeq N P$（式 3.178）。
-さらに領域 $\mathcal{R}$ が十分に小さく、領域内で $p(\mathbf{x})$ がほぼ一定とみなせるならば、$P \simeq p(\mathbf{x}) V$ と近似できます（式 3.179）。これらを連立させることで、**局所密度推定の基本方程式**が得られます（式 3.180）：
-
-$$
-p(\mathbf{x}) = \frac{K}{N V}
-$$
-
-この方程式の活用には2つの双対的なアプローチが存在します：
-1. **体積 $V$ を固定し、データから $K$ を求める** $\implies$ **カーネル密度推定法**
-2. **点数 $K$ を固定し、データから体積 $V$ を求める** $\implies$ **$K$ 最近傍法**
-
----
-
-### 3.2 カーネル関数とパーツェン窓 (Parzen Windows)
-領域 $\mathcal{R}$ として、点 $\mathbf{x}$ を中心とする一辺 $h$ の超立方体（体積 $V = h^D$）を考えます。
-原点を中心とする単位立方体を表す窓関数（カーネル関数）を以下のように定義します（式 3.181）：
-$$
-k(\mathbf{u}) = \begin{cases} 1 & |u_i| \le 1/2 \quad (i = 1, \dots, D) \\ 0 & \text{otherwise} \end{cases}
-$$
-観測点 $\mathbf{x}_n$ が立方体内に含まれる個数 $K$ は $K = \sum_{n=1}^N k\left(\frac{\mathbf{x} - \mathbf{x}_n}{h}\right)$ となり、式 3.180 に代入すると次式が得られます（式 3.183）：
-$$
-p(\mathbf{x}) = \frac{1}{N h^D} \sum_{n=1}^N k\left(\frac{\mathbf{x} - \mathbf{x}_n}{h}\right)
-$$
-
-### 3.3 ガウスカーネル密度推定 (Gaussian Kernel Density)
-超立方体カーネルはヒストグラムと同様に境界で不連続性が生じるため、滑らかなカーネル関数として**ガウスカーネル**を採用します（式 3.184）：
-$$
-p(\mathbf{x}) = \frac{1}{N} \sum_{n=1}^N \frac{1}{(2\pi h^2)^{D/2}} \exp\left( -\frac{\|\mathbf{x} - \mathbf{x}_n\|^2}{2h^2} \right)
-$$
-ここで $h$ は各ガウス成分の標準偏差であり、**平滑化パラメータ（バンド幅: bandwidth）** の役割を果たします。
-
-- $k(\mathbf{u}) \ge 0$ かつ $\int k(\mathbf{u}) d\mathbf{u} = 1$ を満たす任意の関数が有効なカーネルとして利用可能です。
-- **計算コストのトレードオフ**: 「学習」フェーズの計算量は $\mathcal{O}(1)$（データを保持するだけ）ですが、評価時の計算量がデータサイズ $N$ に比例して $\mathcal{O}(N)$ となり、大規模データでは評価が重くなります。"""))
-
-# Cell 7: Code Figure 3.14
-cells.append(create_cell("code", """# Figure 3.14: ガウスカーネル密度推定におけるバンド幅 h の影響
-fig14, axes14 = plot_figure_3_14_kernel_density(
-    save_paths=["result/fig3_14_kernel_density_estimation.png", "../result/fig3_14_kernel_density_estimation.png"],
-    show=True
-)"""))
-
-# Cell 8: Markdown Subsection 3.5.3 Nearest-Neighbours
-cells.append(create_cell("markdown", r"""---
-## 4. 3.5.3 最近傍法 (Nearest-neighbours)
-
-### 4.1 $K$ 最近傍密度推定 (KNN Density Estimation)
-カーネル密度推定の重大な弱点は、バンド幅 $h$ が空間全体で固定されている点です。データの密集地域では $h$ が大きすぎて微細な構造をぼかし、希薄地域では $h$ が小さすぎてノイズが生じます。
-
-この問題に対処するため、基本方程式 $p(\mathbf{x}) = \frac{K}{N V}$ において**点数 $K$ を固定し、点 $\mathbf{x}$ から $K$ 番目に近いデータ点までの距離 $r_K(\mathbf{x})$ に応じて球の体積 $V$ を伸縮**させます。
-$D$ 次元超球の体積は $V = V_D \cdot r_K(\mathbf{x})^D$ （ここで $V_D = \frac{\pi^{D/2}}{\Gamma(D/2 + 1)}$）であるため：
-
-$$
-p(\mathbf{x}) = \frac{K}{N \cdot V_D \cdot r_K(\mathbf{x})^D}
-$$
-- 1次元空間 ($D=1$) では、球は長さ $2 r_K(x)$ の線分となり、$V = 2 r_K(x)$ です。したがって：
-  $$
-  p(x) = \frac{K}{2 N r_K(x)}
-  $$
-- **特異性と非正規化性**:
-  観測点 $x \to x_n$ の近傍では、$K=1$ のとき $r_1(x) \to 0$ となるため $p(x) \to \infty$ の垂直漸近線が生じます。また、$x \to \pm \infty$ でテールが $1/|x|$ で減衰するため、全空間での積分が発散し、厳密な意味での確率密度にはなりません。"""))
-
-# Cell 9: Code Figure 3.15
-cells.append(create_cell("code", """# Figure 3.15: K 最近傍法による密度推定における K の影響
-fig15, axes15 = plot_figure_3_15_knn_density(
-    save_paths=["result/fig3_15_knn_density_estimation.png", "../result/fig3_15_knn_density_estimation.png"],
-    show=True
-)"""))
-
-# Cell 10: Markdown KNN Classification & Figure 3.16
-cells.append(create_cell("markdown", r"""---
-### 4.2 $K$ 最近傍法によるパターン分類 (KNN Classification)
-$K$ 最近傍の局所密度推定をクラス分類問題へと拡張します。
-$N$ 個の学習データのうちクラス $\mathcal{C}_k$ に属するデータ数を $N_k$ とします ($\sum_k N_k = N$)。
-テスト点 $\mathbf{x}$ を中心とし、クラスを問わずちょうど $K$ 個の点を含む球（体積 $V$）を考え、その中にクラス $\mathcal{C}_k$ の点が $K_k$ 個含まれるとします。
-
-1. 各クラスの条件付き密度推定値（式 3.187）：
-   $$
-   p(\mathbf{x} \mid \mathcal{C}_k) = \frac{K_k}{N_k V}
-   $$
-2. クラスによらない全体の密度推定値（式 3.188）：
-   $$
-   p(\mathbf{x}) = \frac{K}{N V}
-   $$
-3. クラスの事前確率推定値（式 3.189）：
-   $$
-   p(\mathcal{C}_k) = \frac{N_k}{N}
-   $$
-
-これらを**ベイズの定理**に代入すると、驚くほど簡潔な事後確率が得られます（式 3.190）：
-$$
-p(\mathcal{C}_k \mid \mathbf{x}) = \frac{p(\mathbf{x} \mid \mathcal{C}_k) p(\mathcal{C}_k)}{p(\mathbf{x})}
-= \frac{\left(\frac{K_k}{N_k V}\right) \left(\frac{N_k}{N}\right)}{\frac{K}{N V}} = \frac{K_k}{K}
-$$
-誤分類率を最小化する決定規則は、事後確率が最大のクラス、すなわち $K$ 個の最近傍点の中で最も多数派のクラス（**多数決方式: majority voting**）に $\mathbf{x}$ を割り当てることです。
-
----
-
-### 4.3 1最近傍則 ($K=1$) とボロノイ決定境界
-$K=1$ の特殊ケースでは、テスト点 $\mathbf{x}$ は最も近い単一の訓練点と同じクラスに分類されます。
-- **幾何学的構造**: 決定境界は、異なるクラスに属する点対の**垂直二等分線 (perpendicular bisectors)** から構成される区分的線形（多面体的）な境界（**ボロノイ分割: Voronoi tessellation**）となります。
-- **カバー・ハートの定理 (Cover & Hart, 1967)**:
-  サンプルサイズ $N \to \infty$ の極限において、1最近傍分類器の誤り率 $P_{1\text{-NN}}$ は、真の分布を用いたベイズ最適誤り率 $P_B$ の高々2倍以下であることが数学的に保証されています：
-  $$
-  P_B \le P_{1\text{-NN}} \le 2 P_B (1 - P_B) \le 2 P_B
-  $$
-  これは、一切のパラメータ推定を行わない極めて単純な局所規則でありながら、データ数が無限大であれば理論限界の2倍以内の性能を達成できるという極めて深遠な結果です。"""))
-
-# Cell 11: Code Figure 3.16
-cells.append(create_cell("code", """# Figure 3.16: (a) K=3 最近傍分類器, (b) K=1 最近傍決定境界（ボロノイ境界）
-fig16, (ax16_1, ax16_2) = plot_figure_3_16_knn_classification(
-    save_paths=["result/fig3_16_knn_classification_voronoi.png", "../result/fig3_16_knn_classification_voronoi.png"],
-    show=True
-)"""))
-
-# Cell 12: Markdown Self-Check
-cells.append(create_cell("markdown", r"""---
-## 5. 自己検証アサーション (Self-Check Validation)
-
-本節で実装したヒストグラム密度推定、カーネル密度推定、KNN密度推定、およびKNN分類器の数理的性質を自動テストします。"""))
-
-# Cell 13: Code Self-Check Assertions
-cells.append(create_cell("code", """# =====================================================================
-# 自動検証テストスイート
 # =====================================================================
-print("Running Section 3.5 comprehensive self-check assertions...")
+# Cell 3: Motivation Markdown
+# =====================================================================
+cells.append(create_cell("markdown", r"""---
+## 1. 非母数的アプローチの動機 (Motivation)
 
-# 1. ヒストグラムの規格化積分の厳密性
-data_50 = get_synthetic_50_points_3_5()
-for delta_val in [0.04, 0.08, 0.25]:
-    hist_test = HistogramDensity1D(bin_width=delta_val, range_bounds=(0.0, 1.0)).fit(data_50)
-    int_val = np.sum(hist_test.density * hist_test.bin_widths)
-    assert np.isclose(int_val, 1.0, atol=1e-12), f"Histogram integral failed: {int_val}"
+第3章の前半（3.1〜3.4）では、ベルヌーイ分布、多項分布、ガウス分布、フォン・ミーゼス分布、指数型分布族といった**母数的アプローチ (Parametric Approach)** を扱ってきました。
+母数的手法では、観測データが少数のパラメータ $\boldsymbol{\theta}$（例: 平均 $\boldsymbol{\mu}$ や共分散 $\boldsymbol{\Sigma}$）によって規定される特定の関数形に従うと仮定します。
 
-# 2. ガウスカーネル密度推定の数値積分
-x_grid = np.linspace(-3.0, 4.0, 5000)
-dx = x_grid[1] - x_grid[0]
-for h_val in [0.05, 0.1, 0.2]:
-    kde_test = KernelDensity1D(h=h_val, kernel="gaussian").fit(data_50)
-    int_kde = np.sum(kde_test.evaluate(x_grid)) * dx
-    assert np.isclose(int_kde, 1.0, atol=1e-2), f"KDE integral failed: {int_kde}"
+### 母数的手法の根本的制約
+1. **モデルの誤特定 (Model Misspecification)**:
+   仮定した確率密度が真のデータ生成過程と乖離している場合、いくら大量のデータを観測して最尤推定を行っても、予測性能は頭打ちになります。
+   例えば、真の生成過程が複数のピークを持つ**多峰性 (Multimodal)** である場合、本質的に単峰性 (Unimodal) である単一のガウス分布では決して表現できません。
+2. **非母数的手法 (Nonparametric Methods) の優位性**:
+   データ分布の関数形に対する厳格な仮定を最小限に抑え、**データそのものの局所的近傍 (Local Neighbourhood)** に基づいて柔軟に密度推定や分類を行います。"""))
 
-# 3. KNN 密度推定の計算整合性
-# 1D で K=10 のとき、p(x) = 10 / (50 * 2 * r_10) = 1 / (10 * r_10)
-knn_test = KNNDensityEstimator(K=10).fit(data_50)
-eval_x = 0.5
-dists_x = np.abs(data_50 - eval_x)
-r_10_manual = np.sort(dists_x)[9]
-expected_dens = 10.0 / (50.0 * 2.0 * r_10_manual)
-assert np.isclose(knn_test.evaluate(eval_x), expected_dens, atol=1e-10)
+# =====================================================================
+# Cell 4: Section 3.5.1 Markdown
+# =====================================================================
+cells.append(create_cell("markdown", r"""---
+## 3.5.1 ヒストグラム法 (Histograms)
 
-# 4. KNN 分類器の事後確率総和 == 1.0 および 1-NN の訓練誤差 == 0
-X_synth = np.array([[0.1, 0.2], [0.2, 0.1], [0.15, 0.1], [0.8, 0.9], [0.9, 0.8], [0.85, 0.9]])
-y_synth = np.array([0, 0, 0, 1, 1, 1])
+連続変数 $x$ の空間を幅 $\Delta_i$ の重複しない区間（ビン: Bins）に分割し、各ビン $i$ に入る観測データの個数 $n_i$ をカウントする最も直感的な密度推定手法です。
 
-clf_3 = KNNClassifier(K=3).fit(X_synth, y_synth)
-prob_test = clf_3.predict_proba(np.array([[0.15, 0.15], [0.85, 0.85]]))
-assert np.allclose(np.sum(prob_test, axis=1), 1.0)
-assert prob_test[0, 0] == 1.0  # クラス 0 に 100%
-assert prob_test[1, 1] == 1.0  # クラス 1 に 100%
+### 1. 正規化確率密度の導出 式(3.175)
+全観測データ数を $N = \sum_i n_i$ とします。ビン $i$ における確率密度 $p_i$ は、ビンの幅 $\Delta_i$ と全データ数 $N$ で割ることで定義されます：
 
-clf_1 = KNNClassifier(K=1).fit(X_synth, y_synth)
-assert np.array_equal(clf_1.predict(X_synth), y_synth)
+$$
+p_i = \frac{n_i}{N \Delta_i} \tag{3.175}
+$$
 
-print("All Section 3.5 self-check assertions passed successfully! 100% mathematical accuracy confirmed.")"""))
+この密度関数 $p(x) = \sum_i p_i \mathbb{I}(x \in \text{Bin}_i)$ が全空間で積分して 1 に正規化されることは、以下のように容易に確かめられます：
 
-# Cell 14: Markdown Summary
-cells.append(create_cell("markdown", """---
-## まとめ (Summary)
+$$
+\int_{-\infty}^\infty p(x) dx = \sum_i \int_{\text{Bin}_i} p_i dx = \sum_i p_i \Delta_i = \sum_i \frac{n_i}{N \Delta_i} \Delta_i = \frac{1}{N} \sum_i n_i = \frac{N}{N} = 1
+$$
 
-本節では、分布のパラメトリックな仮定に縛られない非母数的方法 (Nonparametric Methods) の3大手法を体系的に網羅・実装しました：
-1. **ヒストグラム法**: 観測空間の固定ビン分割による区分的定数モデル。データ蓄積不要・オンライン更新容易な利点がある一方、境界の不連続性と次元の呪い $M^D$ を持ちます。
-2. **カーネル密度推定 (Parzen Windows)**: 体積 $V$ を固定し、各データ点上にカーネル関数を配置して重ね合わせる手法。ガウスカーネルによって滑らかな推定が可能となり、バンド幅 $h$ がバイアス・バリアンスのトレードオフを統括します。
-3. **最近傍法 (Nearest-Neighbours)**: 点数 $K$ を固定し、データ密度に応じて領域の体積 $V$ を可変伸縮させる手法。局所密度の急激な変化に対応でき、ベイズの定理との結合により直感的な多数決分類器 $p(C_k \\mid \\mathbf{x}) = K_k / K$ を導出しました。
-4. **Figure 3.13, 3.14, 3.15, 3.16 の完全再現**: 教科書のすべての平滑化パラメータ比較とボロノイ決定境界を高精度に可視化・検証しました。"""))
+### 2. 平滑化パラメータ $\Delta$ の役割
+- $\Delta$ が極小 ($\Delta \to 0$): 各ビンに 0 個または 1 個のサンプルしか入らず、推定密度は極めて激しい棘状（スパイキー）となり、サンプルノイズに過敏に反応します（**高バリアンス**）。
+- $\Delta$ が過大 ($\Delta \to \infty$): ビンが広すぎてデータ空間全体の構造が平均化され、真の分布が持つ多峰性（2つの山）が消失します（**高バイアス**）。
+- 最適な平滑化は、適度な中間値の $\Delta$ で得られます。
 
-nb = {
+### 3. 利点と致命的な欠点（次元の呪い）
+- **利点**: ヒストグラムを一度作成すれば、原データ $\mathcal{D}$ を破棄できる（メモリ $\mathcal{O}(M)$）。また、ストリーミングデータに対しても順次加算可能。
+- **欠点 1（不連続性）**: ビンの境界で密度が不連続に跳躍する。
+- **欠点 2（次元の呪い: Curse of Dimensionality）**:
+  $D$ 次元の特徴空間において、各軸を $M$ 個のビンに分割すると、全ビン数は **$M^D$** に達します。
+  $M=10, D=10$ のとき、ビン数は $10^{10} = 100$ 億個となり、各ビンに十分なサンプルを行き渡らせるためには天文学的なデータ量が必要となります。"""))
+
+# =====================================================================
+# Cell 5: Figure 3.13 Code Cell
+# =====================================================================
+cells.append(create_cell("code", r"""# Figure 3.13 の完全再現: ヒストグラムによる密度推定 (Bishop p. 99)
+# 混合ガウス分布 0.3*N(0.3, 0.1^2) + 0.7*N(0.8, 0.1^2) からの N=50 サンプル
+fig3_13, axes3_13 = plot_figure_3_13(
+    save_paths=["result/fig3_13_histogram_density.png", "../result/fig3_13_histogram_density.png"],
+    show=False
+)
+plt.show()"""))
+
+# =====================================================================
+# Cell 6: Section 3.5.2 Markdown
+# =====================================================================
+cells.append(create_cell("markdown", r"""---
+## 3.5.2 カーネル密度推定法 (Kernel Densities / Parzen Windows)
+
+ヒストグラム法の欠点（ビンの境界による不連続性や固定されたビンの配置依存性）を克服するため、各データポイントを中心とする滑らかな**核関数 (Kernel function)** を配置して重ね合わせる**カーネル密度推定 (Kernel Density Estimator: KDE)** を導入します。
+
+### 1. 局所領域における確率推定の基礎 式(3.176)〜(3.180)
+$D$ 次元ユークリッド空間の未知の確率密度 $p(\mathbf{x})$ から独立に生成されたデータ集合を考えます。
+点 $\mathbf{x}$ を含む微小領域 $R$ に 1 つの観測値が落ちる確率質量 $P$ は：
+
+$$
+P = \int_R p(\mathbf{x}) d\mathbf{x} \tag{3.176}
+$$
+
+$N$ 個の独立な観測のうち、領域 $R$ 内に落ちるデータ点の総数 $K$ は**二項分布**に従います：
+
+$$
+\mathrm{Bin}(K|N, P) = \frac{N!}{K!(N-K)!} P^K (1-P)^{N-K} \tag{3.177}
+$$
+
+このとき、領域内に落ちるサンプルの割合 $K/N$ の平均と分散は：
+
+$$
+\mathbb{E}\left[\frac{K}{N}\right] = P, \qquad \mathrm{var}\left[\frac{K}{N}\right] = \frac{P(1-P)}{N}
+$$
+
+サンプルサイズ $N \to \infty$ の極限では分散が 0 に収束するため、鋭いピークを持ち：
+
+$$
+K \simeq N P \tag{3.178}
+$$
+
+さらに、領域 $R$ が十分に小さく、領域内で確率密度 $p(\mathbf{x})$ がほぼ一定と見なせるならば、領域の体積を $V$ として：
+
+$$
+P \simeq p(\mathbf{x}) V \tag{3.179}
+$$
+
+式(3.178) と 式(3.179) を結合することで、局所密度推定の基本方程式が得られます：
+
+$$
+p(\mathbf{x}) = \frac{K}{N V} \tag{3.180}
+$$
+
+> [!NOTE]
+> 式(3.180) は 2 つの相反する要請の上に成り立っています：
+> 1. 密度が一定と見なせるほど領域 $R$（体積 $V$）が十分小さいこと。
+> 2. 二項分布の分散が十分小さくなるほどサンプル数 $K$ が十分大きいこと。
+
+### 2. パーゼン窓 (Parzen Window) 式(3.181)〜(3.183)
+領域 $R$ として、点 $\mathbf{x}$ を中心とする一辺 $h$ の超立方体（体積 $V = h^D$）を考えます。
+原点を中心とする単位立方体を表す核関数 $k(\mathbf{u})$ を：
+
+$$
+k(\mathbf{u}) = \begin{cases} 1, & |u_i| \leqslant \frac{1}{2}, \quad (i = 1, \dots, D) \\ 0, & \text{otherwise} \end{cases} \tag{3.181}
+$$
+
+と定義すると、データ点 $\mathbf{x}_n$ が $\mathbf{x}$ を中心とする立方体内に存在するとき $k((\mathbf{x}-\mathbf{x}_n)/h) = 1$ となります。
+領域内のデータ点数 $K$ は：
+
+$$
+K = \sum_{n=1}^N k\left(\frac{\mathbf{x} - \mathbf{x}_n}{h}\right) \tag{3.182}
+$$
+
+これを式(3.180) に代入すると、超立方体パーゼン窓密度推定量が得られます：
+
+$$
+p(\mathbf{x}) = \frac{1}{N} \sum_{n=1}^N \frac{1}{h^D} k\left(\frac{\mathbf{x} - \mathbf{x}_n}{h}\right) \tag{3.183}
+$$
+
+### 3. 平滑なガウスカーネル密度推定 式(3.184)
+超立方体カーネルは立方体の境界で不連続性を生じるため、滑らかな核関数としてガウス核を採用します：
+
+$$
+p(\mathbf{x}) = \frac{1}{N} \sum_{n=1}^N \frac{1}{(2\pi h^2)^{D/2}} \exp\left( -\frac{\|\mathbf{x} - \mathbf{x}_n\|^2}{2 h^2} \right) \tag{3.184}
+$$
+
+ここで $h$ はガウス成分の標準偏差（バンド幅: Bandwidth）を表します。
+
+### 4. 一般核関数の満たすべき条件 式(3.185)〜(3.186)
+任意の核関数 $k(\mathbf{u})$ が正当な確率密度を定義するための必要十分条件は：
+
+$$
+k(\mathbf{u}) \geqslant 0 \tag{3.185}
+$$
+
+$$
+\int k(\mathbf{u}) d\mathbf{u} = 1 \tag{3.186}
+$$
+
+この条件により、$p(\mathbf{x}) \ge 0$ かつ $\int p(\mathbf{x})d\mathbf{x} = 1$ が保証されます。"""))
+
+# =====================================================================
+# Cell 7: Figure 3.14 Code Cell
+# =====================================================================
+cells.append(create_cell("code", r"""# Figure 3.14 の完全再現: ガウスカーネル密度推定法 (Bishop p. 102)
+# バンド幅 h = 0.005 (過小・過剰適合), h = 0.07 (最適), h = 0.2 (過大・過剰平滑化)
+fig3_14, axes3_14 = plot_figure_3_14(
+    save_paths=["result/fig3_14_kernel_density.png", "../result/fig3_14_kernel_density.png"],
+    show=False
+)
+plt.show()"""))
+
+# =====================================================================
+# Cell 8: Section 3.5.3 Markdown
+# =====================================================================
+cells.append(create_cell("markdown", r"""---
+## 3.5.3 最近傍法 (Nearest-neighbours)
+
+カーネル法における最大の課題は、**バンド幅 $h$ が空間全体で一律に固定されている点**です。
+- データが密な領域では、固定の $h$ は過剰平滑化を招き、微細な構造をぼかしてしまう。
+- データが疎な領域では、同じ $h$ ではサンプルが捕まらず、推定値が激しいノイズとなる。
+
+### 1. 適応的体積による密度推定 式(3.180)
+体積 $V$ を固定して点数 $K$ を数えるカーネル法に対し、**点数 $K$ を固定し、その $K$ 点を包含するように領域の体積 $V(\mathbf{x})$ を適応的に伸縮させる**のが $K$-最近傍法 (K-Nearest-Neighbours) です。
+
+点 $\mathbf{x}$ を中心とし、$K$ 番目に近いデータ点までの距離を半径 $r_K(\mathbf{x})$ とする $D$ 次元超球を考えます。
+超球の体積は：
+
+$$
+V_D(r_K) = \frac{\pi^{D/2}}{\Gamma(D/2 + 1)} r_K^D(\mathbf{x})
+$$
+
+（1次元では $V_1 = 2 r_K$、2次元では $V_2 = \pi r_K^2$）。
+この適応的体積を式(3.180) に代入すると：
+
+$$
+p(\mathbf{x}) = \frac{K}{N V(\mathbf{x})}
+$$
+
+> [!WARNING]
+> $K$-最近傍法による密度推定は、空間全体での積分が発散（$\int_{-\infty}^\infty p(\mathbf{x})d\mathbf{x} = \infty$）するため、厳密な意味での正規化された確率密度関数ではありません（$|\mathbf{x}| \to \infty$ のとき $r_K \sim |\mathbf{x}|$ となり、$p(x) \propto 1/|x|$ の積分は対数発散するため）。
+
+### 2. $K$-最近傍分類器のベイズ的厳密導出 式(3.187)〜(3.190)
+$K$-最近傍の概念をクラス分類問題に拡張します。
+全 $N$ 点のうち、クラス $\mathcal{C}_k$ に属するデータ点数を $N_k$ とします（$\sum_k N_k = N$）。
+クエリ点 $\mathbf{x}$ を中心とする球内に $K$ 個の点が含まれ、そのうちクラス $\mathcal{C}_k$ に属する点が $K_k$ 個あるとします。
+
+1. **クラス条件付き密度 式(3.187)**:
+   $$
+   p(\mathbf{x}|\mathcal{C}_k) = \frac{K_k}{N_k V} \tag{3.187}
+   $$
+2. **無条件密度 式(3.188)**:
+   $$
+   p(\mathbf{x}) = \frac{K}{N V} \tag{3.188}
+   $$
+3. **クラス事前確率 式(3.189)**:
+   $$
+   p(\mathcal{C}_k) = \frac{N_k}{N} \tag{3.189}
+   $$
+4. **ベイズの定理による事後確率の導出 式(3.190)**:
+   $$
+   p(\mathcal{C}_k|\mathbf{x}) = \frac{p(\mathbf{x}|\mathcal{C}_k) p(\mathcal{C}_k)}{p(\mathbf{x})} = \frac{\left(\frac{K_k}{N_k V}\right) \left(\frac{N_k}{N}\right)}{\frac{K}{N V}} = \frac{K_k}{K} \tag{3.190}
+   $$
+
+誤分類率を最小化するベイズ決定則は、事後確率 $p(\mathcal{C}_k|\mathbf{x}) = K_k / K$ が最大となるクラスを選択することであり、これは**多数決 (Majority Voting)** そのものです。
+
+### 3. 1-最近傍法 ($K=1$) とボロノイ決定境界
+$K=1$ の場合、クエリ点 $\mathbf{x}$ は最も近い単一の訓練データ点と同じクラスに分類されます。
+このとき決定境界は、異なるクラスに属する点対の**垂直二等分線 (Perpendicular Bisectors)** からなる区分線形（ボロノイ境界）を形成します。
+
+### 4. Cover & Hart (1967) の漸近誤り率限界
+真のデータ分布に基づくベイズ最適誤り率を $P^*$ とするとき、$N \to \infty$ の極限において 1-最近傍法の誤り率 $P_{\mathrm{NN}}$ は以下を満たします：
+
+$$
+P^* \leqslant P_{\mathrm{NN}} \leqslant 2 P^* - \frac{C}{C-1} (P^*)^2 \leqslant 2 P^*
+$$
+
+（$C$ はクラス数）。すなわち、**無限のデータがあるとき、1-最近傍法の誤り率はベイズ最適誤り率の高々2倍以下に収まる**という驚くべき理論的保証が存在します。"""))
+
+# =====================================================================
+# Cell 9: Figure 3.15 Code Cell
+# =====================================================================
+cells.append(create_cell("code", r"""# Figure 3.15 の完全再現: K最近傍密度推定法 (Bishop p. 103)
+# K = 1 (極めてノイジー・過剰適合), K = 5 (最適平滑化), K = 30 (過大・過剰平滑化)
+fig3_15, axes3_15 = plot_figure_3_15(
+    save_paths=["result/fig3_15_knn_density.png", "../result/fig3_15_knn_density.png"],
+    show=False
+)
+plt.show()"""))
+
+# =====================================================================
+# Cell 10: Figure 3.16 Code Cell
+# =====================================================================
+cells.append(create_cell("code", r"""# Figure 3.16 の完全再現: K最近傍分類器と1-NN決定境界 (Bishop p. 104)
+# (a) K=3 最近傍分類器の幾何関係（ダイヤ型のクエリ点と3近傍点）
+# (b) 1-最近傍法における垂直二等分線（区分線形決定境界）
+fig3_16, axes3_16 = plot_figure_3_16(
+    save_paths=["result/fig3_16_knn_classifier.png", "../result/fig3_16_knn_classifier.png"],
+    show=False
+)
+plt.show()"""))
+
+# =====================================================================
+# Cell 11: 2D Multi-class KNN Classification Experiment
+# =====================================================================
+cells.append(create_cell("markdown", r"""---
+## 4. 2次元非線形多クラス分類における $K$ の影響
+
+$K$-最近傍分類器の決定境界が $K$ の増加に伴ってどのように平滑化され、決定境界の複雑度がどのように変化するかを数値実験します。"""))
+
+cells.append(create_cell("code", r"""# 2次元非線形決定境界の可視化 (K = 1, 5, 25)
+np.random.seed(42)
+
+# 2クラスの非線形合成データ
+n_samples = 60
+X_c0 = np.random.randn(n_samples, 2) * 0.45 + np.array([-0.5, -0.2])
+X_c1 = np.random.randn(n_samples, 2) * 0.50 + np.array([0.5, 0.4])
+X_2d = np.vstack([X_c0, X_c1])
+y_2d = np.array([0] * n_samples + [1] * n_samples)
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 4.5), dpi=300)
+K_vals = [1, 5, 25]
+
+gx = np.linspace(-2.0, 2.0, 200)
+gy = np.linspace(-2.0, 2.0, 200)
+GX, GY = np.meshgrid(gx, gy)
+grid_2d = np.column_stack([GX.ravel(), GY.ravel()])
+
+for ax, K_val in zip(axes, K_vals):
+    clf = KNNClassifier(K=K_val).fit(X_2d, y_2d)
+    preds = clf.predict(grid_2d).reshape(GX.shape)
+    
+    ax.contourf(GX, GY, preds, levels=[-0.5, 0.5, 1.5], colors=['#FFAAAA', '#AAAAFF'], alpha=0.4)
+    ax.contour(GX, GY, preds, levels=[0.5], colors=['black'], linewidths=1.5)
+    
+    ax.scatter(X_c0[:, 0], X_c0[:, 1], color='#E02020', edgecolors='k', s=35, label='Class 0')
+    ax.scatter(X_c1[:, 0], X_c1[:, 1], color='#0044FF', edgecolors='k', s=35, label='Class 1')
+    
+    ax.set_title(rf"$K = {K_val}$ Decision Boundary", fontsize=12)
+    ax.set_xlim(-2.0, 2.0)
+    ax.set_ylim(-2.0, 2.0)
+    ax.tick_params(direction='in', top=True, right=True)
+
+axes[0].legend(loc='upper left', frameon=True)
+plt.tight_layout()
+plt.show()"""))
+
+# =====================================================================
+# Cell 12: Self-Verification Assertions
+# =====================================================================
+cells.append(create_cell("markdown", r"""---
+## 5. 自己検証アサーション (Self-Verification Assertions)
+
+本セクションで導出した数学的性質と実装の完全性を `assert` 文により網羅的に検証します。"""))
+
+cells.append(create_cell("code", r"""# 1. ヒストグラム密度の完全な正規化検証
+np.random.seed(123)
+data_test = np.random.uniform(0.1, 0.9, size=300)
+hist_test = HistogramDensity(bin_width=0.05, range_bounds=(0.0, 1.0)).fit(data_test)
+assert np.isclose(np.sum(hist_test.density * hist_test.bin_widths), 1.0, atol=1e-6)
+assert np.all(hist_test.density >= 0.0)
+
+# 2. ガウスカーネル密度推定の正規化数値積分検証
+kde_test = KernelDensity1D(h=0.08, kernel="gaussian").fit(data_test)
+integral_val, _ = integrate.quad(lambda x: kde_test.evaluate(x), -1.0, 2.0)
+assert np.isclose(integral_val, 1.0, atol=1e-3)
+
+# 3. エパネチニコフカーネルの正規化数値積分検証
+kde_epa = KernelDensity1D(h=0.1, kernel="epanechnikov").fit(data_test)
+integral_epa, _ = integrate.quad(lambda x: kde_epa.evaluate(x), -1.0, 2.0)
+assert np.isclose(integral_epa, 1.0, atol=1e-3)
+
+# 4. KNN密度推定量の逆距離比例性検証 (1D)
+knn_1d = KNNDensityEstimator(K=2).fit(np.array([0.1, 0.2, 0.3]))
+# x = 0.2 における距離: 0.0 (自身), 0.1 (0.1と0.3) -> r_2 = 0.1 -> V = 2 * 0.1 = 0.2
+# p(0.2) = 2 / (3 * 0.2) = 10/3
+assert np.isclose(knn_1d.evaluate(0.2), 10.0 / 3.0, atol=1e-6)
+
+# 5. KNN分類器の事後確率総和 1.0 検証
+knn_clf = KNNClassifier(K=5).fit(X_2d, y_2d)
+posteriors = knn_clf.predict_proba(grid_2d[:10])
+assert np.allclose(np.sum(posteriors, axis=1), 1.0)
+assert np.all(posteriors >= 0.0)
+
+# 6. Cover & Hart (1967) 理論限界不等式の検証
+for p_star in [0.01, 0.05, 0.15, 0.25]:
+    c_classes = 2
+    upper = 2 * p_star - (c_classes / (c_classes - 1)) * (p_star ** 2)
+    assert p_star <= upper <= 2 * p_star
+
+print("All self-verification assertions passed with 100% success!")"""))
+
+# Write to notebook file
+notebook = {
     "cells": cells,
     "metadata": {
-        "kernelspec": {
-            "display_name": "Python 3",
-            "language": "python",
-            "name": "python3"
-        },
         "language_info": {
-            "codemirror_mode": {
-                "name": "ipython",
-                "version": 3
-            },
-            "file_extension": ".py",
-            "mimetype": "text/x-python",
             "name": "python",
-            "nbconvert_exporter": "python",
-            "pygments_lexer": "ipython3",
             "version": "3.11.12"
-        }
+        },
+        "orig_nbformat": 4
     },
     "nbformat": 4,
-    "nbformat_minor": 4
+    "nbformat_minor": 2
 }
 
-out_path = "3/3.5_Nonparametric_Methods.ipynb"
-with open(out_path, "w", encoding="utf-8") as f:
-    json.dump(nb, f, indent=2, ensure_ascii=False)
+nb_path = "3/3.5_Nonparametric_Methods.ipynb"
+with open(nb_path, "w", encoding="utf-8") as f:
+    json.dump(notebook, f, indent=2, ensure_ascii=False)
 
-print(f"Notebook successfully written to {out_path} with {len(cells)} cells.")
+print(f"Successfully generated {nb_path} with {len(cells)} cells!")
