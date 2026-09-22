@@ -249,3 +249,7 @@ class TestFigureGeneration:
                 'fig_5_10': 'roc_regions.png',
                 'fig_5_11': 'roc_curve.png'
             }[key]))
+        import matplotlib.pyplot as plt
+        for fig in figs.values():
+            plt.close(fig)
+

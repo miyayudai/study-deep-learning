@@ -286,6 +286,20 @@ def compute_roc_curve(
 # 6. Figures Reproduction (Figures 5.5 to 5.11)
 # =====================================================================
 
+def _save_figure(fig: plt.Figure, filepath: Optional[str], save_both: bool = True) -> None:
+    """Helper to save figure to both 5/result/ and result/ reliably."""
+    if not filepath:
+        return
+    if save_both:
+        filename = os.path.basename(filepath)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        repo_root = os.path.abspath(os.path.join(current_dir, ".."))
+        save_plot(fig, os.path.join(repo_root, "5", "result", filename))
+        save_plot(fig, os.path.join(repo_root, "result", filename))
+    else:
+        save_plot(fig, filepath)
+
+
 def plot_figure_5_5_joint_probabilities(filepath: Optional[str] = None, save_both: bool = True) -> plt.Figure:
     """
     Faithful reproduction of Figure 5.5 (Book page 141):
@@ -382,15 +396,7 @@ def plot_figure_5_5_joint_probabilities(filepath: Optional[str] = None, save_bot
                  fontsize=14, y=0.98)
     fig.tight_layout()
 
-    if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+    _save_figure(fig, filepath, save_both=save_both)
     return fig
 
 
@@ -430,15 +436,7 @@ def plot_figure_5_6_loss_matrix(filepath: Optional[str] = None, save_both: bool 
     ax.set_title("Figure 5.6: Loss Matrix for Cancer Diagnosis", fontsize=13, pad=15)
 
     fig.tight_layout()
-    if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+    _save_figure(fig, filepath, save_both=save_both)
     return fig
 
 
@@ -502,16 +500,7 @@ def plot_figure_5_7_reject_option(filepath: Optional[str] = None, save_both: boo
 
     ax.set_title("Figure 5.7: Illustration of the Reject Option", fontsize=13, pad=15)
     fig.tight_layout()
-
-    if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+    _save_figure(fig, filepath, save_both=save_both)
     return fig
 
 
@@ -567,15 +556,7 @@ def plot_figure_5_8_class_densities_posteriors(filepath: Optional[str] = None, s
                  fontsize=14, y=0.98)
     fig.tight_layout()
 
-    if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+    _save_figure(fig, filepath, save_both=save_both)
     return fig
 
 
@@ -615,15 +596,7 @@ def plot_figure_5_9_confusion_matrix(filepath: Optional[str] = None, save_both: 
     ax.set_title("Figure 5.9: Confusion Matrix Notation", fontsize=13, pad=15)
 
     fig.tight_layout()
-    if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+    _save_figure(fig, filepath, save_both=save_both)
     return fig
 
 
@@ -699,15 +672,7 @@ def plot_figure_5_10_roc_regions(filepath: Optional[str] = None, save_both: bool
     ax.set_title("Figure 5.10: Decision Boundary and Error Components (A, B, C, D, E)", fontsize=13, pad=15)
     fig.tight_layout()
 
-    if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+    _save_figure(fig, filepath, save_both=save_both)
     return fig
 
 
@@ -756,15 +721,7 @@ def plot_figure_5_11_roc_curve(filepath: Optional[str] = None, save_both: bool =
     ax.set_title("Figure 5.11: Receiver Operating Characteristic (ROC) Curves", fontsize=13, pad=12)
 
     fig.tight_layout()
-    if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+    _save_figure(fig, filepath, save_both=save_both)
     return fig
 
 
