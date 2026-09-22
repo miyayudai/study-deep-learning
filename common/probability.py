@@ -4,7 +4,7 @@ Provides exact derivations, calculations, and simulation helpers for discrete di
 Bayes' theorem, medical screening problem, and uncertainty demonstrations.
 """
 import os
-from typing import Dict, Tuple, Optional, Callable, Union, List, Any
+from typing import Dict, Tuple, Optional, Callable, Union, List, Any, Sequence
 import numpy as np
 import scipy.linalg as la
 from scipy import special
@@ -2817,6 +2817,81 @@ class VonMisesDistribution:
         return cls(theta_0=theta_0_ml, m=m_ml)
 
 
+VonMises = VonMisesDistribution
+
+
+class VonMisesMixture:
+    """
+    Mixture of K Von Mises distributions (Section 3.3.1):
+      p(theta) = sum_{k=1}^K pi_k * p(theta | theta_{0k}, m_k)
+    where:
+      pi_k: mixing coefficients, sum(pi_k) = 1, pi_k >= 0
+      theta_{0k}: mean direction of k-th component
+      m_k: concentration parameter of k-th component
+    """
+    def __init__(
+        self,
+        weights: Sequence[float],
+        theta_0s: Sequence[float],
+        ms: Sequence[float]
+    ):
+        weights_arr = np.asarray(weights, dtype=np.float64)
+        if np.any(weights_arr < 0):
+            raise ValueError("Mixing weights must be non-negative")
+        total = np.sum(weights_arr)
+        if total <= 0:
+            raise ValueError("Sum of weights must be positive")
+        self.weights = weights_arr / total
+        self.K = len(self.weights)
+        if len(theta_0s) != self.K or len(ms) != self.K:
+            raise ValueError("weights, theta_0s, and ms must have the same length")
+        self.components = [VonMisesDistribution(theta_0=th, m=m) for th, m in zip(theta_0s, ms)]
+
+    def pdf(self, theta: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute mixture probability density p(theta)."""
+        th = np.asarray(theta, dtype=np.float64)
+        is_scalar = (th.ndim == 0)
+        densities = np.zeros_like(th)
+        for pi_k, comp in zip(self.weights, self.components):
+            densities += pi_k * comp.pdf(th)
+        if is_scalar:
+            return float(densities)
+        return densities
+
+    def log_pdf(self, theta: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute mixture log probability density ln p(theta) using log-sum-exp."""
+        th = np.asarray(theta, dtype=np.float64)
+        is_scalar = (th.ndim == 0)
+        th_flat = np.atleast_1d(th)
+        log_comp = np.zeros((len(th_flat), self.K))
+        for k, (pi_k, comp) in enumerate(zip(self.weights, self.components)):
+            log_comp[:, k] = np.log(pi_k + 1e-300) + comp.log_pdf(th_flat)
+        res = special.logsumexp(log_comp, axis=1)
+        if is_scalar:
+            return float(res[0])
+        return res.reshape(th.shape)
+
+    def responsibilities(self, theta: Union[List[float], np.ndarray]) -> np.ndarray:
+        """Compute responsibilities gamma_{nk} for observations theta."""
+        th = np.asarray(theta, dtype=np.float64).ravel()
+        log_comp = np.zeros((len(th), self.K))
+        for k, (pi_k, comp) in enumerate(zip(self.weights, self.components)):
+            log_comp[:, k] = np.log(pi_k + 1e-300) + comp.log_pdf(th)
+        log_norm = special.logsumexp(log_comp, axis=1, keepdims=True)
+        return np.exp(log_comp - log_norm)
+
+    def sample(self, size: int = 1, seed: Optional[int] = None) -> Union[float, np.ndarray]:
+        """Sample from the von Mises mixture."""
+        rng = np.random.default_rng(seed)
+        k_indices = rng.choice(self.K, size=size, p=self.weights)
+        samples = np.zeros(size)
+        for i, k in enumerate(k_indices):
+            samples[i] = self.components[k].sample(size=1, seed=int(rng.integers(0, 1000000)))
+        if size == 1:
+            return float(samples[0])
+        return samples
+
+
 def plot_figure_3_9(
     save_paths: Optional[List[str]] = None,
     show: bool = False
@@ -2825,50 +2900,54 @@ def plot_figure_3_9(
     Faithfully reproduce Figure 3.9 from Bishop & Bishop (2024), page 90:
     Periodic variables on unit circle and sample mean vector.
     """
-    fig, ax = plt.subplots(figsize=(5.5, 5.5), dpi=300)
-    theta = np.linspace(0, 2*np.pi, 200)
-    ax.plot(np.cos(theta), np.sin(theta), color='gray', linestyle='--', linewidth=1.2, zorder=1)
-    ax.axhline(0, color='black', linewidth=0.8, zorder=1)
-    ax.axvline(0, color='black', linewidth=0.8, zorder=1)
+    from matplotlib.patches import Wedge
 
-    thetas = np.array([0.35, 1.1, 2.3, 3.2])
-    for i, th in enumerate(thetas):
+    fig, ax = plt.subplots(figsize=(5.5, 5.5), dpi=300)
+    
+    # Red unit circle
+    theta_grid = np.linspace(0, 2 * np.pi, 300)
+    ax.plot(np.cos(theta_grid), np.sin(theta_grid), color='#E02020', linewidth=1.8, zorder=2)
+
+    # Coordinate axes with arrowheads
+    ax.annotate('', xy=(1.40, 0), xytext=(-1.25, 0),
+                arrowprops=dict(arrowstyle='->', color='black', lw=1.2, mutation_scale=12), zorder=1)
+    ax.annotate('', xy=(0, 1.40), xytext=(0, -1.25),
+                arrowprops=dict(arrowstyle='->', color='black', lw=1.2, mutation_scale=12), zorder=1)
+    ax.text(1.45, -0.04, r'$x_1$', fontsize=13, va='top', ha='left')
+    ax.text(-0.06, 1.45, r'$x_2$', fontsize=13, va='bottom', ha='right')
+
+    # Data points x_1, x_2, x_3, x_4 on the circle (Bishop page 90)
+    thetas = np.array([-0.30, 0.58, 1.30, 2.25])
+    labels = [r'$\mathbf{x}_1$', r'$\mathbf{x}_2$', r'$\mathbf{x}_3$', r'$\mathbf{x}_4$']
+    offsets = [(0.12, -0.08), (0.12, 0.05), (0.05, 0.12), (-0.12, 0.08)]
+    
+    for th, lbl, off in zip(thetas, labels, offsets):
         x_i = np.cos(th)
         y_i = np.sin(th)
-        ax.annotate('', xy=(x_i, y_i), xytext=(0, 0),
-                    arrowprops=dict(arrowstyle='->', color='#1E56A0', lw=1.5, mutation_scale=12))
-        ax.scatter([x_i], [y_i], color='#1E56A0', s=35, zorder=5)
-        offset = 0.12
-        ax.text(x_i + offset*np.cos(th), y_i + offset*np.sin(th), rf'$\mathbf{{x}}_{i+1}$',
-                fontsize=12, ha='center', va='center', color='#1E56A0', fontweight='bold')
+        ax.scatter([x_i], [y_i], color='#1E56A0', s=45, zorder=5)
+        ax.text(x_i + off[0], y_i + off[1], lbl, fontsize=12, ha='center', va='center', color='black')
 
+    # Sample mean vector x_bar
     x_vecs = np.column_stack([np.cos(thetas), np.sin(thetas)])
     x_bar = np.mean(x_vecs, axis=0)
     theta_bar = np.arctan2(x_bar[1], x_bar[0])
 
+    # Shaded wedge for theta_bar
+    wedge = Wedge((0, 0), 0.35, 0, np.degrees(theta_bar), facecolor='#30B0B0', alpha=0.85, edgecolor='black', linewidth=1.0, zorder=3)
+    ax.add_patch(wedge)
+    ax.text(0.42 * np.cos(theta_bar / 2), 0.42 * np.sin(theta_bar / 2), r'$\bar{\theta}$', fontsize=13, va='center', ha='center')
+
+    # Vector x_bar
     ax.annotate('', xy=(x_bar[0], x_bar[1]), xytext=(0, 0),
-                arrowprops=dict(arrowstyle='->', color='#E02020', lw=2.2, mutation_scale=14))
-    ax.scatter([x_bar[0]], [x_bar[1]], color='#E02020', s=45, zorder=6)
-    ax.text(x_bar[0] - 0.08, x_bar[1] + 0.08, r'$\bar{\mathbf{x}}$', fontsize=14, color='#E02020', fontweight='bold')
+                arrowprops=dict(arrowstyle='->', color='#1E56A0', lw=2.4, mutation_scale=15), zorder=4)
+    ax.scatter([x_bar[0]], [x_bar[1]], color='#1E56A0', s=50, zorder=6)
+    ax.text(x_bar[0] + 0.08, x_bar[1] + 0.02, r'$\bar{\mathbf{x}}$', fontsize=14, color='black', fontweight='bold')
+    ax.text(0.5 * x_bar[0] - 0.07, 0.5 * x_bar[1] + 0.07, r'$\bar{r}$', fontsize=13, color='black')
 
-    arc_theta = np.linspace(0, theta_bar, 50)
-    arc_r = 0.25
-    ax.plot(arc_r * np.cos(arc_theta), arc_r * np.sin(arc_theta), color='black', linewidth=1.0)
-    ax.text(0.30 * np.cos(theta_bar / 2), 0.30 * np.sin(theta_bar / 2), r'$\bar{\theta}$', fontsize=12)
-
-    mid_r = 0.5 * x_bar
-    ax.text(mid_r[0] + 0.05, mid_r[1] - 0.05, r'$r$', fontsize=12, color='#E02020')
-
-    ax.set_xlim(-1.3, 1.3)
-    ax.set_ylim(-1.3, 1.3)
+    ax.set_xlim(-1.35, 1.55)
+    ax.set_ylim(-1.35, 1.55)
     ax.set_aspect('equal')
-    ax.set_xlabel(r'$x_1$', fontsize=12)
-    ax.set_ylabel(r'$x_2$', fontsize=12)
-
-    ax.tick_params(axis='both', which='major', direction='in', top=True, right=True)
-    for spine in ax.spines.values():
-        spine.set_color('black')
-        spine.set_linewidth(0.8)
+    ax.axis('off')
 
     plt.tight_layout()
     if save_paths:
@@ -2891,47 +2970,45 @@ def plot_figure_3_10(
     Faithfully reproduce Figure 3.10 from Bishop & Bishop (2024), page 91:
     2D Gaussian conditioned on unit circle yielding the von Mises distribution.
     """
-    fig, ax = plt.subplots(figsize=(6, 5.5), dpi=300)
-    r0 = 1.6
-    theta0 = np.radians(45)
+    fig, ax = plt.subplots(figsize=(5.5, 5.5), dpi=300)
+    r0 = 1.3
+    theta0 = np.radians(50)
     mu1 = r0 * np.cos(theta0)
     mu2 = r0 * np.sin(theta0)
-    sigma = 0.8
+    sigma = 0.55
 
-    x = np.linspace(-2.2, 2.6, 200)
-    y = np.linspace(-2.2, 2.6, 200)
+    x = np.linspace(-1.5, 2.5, 300)
+    y = np.linspace(-1.5, 2.5, 300)
     X, Y = np.meshgrid(x, y)
 
     dist_sq = (X - mu1)**2 + (Y - mu2)**2
     density = np.exp(-0.5 * dist_sq / (sigma**2)) / (2 * np.pi * sigma**2)
 
-    levels = np.linspace(0.04, density.max() * 0.95, 6)
-    ax.contour(X, Y, density, levels=levels, colors='#1E56A0', linewidths=1.2)
+    # Gaussian concentric circular contours in blue
+    radii = np.array([0.28, 0.52, 0.78, 1.04])
+    levels = np.sort(np.exp(-0.5 * (radii / sigma)**2) / (2 * np.pi * sigma**2))
+    ax.contour(X, Y, density, levels=levels, colors='#1E56A0', linewidths=1.3, zorder=2)
 
-    circle_theta = np.linspace(0, 2*np.pi, 200)
-    ax.plot(np.cos(circle_theta), np.sin(circle_theta), color='#E02020', linewidth=2.2, label='Unit circle ($r=1$)')
+    # Unit circle in red
+    circle_theta = np.linspace(0, 2 * np.pi, 300)
+    ax.plot(np.cos(circle_theta), np.sin(circle_theta), color='#E02020', linewidth=1.8, zorder=3)
 
-    ax.axhline(0, color='black', linewidth=0.8, linestyle=':', alpha=0.7)
-    ax.axvline(0, color='black', linewidth=0.8, linestyle=':', alpha=0.7)
+    # Axes with arrowheads
+    ax.annotate('', xy=(2.3, 0), xytext=(-1.3, 0),
+                arrowprops=dict(arrowstyle='->', color='black', lw=1.2, mutation_scale=12), zorder=1)
+    ax.annotate('', xy=(0, 2.3), xytext=(0, -1.3),
+                arrowprops=dict(arrowstyle='->', color='black', lw=1.2, mutation_scale=12), zorder=1)
+    ax.text(2.35, -0.05, r'$x_1$', fontsize=13, va='top', ha='left')
+    ax.text(-0.06, 2.35, r'$x_2$', fontsize=13, va='bottom', ha='right')
 
-    ax.scatter([mu1], [mu2], color='#1E56A0', s=40, zorder=5)
-    ax.text(mu1 + 0.1, mu2 + 0.1, r'$\boldsymbol{\mu} = (r_0 \cos\theta_0, r_0 \sin\theta_0)$',
-            fontsize=10, color='#1E56A0', fontweight='bold')
+    # Annotations matching Bishop page 91
+    ax.text(-0.35, -0.95, r'$r = 1$', fontsize=13, color='black')
+    ax.text(mu1 + 0.65, mu2 + 0.45, r'$p(\mathbf{x})$', fontsize=13, color='black')
 
-    ax.text(0.65, -0.9, r'$r = 1$', fontsize=12, color='#E02020', fontweight='bold')
-    ax.text(-1.8, 1.8, r'$p(\mathbf{x})$', fontsize=13, color='#1E56A0')
-
-    ax.set_xlim(-2.2, 2.6)
-    ax.set_ylim(-2.2, 2.6)
+    ax.set_xlim(-1.45, 2.45)
+    ax.set_ylim(-1.45, 2.45)
     ax.set_aspect('equal')
-    ax.set_xlabel(r'$x_1$', fontsize=12)
-    ax.set_ylabel(r'$x_2$', fontsize=12)
-    ax.legend(loc='lower left', frameon=True, facecolor='white', framealpha=0.9, fontsize=10)
-
-    ax.tick_params(axis='both', which='major', direction='in', top=True, right=True)
-    for spine in ax.spines.values():
-        spine.set_color('black')
-        spine.set_linewidth(0.8)
+    ax.axis('off')
 
     plt.tight_layout()
     if save_paths:
@@ -2957,45 +3034,62 @@ def plot_figure_3_11(
     m = 5, theta0 = pi/4 (red)
     m = 1, theta0 = 3*pi/4 (blue)
     """
-    fig = plt.figure(figsize=(11, 4.8), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 5.0), dpi=300)
 
     m1, th1 = 5.0, np.pi / 4.0
     m2, th2 = 1.0, 3.0 * np.pi / 4.0
 
-    theta = np.linspace(0, 2*np.pi, 500)
-    pdf1 = np.exp(m1 * (np.cos(theta - th1) - 1.0)) / (2 * np.pi * special.i0e(m1))
-    pdf2 = np.exp(m2 * (np.cos(theta - th2) - 1.0)) / (2 * np.pi * special.i0e(m2))
+    theta = np.linspace(0, 2 * np.pi, 600)
+    vm1 = VonMisesDistribution(theta_0=th1, m=m1)
+    vm2 = VonMisesDistribution(theta_0=th2, m=m2)
+    pdf1 = vm1.pdf(theta)
+    pdf2 = vm2.pdf(theta)
 
     # 1. Cartesian plot (left)
-    ax1 = fig.add_subplot(1, 2, 1)
     ax1.plot(theta, pdf1, color='#E02020', linewidth=2.0, label=r'$m=5, \theta_0 = \pi/4$')
     ax1.plot(theta, pdf2, color='#1E56A0', linewidth=2.0, label=r'$m=1, \theta_0 = 3\pi/4$')
 
-    ax1.set_xlim(0, 2*np.pi)
+    ax1.set_xlim(0, 2 * np.pi)
     ax1.set_ylim(0, 1.0)
-    ax1.set_xticks([0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
-    ax1.set_xticklabels([r'$0$', r'$\pi/2$', r'$\pi$', r'$3\pi/2$', r'$2\pi$'])
-    ax1.set_xlabel(r'$\theta$', fontsize=12)
-    ax1.set_ylabel(r'$p(\theta)$', fontsize=12)
-    ax1.set_title('(a) Cartesian plot', fontsize=12)
-    ax1.legend(loc='upper right', frameon=True, facecolor='white', framealpha=0.9, fontsize=10)
-    ax1.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    ax1.set_xticks([0, 2 * np.pi])
+    ax1.set_xticklabels([r'$0$', r'$2\pi$'], fontsize=12)
+    ax1.set_yticks([])
+    ax1.legend(loc='upper right', frameon=False, fontsize=11)
     for spine in ax1.spines.values():
         spine.set_color('black')
-        spine.set_linewidth(0.8)
+        spine.set_linewidth(1.0)
 
-    # 2. Polar plot (right)
-    ax2 = fig.add_subplot(1, 2, 2, projection='polar')
-    ax2.plot(theta, pdf1, color='#E02020', linewidth=2.0)
-    ax2.plot(theta, pdf2, color='#1E56A0', linewidth=2.0)
+    # 2. Polar plot (right) plotted as 2D parametric curve matching Bishop page 92
+    x1_pol = pdf1 * np.cos(theta)
+    y1_pol = pdf1 * np.sin(theta)
+    x2_pol = pdf2 * np.cos(theta)
+    y2_pol = pdf2 * np.sin(theta)
 
-    ax2.plot([th1, th1], [0, np.max(pdf1)], color='#E02020', linestyle='--', linewidth=1.2)
-    ax2.plot([th2, th2], [0, np.max(pdf2)], color='#1E56A0', linestyle='--', linewidth=1.2)
+    ax2.plot(x1_pol, y1_pol, color='#E02020', linewidth=2.0, label=r'$m=5, \theta_0 = \pi/4$')
+    ax2.plot(x2_pol, y2_pol, color='#1E56A0', linewidth=2.0, label=r'$m=1, \theta_0 = 3\pi/4$')
 
-    ax2.set_theta_zero_location('E')
-    ax2.set_theta_direction(1)
-    ax2.set_title('(b) Polar plot', fontsize=12, pad=15)
-    ax2.tick_params(labelsize=9)
+    # Reference rays
+    ax2.plot([0, 0.95], [0, 0], color='black', linewidth=1.2)
+    ax2.text(0.97, 0.05, r'$0$', fontsize=11)
+    ax2.text(0.97, -0.09, r'$2\pi$', fontsize=11)
+
+    r_ray1 = 0.98
+    ax2.plot([0, r_ray1 * np.cos(np.pi / 4)], [0, r_ray1 * np.sin(np.pi / 4)], color='black', linewidth=1.2)
+    ax2.text(r_ray1 * np.cos(np.pi / 4) + 0.02, r_ray1 * np.sin(np.pi / 4) + 0.02, r'$\pi/4$', fontsize=11)
+
+    r_ray2 = 0.65
+    ax2.plot([0, r_ray2 * np.cos(3 * np.pi / 4)], [0, r_ray2 * np.sin(3 * np.pi / 4)], color='black', linewidth=1.2)
+    ax2.text(r_ray2 * np.cos(3 * np.pi / 4) - 0.12, r_ray2 * np.sin(3 * np.pi / 4) + 0.04, r'$3\pi/4$', fontsize=11)
+
+    ax2.set_xlim(-0.65, 1.15)
+    ax2.set_ylim(-0.45, 1.05)
+    ax2.set_aspect('equal')
+    ax2.set_xticks([])
+    ax2.set_yticks([])
+    ax2.legend(loc='lower right', frameon=False, fontsize=11)
+    for spine in ax2.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(1.0)
 
     plt.tight_layout()
     if save_paths:
@@ -3018,40 +3112,39 @@ def plot_figure_3_12(
     Faithfully reproduce Figure 3.12 from Bishop & Bishop (2024), page 93:
     Left: Modified Bessel function I0(m) defined by (3.130).
     Right: Function A(m) = I1(m) / I0(m) defined by (3.136).
+    Both curves shown in red matching the textbook.
     """
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.2), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.4), dpi=300)
 
     m = np.linspace(0, 10, 300)
     I0 = special.i0(m)
-    I1 = special.i1(m)
-    A = np.zeros_like(m)
-    A[m > 0] = I1[m > 0] / I0[m > 0]
-    A[0] = 0.0
+    A = VonMisesDistribution.bessel_ratio_A(m)
 
     # (a) I0(m)
-    ax1.plot(m, I0, color='#1E56A0', linewidth=2.0)
+    ax1.plot(m, I0, color='#E02020', linewidth=2.0)
     ax1.set_xlim(0, 10)
     ax1.set_ylim(0, 3000)
+    ax1.set_xticks([0, 5, 10])
+    ax1.set_yticks([0, 1000, 2000, 3000])
     ax1.set_xlabel(r'$m$', fontsize=12)
     ax1.set_ylabel(r'$I_0(m)$', fontsize=12)
-    ax1.set_title(r'(a) Zeroth-order Bessel function $I_0(m)$', fontsize=11)
     ax1.tick_params(axis='both', which='major', direction='in', top=True, right=True)
     for spine in ax1.spines.values():
         spine.set_color('black')
-        spine.set_linewidth(0.8)
+        spine.set_linewidth(1.0)
 
     # (b) A(m) = I1(m) / I0(m)
     ax2.plot(m, A, color='#E02020', linewidth=2.0)
     ax2.set_xlim(0, 10)
     ax2.set_ylim(0, 1.0)
+    ax2.set_xticks([0, 5, 10])
     ax2.set_yticks([0.0, 0.5, 1.0])
     ax2.set_xlabel(r'$m$', fontsize=12)
     ax2.set_ylabel(r'$A(m)$', fontsize=12)
-    ax2.set_title(r'(b) Ratio function $A(m) = I_1(m) / I_0(m)$', fontsize=11)
     ax2.tick_params(axis='both', which='major', direction='in', top=True, right=True)
     for spine in ax2.spines.values():
         spine.set_color('black')
-        spine.set_linewidth(0.8)
+        spine.set_linewidth(1.0)
 
     plt.tight_layout()
     if save_paths:
@@ -3065,3 +3158,647 @@ def plot_figure_3_12(
         plt.show()
     return fig, (ax1, ax2)
 
+
+
+
+# =====================================================================
+# Chapter 3, Section 3.4: The Exponential Family
+# =====================================================================
+
+class ExponentialFamilyBase:
+    """
+    Abstract base class for distributions in the Exponential Family:
+        p(x | eta) = h(x) * g(eta) * exp(eta^T u(x))
+                   = h(x) * exp(eta^T u(x) - A(eta))
+    where:
+        - eta: natural parameter vector
+        - u(x): sufficient statistics vector
+        - h(x): base measure
+        - g(eta): normalizer coefficient
+        - A(eta) = -ln g(eta): log partition function (cumulant generating function)
+    """
+    def log_partition(self, eta: np.ndarray) -> float:
+        """Compute log-partition function A(eta) = -ln g(eta)."""
+        raise NotImplementedError
+
+    def grad_log_partition(self, eta: np.ndarray) -> np.ndarray:
+        """Gradient nabla_eta A(eta) = E[u(x)]."""
+        raise NotImplementedError
+
+    def hessian_log_partition(self, eta: np.ndarray) -> np.ndarray:
+        """Hessian nabla^2_eta A(eta) = Cov[u(x)]."""
+        raise NotImplementedError
+
+    def sufficient_statistics(self, x: np.ndarray) -> np.ndarray:
+        """Compute sufficient statistics u(x)."""
+        raise NotImplementedError
+
+    def base_measure(self, x: np.ndarray) -> np.ndarray:
+        """Compute base measure h(x)."""
+        raise NotImplementedError
+
+
+class BernoulliExponential(ExponentialFamilyBase):
+    """
+    Bernoulli distribution as an exponential family member (Eq 3.140 - 3.147):
+        p(x | mu) = mu^x (1 - mu)^(1 - x)
+                  = sigma(-eta) * exp(eta * x)
+    where:
+        - eta = ln(mu / (1 - mu)) (logit)
+        - mu = sigma(eta) = 1 / (1 + exp(-eta)) (logistic sigmoid)
+        - u(x) = x
+        - h(x) = 1
+        - g(eta) = sigma(-eta) = 1 / (1 + exp(eta))
+        - A(eta) = ln(1 + exp(eta)) (softplus)
+        - A'(eta) = sigma(eta) = mu = E[x]
+        - A''(eta) = sigma(eta) * (1 - sigma(eta)) = Var[x]
+    """
+    def __init__(self, mu: Optional[float] = None, eta: Optional[float] = None):
+        if eta is not None:
+            self.eta = float(eta)
+            self.mu = 1.0 / (1.0 + np.exp(-self.eta))
+        elif mu is not None:
+            if not (0.0 < mu < 1.0):
+                raise ValueError(f"mu must be in (0, 1), got {mu}")
+            self.mu = float(mu)
+            self.eta = float(np.log(self.mu / (1.0 - self.mu)))
+        else:
+            self.mu = 0.5
+            self.eta = 0.0
+
+    def log_partition(self, eta: Optional[float] = None) -> float:
+        if eta is None:
+            eta = self.eta
+        return float(np.log1p(np.exp(eta)))
+
+    def grad_log_partition(self, eta: Optional[float] = None) -> float:
+        if eta is None:
+            eta = self.eta
+        return float(1.0 / (1.0 + np.exp(-eta)))
+
+    def hessian_log_partition(self, eta: Optional[float] = None) -> float:
+        if eta is None:
+            eta = self.eta
+        p = self.grad_log_partition(eta)
+        return float(p * (1.0 - p))
+
+    def sufficient_statistics(self, x: np.ndarray) -> np.ndarray:
+        return np.asarray(x, dtype=np.float64)
+
+    def base_measure(self, x: np.ndarray) -> np.ndarray:
+        return np.ones_like(x, dtype=np.float64)
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
+        x = np.asarray(x, dtype=np.float64)
+        return self.eta * x - self.log_partition(self.eta)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return np.exp(self.log_pdf(x))
+
+    @classmethod
+    def fit_mle(cls, X: np.ndarray) -> 'BernoulliExponential':
+        """Maximum likelihood estimation using sufficient statistics."""
+        X = np.asarray(X, dtype=np.float64)
+        mean_u = float(np.mean(X))
+        eps = 1e-12
+        mean_u = np.clip(mean_u, eps, 1.0 - eps)
+        return cls(mu=mean_u)
+
+
+class GaussianExponential1D(ExponentialFamilyBase):
+    """
+    Univariate Gaussian distribution as an exponential family member (Eq 3.162 - 3.167):
+        p(x | mu, sigma^2) = (2 pi sigma^2)^(-1/2) * exp(-(x - mu)^2 / (2 sigma^2))
+    Natural parameters:
+        eta_1 = mu / sigma^2
+        eta_2 = -1 / (2 sigma^2)   (eta_2 < 0)
+    Standard parameters from natural parameters:
+        sigma^2 = -1 / (2 eta_2)
+        mu = -eta_1 / (2 eta_2)
+    Sufficient statistics:
+        u(x) = (x, x^2)^T
+    Base measure:
+        h(x) = (2 pi)^(-1/2)
+    Normalizer:
+        g(eta) = (-2 eta_2)^(1/2) * exp(eta_1^2 / (4 eta_2))
+    Log-partition function:
+        A(eta) = -1/2 * ln(-2 eta_2) - eta_1^2 / (4 eta_2)
+    Gradient:
+        nabla A(eta) = [-eta_1 / (2 eta_2), eta_1^2 / (4 eta_2^2) - 1 / (2 eta_2)]^T
+                     = [mu, mu^2 + sigma^2]^T = E[u(x)]
+    Hessian:
+        nabla^2 A(eta) = [[sigma^2, 2 mu sigma^2], [2 mu sigma^2, 4 mu^2 sigma^2 + 2 sigma^4]]
+                       = Cov[u(x)]
+    """
+    def __init__(self, mu: Optional[float] = None, sigma2: Optional[float] = None,
+                 eta: Optional[Union[np.ndarray, List[float]]] = None):
+        if eta is not None:
+            eta = np.asarray(eta, dtype=np.float64)
+            if eta.shape != (2,):
+                raise ValueError(f"eta must have shape (2,), got {eta.shape}")
+            if eta[1] >= 0:
+                raise ValueError(f"eta_2 must be strictly negative, got {eta[1]}")
+            self.eta = eta
+            self.sigma2 = float(-1.0 / (2.0 * eta[1]))
+            self.mu = float(-eta[0] / (2.0 * eta[1]))
+        elif mu is not None and sigma2 is not None:
+            if sigma2 <= 0:
+                raise ValueError(f"sigma2 must be strictly positive, got {sigma2}")
+            self.mu = float(mu)
+            self.sigma2 = float(sigma2)
+            self.eta = np.array([self.mu / self.sigma2, -1.0 / (2.0 * self.sigma2)], dtype=np.float64)
+        else:
+            self.mu = 0.0
+            self.sigma2 = 1.0
+            self.eta = np.array([0.0, -0.5], dtype=np.float64)
+
+    def log_partition(self, eta: Optional[np.ndarray] = None) -> float:
+        if eta is None:
+            eta = self.eta
+        if eta[1] >= 0:
+            raise ValueError(f"eta_2 must be strictly negative, got {eta[1]}")
+        return float(-0.5 * np.log(-2.0 * eta[1]) - (eta[0]**2) / (4.0 * eta[1]))
+
+    def grad_log_partition(self, eta: Optional[np.ndarray] = None) -> np.ndarray:
+        if eta is None:
+            eta = self.eta
+        if eta[1] >= 0:
+            raise ValueError(f"eta_2 must be strictly negative, got {eta[1]}")
+        e1, e2 = eta[0], eta[1]
+        grad1 = -e1 / (2.0 * e2)
+        grad2 = (e1**2) / (4.0 * e2**2) - 1.0 / (2.0 * e2)
+        return np.array([grad1, grad2], dtype=np.float64)
+
+    def hessian_log_partition(self, eta: Optional[np.ndarray] = None) -> np.ndarray:
+        if eta is None:
+            eta = self.eta
+        if eta[1] >= 0:
+            raise ValueError(f"eta_2 must be strictly negative, got {eta[1]}")
+        e1, e2 = eta[0], eta[1]
+        H11 = -1.0 / (2.0 * e2)
+        H12 = e1 / (2.0 * e2**2)
+        H22 = -(e1**2) / (2.0 * e2**3) + 1.0 / (2.0 * e2**2)
+        return np.array([[H11, H12], [H12, H22]], dtype=np.float64)
+
+    def sufficient_statistics(self, x: np.ndarray) -> np.ndarray:
+        x = np.asarray(x, dtype=np.float64)
+        if x.ndim == 0:
+            return np.array([float(x), float(x**2)])
+        return np.column_stack([x, x**2])
+
+    def base_measure(self, x: np.ndarray) -> np.ndarray:
+        x = np.asarray(x, dtype=np.float64)
+        val = 1.0 / np.sqrt(2.0 * np.pi)
+        if x.ndim == 0:
+            return val
+        return np.full_like(x, val)
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
+        x = np.asarray(x, dtype=np.float64)
+        u = self.sufficient_statistics(x)
+        h = self.base_measure(x)
+        if x.ndim == 0:
+            eta_dot_u = np.dot(self.eta, u)
+        else:
+            eta_dot_u = np.dot(u, self.eta)
+        return np.log(h) + eta_dot_u - self.log_partition(self.eta)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return np.exp(self.log_pdf(x))
+
+    @classmethod
+    def fit_mle(cls, X: np.ndarray) -> 'GaussianExponential1D':
+        X = np.asarray(X, dtype=np.float64).ravel()
+        if len(X) < 2:
+            raise ValueError("Need at least 2 samples to fit Gaussian")
+        mean_u1 = float(np.mean(X))
+        mean_u2 = float(np.mean(X**2))
+        mu_mle = mean_u1
+        sigma2_mle = mean_u2 - mean_u1**2
+        if sigma2_mle <= 1e-12:
+            sigma2_mle = 1e-12
+        return cls(mu=mu_mle, sigma2=sigma2_mle)
+
+
+class MultinomialExponential(ExponentialFamilyBase):
+    """
+    Multinomial / Categorical distribution in non-redundant canonical form (Eq 3.155 - 3.161):
+    For M categories, we use M - 1 independent natural parameters:
+        eta_k = ln(mu_k / mu_M)  for k = 1, ..., M - 1
+    Inverse mapping (Softmax):
+        mu_k = exp(eta_k) / (1 + sum_{j=1}^{M-1} exp(eta_j))
+        mu_M = 1 / (1 + sum_{j=1}^{M-1} exp(eta_j))
+    Sufficient statistics:
+        u(x) = (x_1, ..., x_{M-1})^T
+    Log-partition function:
+        A(eta) = ln(1 + sum_{k=1}^{M-1} exp(eta_k))
+    Gradient:
+        nabla A(eta) = (mu_1, ..., mu_{M-1})^T = E[u(x)]
+    Hessian:
+        nabla^2 A(eta) = diag(mu_{1:M-1}) - mu_{1:M-1} mu_{1:M-1}^T = Cov[u(x)]
+    """
+    def __init__(self, mu: Optional[np.ndarray] = None, eta: Optional[np.ndarray] = None, M: Optional[int] = None):
+        if eta is not None:
+            self.eta = np.asarray(eta, dtype=np.float64)
+            self.M = len(self.eta) + 1
+            exp_eta = np.exp(self.eta)
+            denom = 1.0 + np.sum(exp_eta)
+            mu_first = exp_eta / denom
+            mu_last = 1.0 / denom
+            self.mu = np.append(mu_first, mu_last)
+        elif mu is not None:
+            self.mu = np.asarray(mu, dtype=np.float64)
+            self.M = len(self.mu)
+            if self.M < 2:
+                raise ValueError(f"Need at least 2 categories, got {self.M}")
+            if not np.isclose(np.sum(self.mu), 1.0):
+                self.mu = self.mu / np.sum(self.mu)
+            self.eta = np.log(self.mu[:-1] / self.mu[-1])
+        elif M is not None:
+            self.M = int(M)
+            self.mu = np.full(self.M, 1.0 / self.M)
+            self.eta = np.zeros(self.M - 1)
+        else:
+            self.M = 3
+            self.mu = np.full(3, 1.0 / 3.0)
+            self.eta = np.zeros(2)
+
+    def log_partition(self, eta: Optional[np.ndarray] = None) -> float:
+        if eta is None:
+            eta = self.eta
+        return float(np.log1p(np.sum(np.exp(eta))))
+
+    def grad_log_partition(self, eta: Optional[np.ndarray] = None) -> np.ndarray:
+        if eta is None:
+            eta = self.eta
+        exp_eta = np.exp(eta)
+        return exp_eta / (1.0 + np.sum(exp_eta))
+
+    def hessian_log_partition(self, eta: Optional[np.ndarray] = None) -> np.ndarray:
+        if eta is None:
+            eta = self.eta
+        grad = self.grad_log_partition(eta)
+        return np.diag(grad) - np.outer(grad, grad)
+
+    def sufficient_statistics(self, x: np.ndarray) -> np.ndarray:
+        x = np.asarray(x, dtype=np.float64)
+        if x.ndim == 1:
+            return x[:-1]
+        return x[:, :-1]
+
+    def base_measure(self, x: np.ndarray) -> np.ndarray:
+        x = np.asarray(x, dtype=np.float64)
+        if x.ndim == 1:
+            return 1.0
+        return np.ones(x.shape[0])
+
+    def log_pdf(self, x: np.ndarray) -> np.ndarray:
+        x = np.asarray(x, dtype=np.float64)
+        u = self.sufficient_statistics(x)
+        if x.ndim == 1:
+            eta_dot_u = np.dot(self.eta, u)
+        else:
+            eta_dot_u = np.dot(u, self.eta)
+        return eta_dot_u - self.log_partition(self.eta)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return np.exp(self.log_pdf(x))
+
+    @classmethod
+    def fit_mle(cls, X: np.ndarray) -> 'MultinomialExponential':
+        """Fit categorical distribution from one-hot encoded matrix X (N x M)."""
+        X = np.asarray(X, dtype=np.float64)
+        mean_mu = np.mean(X, axis=0)
+        eps = 1e-12
+        mean_mu = np.clip(mean_mu, eps, None)
+        mean_mu = mean_mu / np.sum(mean_mu)
+        return cls(mu=mean_mu)
+
+
+class VonMisesExponential(ExponentialFamilyBase):
+    """
+    Von Mises distribution as an exponential family member:
+        p(theta | theta_0, m) = 1 / (2 pi I_0(m)) * exp(m cos(theta - theta_0))
+                              = 1 / (2 pi I_0(||eta||)) * exp(eta^T u(theta))
+    where:
+        - eta = [m cos theta_0, m sin theta_0]^T
+        - u(theta) = [cos theta, sin theta]^T
+        - h(theta) = 1
+        - g(eta) = 1 / (2 pi I_0(||eta||))
+        - A(eta) = ln(2 pi) + ln(I_0(||eta||))
+        - grad A(eta) = A(m) * [cos theta_0, sin theta_0]^T = E[u(theta)]
+    """
+    def __init__(self, theta_0: Optional[float] = None, m: Optional[float] = None,
+                 eta: Optional[Union[np.ndarray, List[float]]] = None):
+        if eta is not None:
+            self.eta = np.asarray(eta, dtype=np.float64)
+            if self.eta.shape != (2,):
+                raise ValueError(f"eta must have shape (2,), got {self.eta.shape}")
+            self.m = float(np.linalg.norm(self.eta))
+            self.theta_0 = float(np.arctan2(self.eta[1], self.eta[0]) % (2.0 * np.pi))
+        elif theta_0 is not None and m is not None:
+            if m < 0:
+                raise ValueError(f"Concentration m must be >= 0, got {m}")
+            self.theta_0 = float(theta_0 % (2.0 * np.pi))
+            self.m = float(m)
+            self.eta = np.array([self.m * np.cos(self.theta_0), self.m * np.sin(self.theta_0)])
+        else:
+            self.theta_0 = 0.0
+            self.m = 1.0
+            self.eta = np.array([1.0, 0.0])
+
+    def log_partition(self, eta: Optional[np.ndarray] = None) -> float:
+        if eta is None:
+            eta = self.eta
+        norm_eta = float(np.linalg.norm(eta))
+        return float(np.log(2.0 * np.pi) + np.log(special.i0(norm_eta)))
+
+    def grad_log_partition(self, eta: Optional[np.ndarray] = None) -> np.ndarray:
+        if eta is None:
+            eta = self.eta
+        norm_eta = float(np.linalg.norm(eta))
+        if norm_eta < 1e-12:
+            return np.zeros(2)
+        ratio = float(special.i1(norm_eta) / special.i0(norm_eta))
+        return ratio * (eta / norm_eta)
+
+    def sufficient_statistics(self, theta: np.ndarray) -> np.ndarray:
+        theta = np.asarray(theta, dtype=np.float64)
+        if theta.ndim == 0:
+            return np.array([np.cos(theta), np.sin(theta)])
+        return np.column_stack([np.cos(theta), np.sin(theta)])
+
+    def base_measure(self, theta: np.ndarray) -> np.ndarray:
+        theta = np.asarray(theta, dtype=np.float64)
+        if theta.ndim == 0:
+            return 1.0
+        return np.ones_like(theta)
+
+    def log_pdf(self, theta: np.ndarray) -> np.ndarray:
+        theta = np.asarray(theta, dtype=np.float64)
+        u = self.sufficient_statistics(theta)
+        if theta.ndim == 0:
+            eta_dot_u = np.dot(self.eta, u)
+        else:
+            eta_dot_u = np.dot(u, self.eta)
+        return eta_dot_u - self.log_partition(self.eta)
+
+    def pdf(self, theta: np.ndarray) -> np.ndarray:
+        return np.exp(self.log_pdf(theta))
+
+
+def plot_figure_3_13_exp_family_geometry(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """Figure 3.13: Geometry of the Exponential Family."""
+    from common.plot_utils import setup_style
+    setup_style()
+    eta = np.linspace(-5.0, 5.0, 300)
+    A = np.log1p(np.exp(eta))
+    mu = 1.0 / (1.0 + np.exp(-eta))
+    var = mu * (1.0 - mu)
+    
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4.5), dpi=300)
+    
+    # 1. Log-partition function A(eta)
+    ax1 = axes[0]
+    ax1.plot(eta, A, color='#1E56A0', linewidth=2.5, label=r"$A(\eta) = \ln(1 + e^{\eta})$")
+    for et0, col in zip([-2.0, 0.0, 2.0], ['#E02020', '#2E8B57', '#9370DB']):
+        A0 = np.log1p(np.exp(et0))
+        slope0 = 1.0 / (1.0 + np.exp(-et0))
+        tangent = A0 + slope0 * (eta - et0)
+        ax1.plot(eta, tangent, linestyle='--', color=col, alpha=0.8,
+                 label=rf"Tangent at $\eta={et0:+.1f}$")
+        ax1.scatter([et0], [A0], color=col, s=40, zorder=5)
+    ax1.set_xlim(-5, 5)
+    ax1.set_ylim(-0.5, 5.5)
+    ax1.set_xlabel(r"Natural Parameter $\eta$", fontsize=11)
+    ax1.set_ylabel(r"Log-partition $A(\eta) = -\ln g(\eta)$", fontsize=11)
+    ax1.set_title(r"(a) Strictly Convex $A(\eta)$ & Supporting Tangents", fontsize=11)
+    ax1.legend(loc='upper left', fontsize=9, frameon=True)
+    ax1.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for s in ax1.spines.values():
+        s.set_linewidth(0.8)
+
+    # 2. Gradient mapping nabla A(eta) = E[u]
+    ax2 = axes[1]
+    ax2.plot(eta, mu, color='#E02020', linewidth=2.5, label=r"$\nabla A(\eta) = \sigma(\eta) = \mathbb{E}[x]$")
+    ax2.axhline(0.0, color='gray', linestyle=':', alpha=0.6)
+    ax2.axhline(1.0, color='gray', linestyle=':', alpha=0.6)
+    ax2.axvline(0.0, color='gray', linestyle=':', alpha=0.6)
+    ax2.set_xlim(-5, 5)
+    ax2.set_ylim(-0.05, 1.05)
+    ax2.set_xlabel(r"Natural Parameter $\eta$", fontsize=11)
+    ax2.set_ylabel(r"Expectation Parameter $\mu = \mathbb{E}[u(x)]$", fontsize=11)
+    ax2.set_title(r"(b) Dual Mapping $\nabla A(\eta): \mathcal{H} \to \mathcal{M}$", fontsize=11)
+    ax2.legend(loc='lower right', fontsize=10, frameon=True)
+    ax2.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for s in ax2.spines.values():
+        s.set_linewidth(0.8)
+
+    # 3. Hessian nabla^2 A(eta) = Var[u]
+    ax3 = axes[2]
+    ax3.plot(eta, var, color='#2E8B57', linewidth=2.5, label=r"$\nabla^2 A(\eta) = \mu(1-\mu) = \mathrm{Var}[x]$")
+    ax3.fill_between(eta, var, color='#2E8B57', alpha=0.2)
+    ax3.set_xlim(-5, 5)
+    ax3.set_ylim(-0.02, 0.3)
+    ax3.set_xlabel(r"Natural Parameter $\eta$", fontsize=11)
+    ax3.set_ylabel(r"Curvature / Variance $\nabla^2 A(\eta)$", fontsize=11)
+    ax3.set_title(r"(c) Curvature as Variance / Fisher Information", fontsize=11)
+    ax3.legend(loc='upper right', fontsize=10, frameon=True)
+    ax3.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for s in ax3.spines.values():
+        s.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.13 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, axes
+
+
+def plot_figure_3_14_exp_family_members(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """Figure 3.14: Major Exponential Family Members and their Canonical Mappings."""
+    from common.plot_utils import setup_style
+    setup_style()
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10), dpi=300)
+    
+    # (a) Bernoulli
+    ax_a = axes[0, 0]
+    mu_vals = np.linspace(0.01, 0.99, 200)
+    eta_vals = np.log(mu_vals / (1.0 - mu_vals))
+    ax_a.plot(mu_vals, eta_vals, color='#1E56A0', linewidth=2.2)
+    ax_a.axhline(0, color='gray', linestyle=':', alpha=0.5)
+    ax_a.axvline(0.5, color='gray', linestyle=':', alpha=0.5)
+    ax_a.set_xlabel(r"Mean Parameter $\mu \in (0, 1)$", fontsize=11)
+    ax_a.set_ylabel(r"Natural Parameter $\eta = \ln(\mu / (1-\mu))$", fontsize=11)
+    ax_a.set_title(r"(a) Bernoulli: Logit Link ($\mathbf{u}(x)=x$)", fontsize=12)
+    ax_a.tick_params(direction='in', top=True, right=True)
+
+    # (b) Multinomial (3-state simplex to natural coordinates)
+    ax_b = axes[0, 1]
+    v1 = np.array([0.0, 0.0])
+    v2 = np.array([1.0, 0.0])
+    v3 = np.array([0.5, np.sqrt(3)/2])
+    tri = np.array([v1, v2, v3, v1])
+    ax_b.plot(tri[:, 0], tri[:, 1], 'k-', linewidth=1.5)
+    
+    grid_pts = []
+    colors = []
+    for p1 in np.linspace(0.05, 0.9, 18):
+        for p2 in np.linspace(0.05, 0.9 - p1, 18):
+            p3 = 1.0 - p1 - p2
+            if p3 > 0.02:
+                xy = p1 * v1 + p2 * v2 + p3 * v3
+                grid_pts.append(xy)
+                colors.append(np.log(p1 / p3))
+    grid_pts = np.array(grid_pts)
+    sc = ax_b.scatter(grid_pts[:, 0], grid_pts[:, 1], c=colors, cmap='coolwarm', s=25, alpha=0.85)
+    plt.colorbar(sc, ax=ax_b, label=r"$\eta_1 = \ln(\mu_1 / \mu_3)$", pad=0.02)
+    ax_b.text(v1[0] - 0.06, v1[1] - 0.04, r"$\mu_1=1$", fontsize=10, color='#1E56A0', fontweight='bold')
+    ax_b.text(v2[0] + 0.02, v2[1] - 0.04, r"$\mu_2=1$", fontsize=10, color='#E02020', fontweight='bold')
+    ax_b.text(v3[0] - 0.05, v3[1] + 0.04, r"$\mu_3=1$", fontsize=10, color='#2E8B57', fontweight='bold')
+    ax_b.set_title(r"(b) Multinomial: Probability Simplex & Softmax", fontsize=12)
+    ax_b.set_aspect('equal')
+    ax_b.axis('off')
+
+    # (c) Univariate Gaussian Natural Parameter space (eta1, eta2) with eta2 < 0
+    ax_c = axes[1, 0]
+    eta1_grid = np.linspace(-3.0, 3.0, 150)
+    eta2_grid = np.linspace(-3.0, -0.1, 150)
+    E1, E2 = np.meshgrid(eta1_grid, eta2_grid)
+    MU = -E1 / (2.0 * E2)
+    cs = ax_c.contour(E1, E2, MU, levels=np.linspace(-2, 2, 9), cmap='coolwarm', linewidths=1.2)
+    ax_c.clabel(cs, inline=True, fontsize=8, fmt=r"$\mu=%.1f$")
+    ax_c.axhline(0, color='black', linewidth=1.5)
+    ax_c.fill_between(eta1_grid, 0, 0.5, color='gray', alpha=0.3)
+    ax_c.text(0, 0.15, r"Invalid domain ($\eta_2 \geq 0$)", ha='center', fontsize=10, color='darkred')
+    ax_c.set_xlim(-3, 3)
+    ax_c.set_ylim(-3, 0.5)
+    ax_c.set_xlabel(r"Natural Parameter $\eta_1 = \mu / \sigma^2$", fontsize=11)
+    ax_c.set_ylabel(r"Natural Parameter $\eta_2 = -1 / (2\sigma^2)$", fontsize=11)
+    ax_c.set_title(r"(c) Gaussian: $\mathbf{u}(x) = (x, x^2)^T$ Domain ($\eta_2 < 0$)", fontsize=12)
+    ax_c.tick_params(direction='in', top=True, right=True)
+
+    # (d) Von Mises Natural Parameter space eta = (m cos theta0, m sin theta0)
+    ax_d = axes[1, 1]
+    radii = [1.0, 2.5, 4.0]
+    circle_theta = np.linspace(0, 2*np.pi, 200)
+    for r in radii:
+        ax_d.plot(r * np.cos(circle_theta), r * np.sin(circle_theta), 'k--', alpha=0.4)
+        ax_d.text(r * 0.707 + 0.1, r * 0.707 + 0.1, f"$m={r:.1f}$", fontsize=8, color='gray')
+    
+    test_params = [(np.pi/4, 4.0, '#E02020', r"$\theta_0=\frac{\pi}{4}, m=4$"),
+                   (3*np.pi/4, 2.5, '#1E56A0', r"$\theta_0=\frac{3\pi}{4}, m=2.5$"),
+                   (-np.pi/3, 3.2, '#2E8B57', r"$\theta_0=-\frac{\pi}{3}, m=3.2$")]
+    for th0, m_val, col, lbl in test_params:
+        e1 = m_val * np.cos(th0)
+        e2 = m_val * np.sin(th0)
+        ax_d.annotate('', xy=(e1, e2), xytext=(0, 0),
+                      arrowprops=dict(facecolor=col, edgecolor=col, width=1.8, headwidth=8))
+        ax_d.scatter([e1], [e2], color=col, s=40, zorder=5, label=lbl)
+    
+    ax_d.axhline(0, color='gray', linestyle=':', alpha=0.5)
+    ax_d.axvline(0, color='gray', linestyle=':', alpha=0.5)
+    ax_d.set_xlim(-5, 5)
+    ax_d.set_ylim(-5, 5)
+    ax_d.set_aspect('equal')
+    ax_d.set_xlabel(r"Natural Parameter $\eta_1 = m \cos \theta_0$", fontsize=11)
+    ax_d.set_ylabel(r"Natural Parameter $\eta_2 = m \sin \theta_0$", fontsize=11)
+    ax_d.set_title(r"(d) Von Mises: $\mathbf{u}(\theta) = (\cos\theta, \sin\theta)^T$", fontsize=12)
+    ax_d.legend(loc='lower left', fontsize=9, frameon=True)
+    ax_d.tick_params(direction='in', top=True, right=True)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.14 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, axes
+
+
+def plot_figure_3_15_sufficient_statistics_online(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """Figure 3.15: Sufficient Statistics and Online / Stream Estimation."""
+    from common.plot_utils import setup_style
+    setup_style()
+    np.random.seed(42)
+    true_mu = 3.5
+    true_sigma2 = 2.0
+    N = 500
+    X = np.random.normal(true_mu, np.sqrt(true_sigma2), size=N)
+    
+    sum_x = np.cumsum(X)
+    sum_x2 = np.cumsum(X**2)
+    n_arr = np.arange(1, N + 1)
+    
+    mu_mle_seq = sum_x / n_arr
+    sigma2_mle_seq = (sum_x2 / n_arr) - (mu_mle_seq**2)
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4.5), dpi=300)
+    
+    # (a) Online convergence
+    ax1.plot(n_arr, mu_mle_seq, color='#1E56A0', linewidth=1.8, label=r"$\mu^{\mathrm{ML}}_N = \frac{1}{N}\sum x_n$")
+    ax1.axhline(true_mu, color='#1E56A0', linestyle='--', alpha=0.7, label=r"True $\mu = 3.5$")
+    
+    ax1.plot(n_arr, sigma2_mle_seq, color='#E02020', linewidth=1.8, label=r"${\sigma^2}^{\mathrm{ML}}_N = \frac{1}{N}\sum x_n^2 - (\mu^{\mathrm{ML}}_N)^2$")
+    ax1.axhline(true_sigma2, color='#E02020', linestyle='--', alpha=0.7, label=r"True $\sigma^2 = 2.0$")
+    
+    ax1.set_xlim(1, N)
+    ax1.set_ylim(0, 5.5)
+    ax1.set_xlabel(r"Sample Count $N$ (Stream Step)", fontsize=11)
+    ax1.set_ylabel("Parameter Estimate", fontsize=11)
+    ax1.set_title("(a) Online Stream MLE via Running Sufficient Statistics", fontsize=11)
+    ax1.legend(loc='upper right', fontsize=9, frameon=True)
+    ax1.tick_params(direction='in', top=True, right=True)
+    for s in ax1.spines.values():
+        s.set_linewidth(0.8)
+
+    # (b) Memory Footprint: Buffer O(N) vs Sufficient Statistics O(1)
+    bytes_per_float = 8
+    raw_buffer_bytes = n_arr * bytes_per_float
+    suff_stat_bytes = np.full_like(n_arr, 24)
+    
+    ax2.plot(n_arr, raw_buffer_bytes / 1024.0, color='#E02020', linewidth=2.0,
+             label=r"Raw Data Buffering: $\mathcal{O}(N)$ Storage")
+    ax2.plot(n_arr, suff_stat_bytes / 1024.0, color='#2E8B57', linewidth=2.2,
+             label=r"Sufficient Statistics $\sum \mathbf{u}(x_n)$: $\mathcal{O}(1)$ Storage")
+    ax2.fill_between(n_arr, suff_stat_bytes / 1024.0, raw_buffer_bytes / 1024.0,
+                     color='#E02020', alpha=0.1)
+    ax2.set_xlim(1, N)
+    ax2.set_xlabel(r"Sample Count $N$", fontsize=11)
+    ax2.set_ylabel("Memory Footprint (KB)", fontsize=11)
+    ax2.set_title(r"(b) Memory Efficiency of Sufficient Statistics", fontsize=11)
+    ax2.legend(loc='upper left', fontsize=10, frameon=True)
+    ax2.tick_params(direction='in', top=True, right=True)
+    for s in ax2.spines.values():
+        s.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.15 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, (ax1, ax2)
