@@ -3802,3 +3802,634 @@ def plot_figure_3_15_sufficient_statistics_online(
     if show:
         plt.show()
     return fig, (ax1, ax2)
+
+
+# =====================================================================
+# 3.5 Nonparametric Methods
+# =====================================================================
+
+class HistogramDensity1D:
+    """
+    1D Histogram Density Estimator (Section 3.5.1, Eq 3.175):
+        p_i = n_i / (N * Delta_i)
+    where:
+        n_i: number of observations in bin i
+        N: total number of observations
+        Delta_i: width of bin i
+    """
+    def __init__(
+        self,
+        bin_width: Optional[float] = None,
+        bin_edges: Optional[Union[List[float], np.ndarray]] = None,
+        range_bounds: Tuple[float, float] = (0.0, 1.0)
+    ):
+        if bin_edges is not None:
+            self.bin_edges = np.asarray(bin_edges, dtype=np.float64)
+            self.bin_widths = np.diff(self.bin_edges)
+        elif bin_width is not None:
+            low, high = range_bounds
+            self.bin_edges = np.arange(low, high + bin_width * 0.5, bin_width)
+            self.bin_widths = np.diff(self.bin_edges)
+        else:
+            raise ValueError("Must specify either bin_width or bin_edges")
+
+        self.n_bins = len(self.bin_widths)
+        self.counts = np.zeros(self.n_bins, dtype=int)
+        self.density = np.zeros(self.n_bins, dtype=np.float64)
+        self.total_samples = 0
+
+    def fit(self, X: Union[List[float], np.ndarray]) -> "HistogramDensity1D":
+        """Fit histogram density on 1D observations X."""
+        X_arr = np.asarray(X, dtype=np.float64).ravel()
+        self.total_samples = len(X_arr)
+        if self.total_samples == 0:
+            raise ValueError("Cannot fit on empty data")
+
+        self.counts, _ = np.histogram(X_arr, bins=self.bin_edges)
+        self.density = self.counts / (self.total_samples * self.bin_widths)
+        return self
+
+    def evaluate(self, x: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Evaluate piecewise-constant probability density at points x."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        is_scalar = (x_arr.ndim == 0)
+        x_flat = np.atleast_1d(x_arr)
+        
+        # Identify bin index for each query point
+        # np.digitize returns 1-indexed bin
+        bin_indices = np.digitize(x_flat, self.bin_edges) - 1
+        
+        res = np.zeros_like(x_flat, dtype=np.float64)
+        valid = (bin_indices >= 0) & (bin_indices < self.n_bins)
+        res[valid] = self.density[bin_indices[valid]]
+
+        # Edge case: right boundary point
+        right_boundary = (x_flat == self.bin_edges[-1])
+        if np.any(right_boundary) and self.n_bins > 0:
+            res[right_boundary] = self.density[-1]
+
+        if is_scalar:
+            return float(res[0])
+        return res
+
+    def sample(self, size: int = 1, seed: Optional[int] = None) -> np.ndarray:
+        """Sample from the piecewise constant histogram density model."""
+        rng = np.random.RandomState(seed)
+        # Select bin according to discrete probabilities p_i * Delta_i = n_i / N
+        probs = self.counts / float(self.total_samples)
+        chosen_bins = rng.choice(self.n_bins, size=size, p=probs)
+        # Uniform within each chosen bin
+        lows = self.bin_edges[chosen_bins]
+        highs = self.bin_edges[chosen_bins + 1]
+        return rng.uniform(lows, highs)
+
+    def pdf(self, x: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Alias for evaluate(x)."""
+        return self.evaluate(x)
+
+    def score_samples(self, x: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute log-density log p(x)."""
+        p = np.asarray(self.evaluate(x), dtype=np.float64)
+        return np.log(np.maximum(p, 1e-300))
+
+
+class KernelDensity1D:
+    """
+    1D Kernel Density Estimator / Parzen Window (Section 3.5.2, Eq 3.183 - 3.184):
+        p(x) = (1 / N) sum_{n=1}^N (1 / h) k((x - x_n) / h)
+    Supports Gaussian, Boxcar (Tophat), and Epanechnikov kernels.
+    """
+    def __init__(self, h: float = 0.05, kernel: str = "gaussian"):
+        if h <= 0:
+            raise ValueError(f"Bandwidth h must be positive, got {h}")
+        self.h = float(h)
+        self.kernel = kernel.lower()
+        if self.kernel not in ["gaussian", "boxcar", "tophat", "epanechnikov"]:
+            raise ValueError(f"Unsupported kernel '{kernel}'. Choose from 'gaussian', 'boxcar', 'epanechnikov'.")
+        self.X: Optional[np.ndarray] = None
+        self.N: int = 0
+
+    def fit(self, X: Union[List[float], np.ndarray]) -> "KernelDensity1D":
+        """Store training sample observations."""
+        self.X = np.asarray(X, dtype=np.float64).ravel()
+        self.N = len(self.X)
+        if self.N == 0:
+            raise ValueError("Cannot fit KDE on empty data")
+        return self
+
+    def evaluate(self, x: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Evaluate kernel density estimate at query points x."""
+        if self.X is None:
+            raise ValueError("KernelDensity1D must be fitted before evaluation")
+
+        x_arr = np.asarray(x, dtype=np.float64)
+        is_scalar = (x_arr.ndim == 0)
+        x_flat = np.atleast_1d(x_arr)
+
+        # Distance matrix (M, N) normalized by bandwidth h
+        u = (x_flat[:, None] - self.X[None, :]) / self.h
+
+        if self.kernel == "gaussian":
+            # k(u) = (1 / sqrt(2*pi)) * exp(-0.5 * u^2) (Eq 3.184)
+            k_val = np.exp(-0.5 * u**2) / np.sqrt(2.0 * np.pi)
+        elif self.kernel in ["boxcar", "tophat"]:
+            # k(u) = 1 if |u| <= 0.5, else 0 (Eq 3.181)
+            k_val = np.where(np.abs(u) <= 0.5, 1.0, 0.0)
+        elif self.kernel == "epanechnikov":
+            # k(u) = 0.75 * (1 - u^2) for |u| <= 1, else 0
+            k_val = np.where(np.abs(u) <= 1.0, 0.75 * (1.0 - u**2), 0.0)
+
+        dens = np.sum(k_val, axis=1) / (self.N * self.h)
+        if is_scalar:
+            return float(dens[0])
+        return dens
+
+    @staticmethod
+    def silverman_bandwidth(X: Union[List[float], np.ndarray]) -> float:
+        """Silverman's rule-of-thumb bandwidth for Gaussian KDE: h = 1.06 * std * N^(-1/5)."""
+        X_arr = np.asarray(X, dtype=np.float64).ravel()
+        n = len(X_arr)
+        if n < 2:
+            return 1.0
+        std = np.std(X_arr, ddof=1)
+        return float(1.06 * std * (n ** (-0.2)))
+
+    def pdf(self, x: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Alias for evaluate(x)."""
+        return self.evaluate(x)
+
+    def score_samples(self, x: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute log-density log p(x)."""
+        p = np.asarray(self.evaluate(x), dtype=np.float64)
+        return np.log(np.maximum(p, 1e-300))
+
+    def sample(self, size: int = 1, seed: Optional[int] = None) -> np.ndarray:
+        """Sample from the kernel density model."""
+        if self.X is None:
+            raise ValueError("Model must be fitted before sampling.")
+        rng = np.random.default_rng(seed)
+        chosen_indices = rng.integers(0, self.N, size=size)
+        centers = self.X[chosen_indices]
+        if self.kernel == "gaussian":
+            noise = rng.normal(0, self.h, size=size)
+        elif self.kernel in ["boxcar", "tophat"]:
+            noise = rng.uniform(-0.5 * self.h, 0.5 * self.h, size=size)
+        else:
+            noise = rng.normal(0, self.h, size=size)
+        return centers + noise
+
+
+class KernelDensityND:
+    """
+    Multidimensional Kernel Density Estimator (Section 3.5.2, Eq 3.184):
+        p(x) = (1 / N) sum_{n=1}^N (1 / (2*pi*h^2)^(D/2)) exp(- ||x - x_n||^2 / (2*h^2))
+    """
+    def __init__(self, h: float = 0.1):
+        if h <= 0:
+            raise ValueError(f"Bandwidth h must be positive, got {h}")
+        self.h = float(h)
+        self.X: Optional[np.ndarray] = None
+        self.N: int = 0
+        self.D: int = 0
+
+    def fit(self, X: np.ndarray) -> "KernelDensityND":
+        X_arr = np.asarray(X, dtype=np.float64)
+        if X_arr.ndim == 1:
+            X_arr = X_arr[:, None]
+        self.X = X_arr
+        self.N, self.D = self.X.shape
+        return self
+
+    def evaluate(self, X_query: np.ndarray) -> np.ndarray:
+        if self.X is None:
+            raise ValueError("Model must be fitted before evaluation")
+        Q = np.asarray(X_query, dtype=np.float64)
+        if Q.ndim == 1:
+            Q = Q[None, :]
+
+        # Squared Euclidean distances: ||x - x_n||^2
+        # (M, 1, D) - (1, N, D) -> (M, N)
+        diff = Q[:, None, :] - self.X[None, :, :]
+        sq_dist = np.sum(diff**2, axis=-1)
+
+        norm_const = 1.0 / ((2.0 * np.pi * (self.h**2)) ** (self.D / 2.0))
+        k_vals = norm_const * np.exp(-0.5 * sq_dist / (self.h**2))
+        return np.mean(k_vals, axis=1)
+
+
+class KNNDensityEstimator:
+    """
+    K-Nearest-Neighbour Density Estimator (Section 3.5.3, Eq 3.180):
+        p(x) = K / (N * V(x))
+    where V(x) is the volume of a hypersphere of radius r_K(x) (distance to K-th neighbor):
+        V_D(r) = (pi^(D/2) / Gamma(D/2 + 1)) * r^D
+    """
+    def __init__(self, K: int = 5):
+        if K < 1:
+            raise ValueError(f"K must be >= 1, got {K}")
+        self.K = int(K)
+        self.X: Optional[np.ndarray] = None
+        self.N: int = 0
+        self.D: int = 0
+
+    def fit(self, X: Union[List[float], np.ndarray]) -> "KNNDensityEstimator":
+        X_arr = np.asarray(X, dtype=np.float64)
+        if X_arr.ndim == 1:
+            X_arr = X_arr[:, None]
+        self.X = X_arr
+        self.N, self.D = self.X.shape
+        if self.K > self.N:
+            raise ValueError(f"K={self.K} cannot exceed sample size N={self.N}")
+        return self
+
+    def _sphere_volume(self, r: np.ndarray) -> np.ndarray:
+        """Volume of D-dimensional sphere of radius r."""
+        c = (np.pi ** (self.D / 2.0)) / special.gamma(self.D / 2.0 + 1.0)
+        return c * (r ** self.D)
+
+    def evaluate(self, x: Union[float, List[float], np.ndarray], eps: float = 1e-9) -> Union[float, np.ndarray]:
+        """Evaluate KNN density at query points x."""
+        if self.X is None:
+            raise ValueError("Model must be fitted before evaluation")
+
+        x_arr = np.asarray(x, dtype=np.float64)
+        is_scalar = (x_arr.ndim == 0) or (x_arr.ndim == 1 and self.D == 1 and len(x_arr) == 1)
+        if x_arr.ndim == 1 and self.D > 1:
+            x_arr = x_arr[None, :]
+        elif x_arr.ndim == 1 and self.D == 1:
+            x_arr = x_arr[:, None]
+        elif x_arr.ndim == 0:
+            x_arr = np.array([[x_arr]])
+
+        # Pairwise distance matrix (M, N)
+        diff = x_arr[:, None, :] - self.X[None, :, :]
+        dists = np.sqrt(np.sum(diff**2, axis=-1))
+
+        # Distance to K-th nearest neighbor (0-indexed: K - 1)
+        sorted_dists = np.sort(dists, axis=1)
+        r_K = sorted_dists[:, self.K - 1]
+
+        # Regularize near-zero distances
+        r_K_safe = np.maximum(r_K, eps)
+        vol = self._sphere_volume(r_K_safe)
+        dens = self.K / (self.N * vol)
+
+        if is_scalar:
+            return float(dens[0])
+        return dens
+
+    def pdf(self, x: Union[float, List[float], np.ndarray], eps: float = 1e-9) -> Union[float, np.ndarray]:
+        """Alias for evaluate(x)."""
+        return self.evaluate(x, eps=eps)
+
+    def score_samples(self, x: Union[float, List[float], np.ndarray], eps: float = 1e-9) -> Union[float, np.ndarray]:
+        """Compute log-density log p(x)."""
+        p = np.asarray(self.evaluate(x, eps=eps), dtype=np.float64)
+        return np.log(np.maximum(p, 1e-300))
+
+
+class KNNClassifier:
+    """
+    K-Nearest-Neighbour Classifier (Section 3.5.3, Eq 3.187 - 3.190):
+        p(C_k | x) = K_k / K
+    Classifies a query point to the majority class amongst its K nearest neighbours.
+    """
+    def __init__(self, K: int = 3):
+        if K < 1:
+            raise ValueError(f"K must be >= 1, got {K}")
+        self.K = int(K)
+        self.X: Optional[np.ndarray] = None
+        self.y: Optional[np.ndarray] = None
+        self.classes_: Optional[np.ndarray] = None
+        self.N: int = 0
+
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "KNNClassifier":
+        """Store training points and class labels."""
+        X_arr = np.asarray(X, dtype=np.float64)
+        y_arr = np.asarray(y, dtype=int).ravel()
+        if X_arr.ndim == 1:
+            X_arr = X_arr[:, None]
+        if len(X_arr) != len(y_arr):
+            raise ValueError("X and y must have same length")
+
+        self.X = X_arr
+        self.y = y_arr
+        self.classes_ = np.unique(y_arr)
+        self.N = len(X_arr)
+        if self.K > self.N:
+            raise ValueError(f"K={self.K} cannot exceed dataset size N={self.N}")
+        return self
+
+    def predict_proba(self, X_query: np.ndarray) -> np.ndarray:
+        """
+        Compute posterior probabilities p(C_k | x) = K_k / K (Eq 3.190).
+        Returns array of shape (len(X_query), n_classes).
+        """
+        if self.X is None:
+            raise ValueError("Model must be fitted before prediction")
+        Q = np.asarray(X_query, dtype=np.float64)
+        if Q.ndim == 1:
+            Q = Q[None, :]
+
+        # Distance matrix (M, N)
+        diff = Q[:, None, :] - self.X[None, :, :]
+        dists = np.sqrt(np.sum(diff**2, axis=-1))
+
+        # Find indices of K nearest neighbors
+        knn_indices = np.argsort(dists, axis=1)[:, :self.K]
+
+        # Count occurrences of each class in neighbors
+        n_queries = len(Q)
+        n_classes = len(self.classes_)
+        proba = np.zeros((n_queries, n_classes), dtype=np.float64)
+
+        for i in range(n_queries):
+            neighbor_labels = self.y[knn_indices[i]]
+            for c_idx, cls in enumerate(self.classes_):
+                proba[i, c_idx] = np.sum(neighbor_labels == cls) / float(self.K)
+
+        return proba
+
+    def predict(self, X_query: np.ndarray) -> np.ndarray:
+        """Predict class label by majority vote (maximum posterior probability)."""
+        proba = self.predict_proba(X_query)
+        best_indices = np.argmax(proba, axis=1)
+        return self.classes_[best_indices]
+
+    def get_k_nearest_indices(self, x_query: np.ndarray) -> np.ndarray:
+        """Return indices of K nearest training points to a single query vector."""
+        q = np.asarray(x_query, dtype=np.float64).ravel()
+        dists = np.sqrt(np.sum((self.X - q)**2, axis=1))
+        return np.argsort(dists)[:self.K]
+
+
+# =====================================================================
+# Figure Plotting Functions for Section 3.5
+# =====================================================================
+
+def get_mixture_pdf_3_5(x: np.ndarray) -> np.ndarray:
+    """Mixture of two Gaussians on [0, 1] used in Figures 3.13, 3.14, 3.15."""
+    pi1, mu1, s1 = 0.3, 0.3, 0.09
+    pi2, mu2, s2 = 0.7, 0.75, 0.085
+    g1 = (1.0 / (np.sqrt(2 * np.pi) * s1)) * np.exp(-0.5 * ((x - mu1) / s1) ** 2)
+    g2 = (1.0 / (np.sqrt(2 * np.pi) * s2)) * np.exp(-0.5 * ((x - mu2) / s2) ** 2)
+    return pi1 * g1 + pi2 * g2
+
+
+def get_synthetic_50_points_3_5(seed: int = 26) -> np.ndarray:
+    """Generate the exact 50 synthetic data points used in Figures 3.13, 3.14, 3.15."""
+    rng = np.random.RandomState(seed)
+    n1 = rng.binomial(50, 0.3)
+    n2 = 50 - n1
+    s1 = rng.normal(0.3, 0.09, size=n1)
+    s2 = rng.normal(0.75, 0.085, size=n2)
+    return np.sort(np.clip(np.concatenate([s1, s2]), 0.01, 0.99))
+
+
+def plot_figure_3_13_histogram(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, np.ndarray]:
+    """
+    Faithfully reproduce Figure 3.13 from Bishop & Bishop (2024), page 99:
+    Histogram density estimates for Delta = 0.04, 0.08, 0.25 on 50 data points.
+    """
+    data = get_synthetic_50_points_3_5()
+    deltas = [0.04, 0.08, 0.25]
+    x_grid = np.linspace(0, 1, 500)
+    true_pdf = get_mixture_pdf_3_5(x_grid)
+
+    fig, axes = plt.subplots(3, 1, figsize=(6.5, 5.5), dpi=300, sharex=True)
+
+    for ax, delta in zip(axes, deltas):
+        hist_model = HistogramDensity1D(bin_width=delta, range_bounds=(0.0, 1.0)).fit(data)
+        bins = hist_model.bin_edges
+        counts = hist_model.counts
+        density = hist_model.density
+
+        for i in range(len(counts)):
+            b_left = bins[i]
+            h = density[i]
+            ax.bar(b_left, h, width=delta, align='edge',
+                   facecolor='#4D72B8', edgecolor='black', linewidth=0.8, alpha=0.9, zorder=2)
+
+        ax.plot(x_grid, true_pdf, color='#00C000', linewidth=1.8, zorder=3)
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 5.2)
+        ax.set_yticks([0, 5])
+        ax.set_xticks([0, 0.5, 1])
+        ax.tick_params(direction='in', top=True, right=True)
+        ax.text(0.04, 4.0, rf"$\Delta = {delta}$", fontsize=11, zorder=4)
+        for s in ax.spines.values():
+            s.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.13 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, axes
+
+
+def plot_figure_3_14_kernel_density(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, np.ndarray]:
+    """
+    Faithfully reproduce Figure 3.14 from Bishop & Bishop (2024), page 102:
+    Kernel density estimation with Gaussian kernel h = 0.005, 0.07, 0.2.
+    """
+    data = get_synthetic_50_points_3_5()
+    bandwidths = [0.005, 0.07, 0.2]
+    x_grid = np.linspace(0, 1, 1000)
+    true_pdf = get_mixture_pdf_3_5(x_grid)
+
+    fig, axes = plt.subplots(3, 1, figsize=(6.5, 5.5), dpi=300, sharex=True)
+
+    for ax, h in zip(axes, bandwidths):
+        kde = KernelDensity1D(h=h, kernel="gaussian").fit(data)
+        dens_est = kde.evaluate(x_grid)
+
+        ax.plot(x_grid, dens_est, color='#0044FF', linewidth=1.5, zorder=2)
+        ax.plot(x_grid, true_pdf, color='#00C000', linewidth=1.8, zorder=3)
+
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 5.2)
+        ax.set_yticks([0, 5])
+        ax.set_xticks([0, 0.5, 1])
+        ax.tick_params(direction='in', top=True, right=True)
+        ax.text(0.04, 4.0, rf"$h = {h}$", fontsize=11, zorder=4)
+        for s in ax.spines.values():
+            s.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.14 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, axes
+
+
+def plot_figure_3_15_knn_density(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, np.ndarray]:
+    """
+    Faithfully reproduce Figure 3.15 from Bishop & Bishop (2024), page 103:
+    K-nearest-neighbour density estimation with K = 1, 5, 30.
+    """
+    data = get_synthetic_50_points_3_5()
+    K_values = [1, 5, 30]
+    x_grid = np.linspace(0, 1, 2000)
+    true_pdf = get_mixture_pdf_3_5(x_grid)
+
+    fig, axes = plt.subplots(3, 1, figsize=(6.5, 5.5), dpi=300, sharex=True)
+
+    for ax, K in zip(axes, K_values):
+        knn = KNNDensityEstimator(K=K).fit(data)
+        dens_est = knn.evaluate(x_grid)
+        # Cap infinite spikes for visualization
+        dens_est_clipped = np.clip(dens_est, 0, 5.15)
+
+        ax.plot(x_grid, dens_est_clipped, color='#0044FF', linewidth=1.5, zorder=2)
+        ax.plot(x_grid, true_pdf, color='#00C000', linewidth=1.8, zorder=3)
+
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 5.2)
+        ax.set_yticks([0, 5])
+        ax.set_xticks([0, 0.5, 1])
+        ax.tick_params(direction='in', top=True, right=True)
+        ax.text(0.04, 4.0, rf"$K = {K}$", fontsize=11, zorder=4)
+        for s in ax.spines.values():
+            s.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.15 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, axes
+
+
+def plot_figure_3_16_knn_classification(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Tuple[plt.Axes, plt.Axes]]:
+    """
+    Faithfully reproduce Figure 3.16 from Bishop & Bishop (2024), page 104:
+    (a) K-nearest-neighbour classifier (K = 3) with query point.
+    (b) Nearest-neighbour (K = 1) decision boundary (Voronoi bisectors).
+    """
+    red_pts = np.array([
+        [0.05, 0.85], [0.10, 0.65], [0.12, 0.35], [0.18, 0.80],
+        [0.22, 0.55], [0.20, 0.34], [0.25, 0.70], [0.30, 0.85],
+        [0.35, 0.40], [0.40, 0.60]
+    ])
+    blue_pts = np.array([
+        [0.18, 0.26], [0.30, 0.08], [0.36, 0.25], [0.48, 0.06],
+        [0.52, 0.25], [0.55, 0.45], [0.60, 0.88], [0.64, 0.15],
+        [0.68, 0.70], [0.72, 0.38], [0.78, 0.55], [0.85, 0.15],
+        [0.90, 0.65]
+    ])
+    query_pt = np.array([0.45, 0.63])
+
+    all_pts = np.vstack([red_pts, blue_pts])
+    all_labels = np.array([0]*len(red_pts) + [1]*len(blue_pts))
+
+    clf_k3 = KNNClassifier(K=3).fit(all_pts, all_labels)
+    knn_idx = clf_k3.get_k_nearest_indices(query_pt)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8.5, 4.2), dpi=300)
+
+    # Subplot (a) K=3
+    ax1.scatter(red_pts[:, 0], red_pts[:, 1], color='#E02020', s=45, zorder=3, edgecolors='none')
+    ax1.scatter(blue_pts[:, 0], blue_pts[:, 1], color='#0044FF', s=45, zorder=3, edgecolors='none')
+    for idx in knn_idx:
+        nbr = all_pts[idx]
+        ax1.plot([query_pt[0], nbr[0]], [query_pt[1], nbr[1]], color='#00C000', linewidth=2.0, zorder=2)
+    ax1.scatter(query_pt[0], query_pt[1], marker='D', s=60, facecolor='#00E000',
+                edgecolor='black', linewidth=1.5, zorder=4)
+
+    ax1.set_xlim(-0.02, 1.05)
+    ax1.set_ylim(-0.02, 1.05)
+    ax1.set_xticks([])
+    ax1.set_yticks([])
+    ax1.set_xlabel(r"$x_1$", fontsize=12, loc='right')
+    ax1.set_ylabel(r"$x_2$", fontsize=12, loc='top', rotation=0, labelpad=8)
+    ax1.set_title("(a)", fontsize=12, y=-0.15)
+    ax1.spines['left'].set_position(('data', 0))
+    ax1.spines['bottom'].set_position(('data', 0))
+    ax1.spines['right'].set_visible(False)
+    ax1.spines['top'].set_visible(False)
+    ax1.plot(1.03, 0, ">k", clip_on=False, markersize=6)
+    ax1.plot(0, 1.03, "^k", clip_on=False, markersize=6)
+
+    # Subplot (b) 1-NN Voronoi boundary
+    ax2.scatter(red_pts[:, 0], red_pts[:, 1], color='#E02020', s=45, zorder=3, edgecolors='none')
+    ax2.scatter(blue_pts[:, 0], blue_pts[:, 1], color='#0044FF', s=45, zorder=3, edgecolors='none')
+
+    gx = np.linspace(-0.02, 1.05, 500)
+    gy = np.linspace(-0.02, 1.05, 500)
+    GX, GY = np.meshgrid(gx, gy)
+    grid_pts = np.column_stack([GX.ravel(), GY.ravel()])
+
+    d_red = np.min(np.linalg.norm(grid_pts[:, None, :] - red_pts[None, :, :], axis=2), axis=1)
+    d_blue = np.min(np.linalg.norm(grid_pts[:, None, :] - blue_pts[None, :, :], axis=2), axis=1)
+    diff_grid = (d_red - d_blue).reshape(GX.shape)
+
+    ax2.contour(GX, GY, diff_grid, levels=[0], colors=['#00C000'], linewidths=[2.2], zorder=2)
+
+    ax2.set_xlim(-0.02, 1.05)
+    ax2.set_ylim(-0.02, 1.05)
+    ax2.set_xticks([])
+    ax2.set_yticks([])
+    ax2.set_xlabel(r"$x_1$", fontsize=12, loc='right')
+    ax2.set_ylabel(r"$x_2$", fontsize=12, loc='top', rotation=0, labelpad=8)
+    ax2.set_title("(b)", fontsize=12, y=-0.15)
+    ax2.spines['left'].set_position(('data', 0))
+    ax2.spines['bottom'].set_position(('data', 0))
+    ax2.spines['right'].set_visible(False)
+    ax2.spines['top'].set_visible(False)
+    ax2.plot(1.03, 0, ">k", clip_on=False, markersize=6)
+    ax2.plot(0, 1.03, "^k", clip_on=False, markersize=6)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.16 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, (ax1, ax2)
+
+
+# =====================================================================
+# Aliases for Section 3.5 Nonparametric Methods
+# =====================================================================
+HistogramDensity = HistogramDensity1D
+KernelDensityEstimator = KernelDensity1D
+KNearestNeighborsDensity = KNNDensityEstimator
+KNearestNeighborsClassifier = KNNClassifier
+
+plot_figure_3_13 = plot_figure_3_13_histogram
+plot_figure_3_14 = plot_figure_3_14_kernel_density
+plot_figure_3_15 = plot_figure_3_15_knn_density
+plot_figure_3_16 = plot_figure_3_16_knn_classification
