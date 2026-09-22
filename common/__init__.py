@@ -1,3 +1,5 @@
 """
 Common utilities for Deep Learning: Foundations and Concepts (Bishop & Bishop 2024).
 """
+from . import linear_models
+

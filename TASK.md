@@ -73,7 +73,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第1章** | 深層学習革命 (The Deep Learning Revolution) | 3 | 13 | Figure 1.1 〜 1.16 (全16枚) | なし (Tutorial) | 完了 (`[x]`) |
 | **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 完了 (`[x]`) |
 | **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 完了 (`[x]`) |
-| **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 未着手 |
+| **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 進行中 (1/4 ユニット完了) |
 | **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 未着手 |
 | **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 4 | 14 | Figure 6.1 〜 6.13 (全13枚) | 全17問 | 未着手 |
 | **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 未着手 |
@@ -90,13 +90,13 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **16 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **17 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 4.1 Linear Regression
-- **担当セクション**: 第4章 4.1 線形回帰 (Linear Regression)
+- **現在実行中のタスク**: 4.2 Decision theory
+- **担当セクション**: 第4章 4.2 決定理論 (Decision theory)
 - **ステータス**: 実行中 (`[-]`)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
@@ -277,23 +277,23 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `4/`
 - 再現図版目標: Figure 4.1 〜 4.8 (全8枚)
 
-- [-] **4.1 Linear Regression**
+- [x] **4.1 Linear Regression**
   - ノートブック: `4/4.1_Linear_Regression.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 4.1.1 Basis functions
-    - [ ] 4.1.2 Likelihood function
-    - [ ] 4.1.3 Maximum likelihood
-    - [ ] 4.1.4 Geometry of least squares
-    - [ ] 4.1.5 Sequential learning
-    - [ ] 4.1.6 Regularized least squares
-    - [ ] 4.1.7 Multiple outputs
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 4.1.1 Basis functions
+    - [x] 4.1.2 Likelihood function
+    - [x] 4.1.3 Maximum likelihood
+    - [x] 4.1.4 Geometry of least squares
+    - [x] 4.1.5 Sequential learning
+    - [x] 4.1.6 Regularized least squares
+    - [x] 4.1.7 Multiple outputs
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 4.1 〜 4.4)
   - テスト: `tests/test_ch4_linear_regressi.py`
 
-- [ ] **4.2 Decision theory**
+- [-] **4.2 Decision theory**
   - ノートブック: `4/4.2_Decision_theory.ipynb`
   - 小節: （単独構成）
-  - 図版再現: `result/` への該当Figureプロット保存
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 4.5 〜 4.6)
   - テスト: `tests/test_ch4_decision_theory.py`
 
 - [ ] **4.3 The Bias–Variance Trade-off**
