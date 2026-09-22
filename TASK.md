@@ -55,7 +55,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | Chapter | タイトル | 節数 | 小節数 | 教科書図版 | 演習問題 (Exercises) | 状態 |
 |---|---|:---:|:---:|:---:|:---:|:---:|
 | **第1章** | 深層学習革命 (The Deep Learning Revolution) | 3 | 13 | Figure 1.1 〜 1.16 (全16枚) | なし (Tutorial) | 完了 (`[x]`) |
-| **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 進行中 (1/6節完了) |
+| **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 進行中 (2/6節完了) |
 | **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 未着手 |
 | **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 未着手 |
 | **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 未着手 |
@@ -135,12 +135,12 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 2.1, 2.2, 2.3, 2.4, 2.5)
   - テスト: `tests/test_ch2_the_rules_of_pr.py`
 
-- [ ] **2.2 Probability Densities**
+- [x] **2.2 Probability Densities**
   - ノートブック: `2/2.2_Probability_Densities.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 2.2.1 Example distributions
-    - [ ] 2.2.2 Expectations and covariances
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 2.2.1 Example distributions
+    - [x] 2.2.2 Expectations and covariances
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 2.6, 2.7)
   - テスト: `tests/test_ch2_probability_den.py`
 
 - [ ] **2.3 The Gaussian Distribution**
