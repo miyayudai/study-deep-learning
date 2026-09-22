@@ -55,7 +55,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | Chapter | タイトル | 節数 | 小節数 | 教科書図版 | 演習問題 (Exercises) | 状態 |
 |---|---|:---:|:---:|:---:|:---:|:---:|
 | **第1章** | 深層学習革命 (The Deep Learning Revolution) | 3 | 13 | Figure 1.1 〜 1.16 (全16枚) | なし (Tutorial) | 完了 (`[x]`) |
-| **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 未着手 |
+| **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 進行中 (1/6節完了) |
 | **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 未着手 |
 | **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 未着手 |
 | **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 未着手 |
@@ -123,16 +123,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `2/`
 - 再現図版目標: Figure 2.1 〜 2.16 (全16枚)
 
-- [ ] **2.1 The Rules of Probability**
+- [x] **2.1 The Rules of Probability**
   - ノートブック: `2/2.1_The_Rules_of_Probability.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 2.1.1 A medical screening example
-    - [ ] 2.1.2 The sum and product rules
-    - [ ] 2.1.3 Bayes’ theorem
-    - [ ] 2.1.4 Medical screening revisited
-    - [ ] 2.1.5 Prior and posterior probabilities
-    - [ ] 2.1.6 Independent variables
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 2.1.1 A medical screening example
+    - [x] 2.1.2 The sum and product rules
+    - [x] 2.1.3 Bayes’ theorem
+    - [x] 2.1.4 Medical screening revisited
+    - [x] 2.1.5 Prior and posterior probabilities
+    - [x] 2.1.6 Independent variables
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 2.1, 2.2, 2.3, 2.4, 2.5)
   - テスト: `tests/test_ch2_the_rules_of_pr.py`
 
 - [ ] **2.2 Probability Densities**
