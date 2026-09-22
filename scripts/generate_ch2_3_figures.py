@@ -1,320 +1,334 @@
 """
 Generate publication-quality figures for Chapter 2 Section 2.3:
-  - Figure 2.8: Plot of a Gaussian distribution showing mean mu and standard deviation 2*sigma
-  - Figure 2.9: Illustration of likelihood function for the Gaussian distribution
-  - Figure 2.10: Illustration of bias in maximum likelihood estimation of mean and variance
-  - Figure 2.11: Schematic illustration of Gaussian conditional distribution in linear regression
+  - Figure 2.8: 1D Gaussian distribution showing mean mu and 2sigma width
+  - Figure 2.9: Gaussian likelihood function with data points and density heights
+  - Figure 2.10: Illustration of bias in maximum likelihood variance with N=2 data points (a, b, c)
+  - Figure 2.11: Probabilistic linear regression with Gaussian noise and vertical predictive distribution
 """
 import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from common.plot_utils import setup_style, save_plot
 from common.probability import (
     Gaussian1D,
     gaussian_maximum_likelihood,
+    simulate_gaussian_mle_bias,
     GaussianLinearRegression
 )
 
 
 def generate_figure_2_8(save_dirs=("result", "2/result")):
     """
-    Figure 2.8: Plot of a Gaussian distribution for a single continuous variable x
-    showing the mean mu and standard deviation sigma (2*sigma width arrow).
+    Figure 2.8: Univariate Gaussian distribution N(x | mu, sigma^2).
+    Shows:
+      - Red bell curve
+      - Axis arrows: horizontal x, vertical N(x | mu, sigma^2)
+      - Mean mu tick and label
+      - Double-ended arrow between inflection points mu - sigma and mu + sigma with label 2sigma
     """
     mu = 0.0
     sigma = 1.0
-    g = Gaussian1D(mu=mu, sigma2=sigma**2)
+    gauss = Gaussian1D(mu=mu, sigma2=sigma**2)
 
-    x = np.linspace(-3.5, 3.5, 600)
-    y = g.pdf(x)
+    x = np.linspace(-3.6, 3.6, 500)
+    p_x = gauss.pdf(x)
 
-    fig, ax = plt.subplots(figsize=(5.5, 4.5), dpi=300)
+    fig, ax = plt.subplots(figsize=(6, 4.8), dpi=300)
 
     # Plot Gaussian curve in red
-    ax.plot(x, y, color='red', linewidth=2.0, zorder=3)
+    ax.plot(x, p_x, color='red', linewidth=2.0, zorder=3)
 
-    # Inflection points at x = mu +- sigma, height is y_inflec = N(mu) * exp(-0.5)
-    y_inflec = g.pdf(mu + sigma)
-
-    # Draw horizontal double-headed arrow at inflection height across 2*sigma
+    # Inflection points: x = mu +- sigma, y = N(mu +- sigma | mu, sigma^2) = 1/(sqrt(2*pi)*sigma) * e^(-0.5)
+    y_inflec = gauss.pdf(mu + sigma)
+    # Draw double-ended arrow for 2*sigma
     ax.annotate(
         '', xy=(mu + sigma, y_inflec), xytext=(mu - sigma, y_inflec),
-        arrowprops=dict(arrowstyle="<|-|>", color="black", lw=1.5, mutation_scale=12)
+        arrowprops=dict(arrowstyle="<|-|>", color="black", lw=1.3, mutation_scale=12)
     )
-    # Label '2\sigma' above arrow
-    ax.text(mu, y_inflec + 0.02, r'$2\sigma$', fontsize=13, ha='center', va='bottom')
+    # Label "2\sigma" centered above arrow
+    ax.text(mu, y_inflec + 0.015, r'$2\sigma$', color='black', fontsize=13, ha='center', va='bottom')
 
-    # Tick and label at mu on x-axis
-    ax.plot([mu, mu], [-0.015, 0.015], color='black', lw=1.5)
-    ax.text(mu, -0.035, r'$\mu$', fontsize=13, ha='center', va='top')
+    # Tick at mu on x-axis
+    ax.plot([mu, mu], [-0.015, 0.015], color='black', linewidth=1.5, zorder=4)
+    ax.text(mu, -0.04, r'$\mu$', color='black', fontsize=14, ha='center', va='top')
 
-    # Arrow axes (Bishop style)
-    ax.set_xlim(-3.6, 3.8)
-    ax.set_ylim(-0.05, 0.46)
+    # Axis arrows
+    ax.annotate(
+        '', xy=(3.65, 0), xytext=(-3.7, 0),
+        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=15)
+    )
+    ax.annotate(
+        '', xy=(-3.65, 0.45), xytext=(-3.65, 0),
+        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=15)
+    )
+
+    # Axis labels
+    ax.text(3.55, -0.04, r'$x$', color='black', fontsize=14, ha='center', va='top')
+    ax.text(-3.6, 0.41, r'$\mathcal{N}(x \mid \mu, \sigma^2)$', color='black', fontsize=13, ha='left', va='center')
+
+    # Setup limits and spines
+    ax.set_xlim(-3.75, 3.8)
+    ax.set_ylim(-0.06, 0.46)
     ax.set_xticks([])
     ax.set_yticks([])
-
     for s in ['top', 'right', 'left', 'bottom']:
         ax.spines[s].set_visible(False)
-
-    # Horizontal axis with arrow
-    ax.annotate(
-        '', xy=(3.7, 0), xytext=(-3.6, 0),
-        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=14)
-    )
-    ax.text(3.6, -0.035, r'$x$', fontsize=13, ha='center', va='top')
-
-    # Vertical axis with arrow
-    ax.annotate(
-        '', xy=(-3.5, 0.44), xytext=(-3.5, 0),
-        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=14)
-    )
-    ax.text(-3.4, 0.42, r'$\mathcal{N}(x|\mu, \sigma^2)$', fontsize=13, ha='left', va='center')
-
     ax.grid(False)
+
     plt.tight_layout()
-
     for sdir in save_dirs:
-        out_path = os.path.join(sdir, "fig2_08_gaussian_distribution.png")
-        save_plot(fig, out_path)
-
+        os.makedirs(sdir, exist_ok=True)
+        save_plot(fig, os.path.join(sdir, "fig2_08_gaussian_distribution.png"))
     plt.close(fig)
 
 
 def generate_figure_2_9(save_dirs=("result", "2/result")):
     """
-    Figure 2.9: Illustration of the likelihood function for the Gaussian distribution.
-    Data points {x_n} in grey on axis, vertical green lines to blue points on red curve.
+    Figure 2.9: Likelihood function for a Gaussian distribution.
+    Shows:
+      - Red bell curve
+      - Data points x_n on horizontal axis (grey dots)
+      - Vertical green lines from axis to curve
+      - Blue dots on curve at (x_n, p(x_n))
+      - Axis arrows: x and p(x)
+      - Annotations: x_n under one point, N(x_n | mu, sigma^2) near the blue point
     """
     mu = 0.0
     sigma = 1.0
-    g = Gaussian1D(mu=mu, sigma2=sigma**2)
+    gauss = Gaussian1D(mu=mu, sigma2=sigma**2)
 
-    x = np.linspace(-3.2, 3.5, 600)
-    y = g.pdf(x)
+    x = np.linspace(-3.5, 3.5, 500)
+    p_x = gauss.pdf(x)
 
-    # 6 representative data points matching Figure 2.9 in textbook
-    x_data = np.array([-2.1, -1.3, -0.4, 0.2, 1.1, 1.9])
-    y_data = g.pdf(x_data)
-
-    fig, ax = plt.subplots(figsize=(5.5, 4.5), dpi=300)
+    fig, ax = plt.subplots(figsize=(6, 4.8), dpi=300)
 
     # Plot Gaussian curve in red
-    ax.plot(x, y, color='red', linewidth=2.0, zorder=3)
+    ax.plot(x, p_x, color='red', linewidth=2.0, zorder=3)
 
-    # Vertical green lines and points
-    for xn, yn in zip(x_data, y_data):
-        ax.plot([xn, xn], [0, yn], color='#1b9e77', linewidth=1.6, zorder=2)
-        # Grey point on axis
-        ax.scatter([xn], [0], color='#7f7f7f', s=35, zorder=4)
-        # Blue point on curve
-        ax.scatter([xn], [yn], color='#1f77b4', s=45, zorder=4)
+    # Data points x_n matching textbook Figure 2.9 distribution
+    # Points from left to right: ~ -2.0, -1.0, -0.3, -0.1, 0.7, 1.0, 2.0
+    x_points = np.array([-2.1, -1.0, -0.28, -0.05, 0.75, 1.05, 2.0])
+    y_points = gauss.pdf(x_points)
 
-    # Annotations matching Figure 2.9
-    # Label the rightmost point xn and N(xn|mu, sigma2)
-    xn_target = x_data[-1]
-    yn_target = y_data[-1]
-    ax.text(xn_target, -0.035, r'$x_n$', fontsize=13, ha='center', va='top')
-    ax.text(xn_target + 0.15, yn_target + 0.035, r'$\mathcal{N}(x_n|\mu, \sigma^2)$', fontsize=12, ha='left', va='bottom')
+    # Vertical green lines and dots
+    for xn, yn in zip(x_points, y_points):
+        # Vertical green line
+        ax.plot([xn, xn], [0, yn], color='#008000', linewidth=1.5, zorder=2)
+        # Grey dot on x-axis
+        ax.plot(xn, 0, marker='o', color='#777777', markersize=6.5, zorder=4)
+        # Blue dot on curve
+        ax.plot(xn, yn, marker='o', color='#0000ff', markersize=6.5, zorder=4)
 
-    # Arrow axes
-    ax.set_xlim(-3.4, 3.7)
-    ax.set_ylim(-0.05, 0.46)
+    # Axis arrows
+    ax.annotate(
+        '', xy=(3.55, 0), xytext=(-3.6, 0),
+        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=15)
+    )
+    ax.annotate(
+        '', xy=(-3.55, 0.45), xytext=(-3.55, 0),
+        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=15)
+    )
+
+    # Labels
+    ax.text(3.45, -0.04, r'$x$', color='black', fontsize=14, ha='center', va='top')
+    ax.text(-3.55, 0.25, r'$p(x)$', color='black', fontsize=13, ha='right', va='center')
+
+    # Annotation for x_n and N(x_n | mu, sigma^2) at rightmost point x_points[-1]
+    xn_labeled = x_points[-1]
+    yn_labeled = y_points[-1]
+    ax.text(xn_labeled, -0.04, r'$x_n$', color='black', fontsize=13, ha='center', va='top')
+    ax.text(xn_labeled + 0.1, yn_labeled + 0.04, r'$\mathcal{N}(x_n \mid \mu, \sigma^2)$',
+            color='black', fontsize=12, ha='left', va='bottom')
+
+    # Limits and spines
+    ax.set_xlim(-3.7, 3.7)
+    ax.set_ylim(-0.06, 0.46)
     ax.set_xticks([])
     ax.set_yticks([])
-
     for s in ['top', 'right', 'left', 'bottom']:
         ax.spines[s].set_visible(False)
-
-    # Horizontal axis
-    ax.annotate(
-        '', xy=(3.6, 0), xytext=(-3.3, 0),
-        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=14)
-    )
-    ax.text(3.5, -0.035, r'$x$', fontsize=13, ha='center', va='top')
-
-    # Vertical axis
-    ax.annotate(
-        '', xy=(-3.2, 0.44), xytext=(-3.2, 0),
-        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=14)
-    )
-    ax.text(-3.45, 0.25, r'$p(x)$', fontsize=13, ha='right', va='center')
-
     ax.grid(False)
+
     plt.tight_layout()
-
     for sdir in save_dirs:
-        out_path = os.path.join(sdir, "fig2_09_gaussian_likelihood.png")
-        save_plot(fig, out_path)
-
+        os.makedirs(sdir, exist_ok=True)
+        save_plot(fig, os.path.join(sdir, "fig2_09_gaussian_likelihood.png"))
     plt.close(fig)
 
 
 def generate_figure_2_10(save_dirs=("result", "2/result")):
     """
-    Figure 2.10: Illustration of how bias arises when using maximum likelihood to
-    determine the mean and variance of a Gaussian (3 subplots, N=2 data points).
+    Figure 2.10: Illustration of how bias arises in maximum likelihood variance.
+    3 subplots (a, b, c) showing:
+      - True Gaussian distribution (red curve)
+      - True mean mu (dashed grey vertical line)
+      - Green dots: N=2 sample data points
+      - Blue curve: fitted Gaussian distribution with sample mean mu_ML and variance sigma^2_ML
     """
-    true_mu = 0.0
-    true_sigma = 1.0
-    g_true = Gaussian1D(mu=true_mu, sigma2=true_sigma**2)
+    fig, axes = plt.subplots(1, 3, figsize=(11, 3.6), dpi=300)
 
-    x = np.linspace(-3.2, 3.2, 600)
-    y_true = g_true.pdf(x)
+    # True distribution parameters
+    mu_true = 0.0
+    sigma_true = 1.0
+    gauss_true = Gaussian1D(mu=mu_true, sigma2=sigma_true**2)
 
-    # 3 data sets of 2 points each (N=2) matching Figure 2.10
+    x_grid = np.linspace(-3.2, 3.2, 400)
+    pdf_true = gauss_true.pdf(x_grid)
+
+    # 3 representative datasets of N=2 points
+    # (a) both points to the left of mu
+    # (b) points symmetric / straddling mu
+    # (c) both points to the right of mu
     datasets = [
-        np.array([-1.7, -0.9]),   # Both points left of mu
-        np.array([-0.42, 0.42]),  # Points straddle mu symmetrically
-        np.array([0.9, 1.7])      # Both points right of mu
+        np.array([-1.5, -0.6]),
+        np.array([-0.45, 0.45]),
+        np.array([0.7, 1.6])
     ]
 
-    fig, axes = plt.subplots(1, 3, figsize=(10, 3.4), dpi=300)
-
-    for i, (ax, data) in enumerate(zip(axes, datasets)):
-        mle = gaussian_maximum_likelihood(data)
-        mu_ml = mle["mu_ML"]
-        sigma_ml = mle["sigma_ML"]
-        g_fit = Gaussian1D(mu=mu_ml, sigma2=sigma_ml**2)
-        y_fit = g_fit.pdf(x)
+    for idx, (ax, data) in enumerate(zip(axes, datasets)):
+        mu_ml = np.mean(data)
+        sigma2_ml = np.mean((data - mu_ml)**2)
+        sigma_ml = np.sqrt(sigma2_ml)
+        gauss_ml = Gaussian1D(mu=mu_ml, sigma2=sigma2_ml)
+        pdf_ml = gauss_ml.pdf(x_grid)
 
         # Baseline horizontal axis
-        ax.axhline(0, color='blue', linewidth=1.2, zorder=1)
+        ax.plot([-3.2, 3.2], [0, 0], color='black', linewidth=1.5, zorder=1)
 
-        # Dashed vertical line at true mean mu
-        ax.axvline(true_mu, color='#7f7f7f', linestyle='--', linewidth=1.2, zorder=2)
-        ax.text(true_mu, -0.08, r'$\mu$', fontsize=13, ha='center', va='top')
+        # Vertical dashed line at true mu
+        ax.axvline(mu_true, color='#888888', linestyle='--', linewidth=1.4, zorder=2)
 
-        # True distribution in red (broad curve)
-        ax.plot(x, y_true, color='red', linewidth=1.8, zorder=3)
+        # Plot true distribution in red
+        ax.plot(x_grid, pdf_true, color='red', linewidth=2.0, zorder=3)
 
-        # Fitted distribution in blue (narrow, taller curve)
-        ax.plot(x, y_fit, color='blue', linewidth=1.8, zorder=4)
+        # Plot fitted ML distribution in blue
+        ax.plot(x_grid, pdf_ml, color='blue', linewidth=2.0, zorder=4)
 
-        # Two data points in green on baseline
-        ax.scatter(data, [0, 0], color='#2ca02c', s=45, zorder=5)
+        # Plot green data points
+        ax.plot(data, [0, 0], marker='o', color='#008000', markersize=8, linestyle='None', zorder=5)
 
-        ax.set_xlim(-3.0, 3.0)
-        ax.set_ylim(-0.12, 1.25)
+        # Label mu under dashed line
+        ax.text(mu_true, -0.12, r'$\mu$', color='black', fontsize=14, ha='center', va='top')
+
+        # Subplot letter label: (a), (b), (c)
+        label_letter = ['(a)', '(b)', '(c)'][idx]
+        ax.set_title(label_letter, fontsize=12, pad=8)
+
+        # Settings
+        ax.set_xlim(-3.2, 3.2)
+        ax.set_ylim(-0.15, 1.05)
         ax.set_xticks([])
         ax.set_yticks([])
-
         for s in ['top', 'right', 'left', 'bottom']:
             ax.spines[s].set_visible(False)
-
         ax.grid(False)
 
     plt.tight_layout()
-
     for sdir in save_dirs:
-        out_path = os.path.join(sdir, "fig2_10_mle_bias.png")
-        save_plot(fig, out_path)
-
+        os.makedirs(sdir, exist_ok=True)
+        save_plot(fig, os.path.join(sdir, "fig2_10_mle_bias.png"))
     plt.close(fig)
 
 
 def generate_figure_2_11(save_dirs=("result", "2/result")):
     """
-    Figure 2.11: Schematic illustration of a Gaussian conditional distribution for t
-    given x, in which the mean is given by the polynomial function y(x, w) and
-    the variance is given by sigma^2.
+    Figure 2.11: Probabilistic Linear Regression with Gaussian Noise.
+    Shows:
+      - Synthetic data points (blue dots) scattered with Gaussian noise
+      - Regression curve y(x, w) in red
+      - Vertical line at x_0
+      - Vertically oriented Gaussian density p(t | x_0, w, sigma^2) in blue
+      - Axes labeled x and t
+      - Annotations: y(x, w), x_0, p(t | x_0, w, sigma^2)
     """
     rng = np.random.default_rng(42)
+    N = 50
+    x_data = rng.uniform(-1.0, 1.0, size=N)
 
-    # Generate synthetic training points around a smooth polynomial
-    N = 35
-    x_train = np.sort(rng.uniform(0.1, 2.9, N))
-    # True underlying curve: smooth cubic polynomial
-    true_poly = lambda x: 0.2 + 0.9 * x - 0.45 * x**2 + 0.15 * x**3
-    noise_sigma = 0.14
-    t_train = true_poly(x_train) + rng.normal(0, noise_sigma, N)
+    # Underlying nonlinear curve: gentle inflection in middle, curves up on right, down on left
+    noise_sigma = 0.18
+    y_true_func = lambda x: 0.7 * (x**3) + 0.1 * np.sin(np.pi * x)
+    t_data = y_true_func(x_data) + rng.normal(0, noise_sigma, size=N)
 
-    # Fit polynomial model of degree 3
+    # Fit a degree-3 regression model
     model = GaussianLinearRegression(degree=3)
-    model.fit(x_train, t_train)
+    model.fit(x_data, t_data)
 
-    x_dense = np.linspace(0.05, 3.0, 400)
-    y_dense, _ = model.predict(x_dense)
+    x_line = np.linspace(-1.05, 1.05, 300)
+    y_line, _ = model.predict(x_line)
 
-    fig, ax = plt.subplots(figsize=(6, 5), dpi=300)
+    fig, ax = plt.subplots(figsize=(6, 5.2), dpi=300)
 
-    # Axes with arrows
-    for s in ['top', 'right', 'left', 'bottom']:
-        ax.spines[s].set_visible(False)
+    # Scatter synthetic data points in blue
+    ax.scatter(x_data, t_data, color='#0000ff', s=24, zorder=3)
 
+    # Regression curve in red
+    ax.plot(x_line, y_line, color='red', linewidth=2.0, zorder=4)
+
+    # Evaluation point x_0
+    x0 = -0.05
+    y0, sigma_ml = model.predict(np.array([x0]))
+    y0 = y0[0]
+
+    # Vertical grey line at x_0
+    ax.plot([x0, x0], [-0.85, 0.85], color='#888888', linewidth=1.5, zorder=2)
+
+    # Vertical Gaussian density at x_0
+    # Bell curve points outwards (to the right) along x
+    t_range = np.linspace(y0 - 3.5 * sigma_ml, y0 + 3.5 * sigma_ml, 300)
+    # Density values
+    p_t = (1.0 / (np.sqrt(2 * np.pi) * sigma_ml)) * np.exp(-0.5 * ((t_range - y0) / sigma_ml)**2)
+    p_t = p_t - p_t[0]  # ensure ends touch x0 exactly
+    # Scale density for visual proportion
+    scale_factor = 0.12 / np.max(p_t)
+    x_curve = x0 + p_t * scale_factor
+
+    # Plot vertical Gaussian bell curve in blue
+    ax.plot(x_curve, t_range, color='#0000ff', linewidth=2.0, zorder=5)
+
+    # Axis arrows
     ax.annotate(
-        '', xy=(3.3, 0), xytext=(0, 0),
-        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=14)
+        '', xy=(1.15, -0.85), xytext=(-1.12, -0.85),
+        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=15)
     )
-    ax.text(3.35, 0, r'$x$', fontsize=13, ha='left', va='center')
-
     ax.annotate(
-        '', xy=(0, 2.05), xytext=(0, 0),
-        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=14)
+        '', xy=(-1.1, 0.95), xytext=(-1.1, -0.85),
+        arrowprops=dict(arrowstyle="-|>", color="black", lw=1.5, mutation_scale=15)
     )
-    ax.text(0.02, 2.08, r'$t$', fontsize=13, ha='center', va='bottom')
 
-    # Data points in blue
-    ax.scatter(x_train, t_train, color='#1f77b4', s=25, zorder=3)
+    # Axis labels
+    ax.text(1.15, -0.92, r'$x$', color='black', fontsize=14, ha='center', va='top')
+    ax.text(-1.15, 0.95, r'$t$', color='black', fontsize=14, ha='right', va='center')
 
-    # Regression curve y(x, w) in red
-    ax.plot(x_dense, y_dense, color='red', linewidth=2.0, zorder=4)
-    # Place label y(x, w) slightly above the curve near x=2.5
-    ax.text(2.55, 1.72, r'$y(x, \mathbf{w})$', color='black', fontsize=12, ha='left', va='bottom')
+    # Annotations matching Figure 2.11
+    ax.text(x0, -0.92, r'$x_0$', color='black', fontsize=13, ha='center', va='top')
+    ax.text(0.9, 0.72, r'$y(x, \mathbf{w})$', color='black', fontsize=13, ha='right', va='bottom')
+    ax.text(x0 + 0.05, y0 - 0.35, r'$p(t \mid x_0, \mathbf{w}, \sigma^2)$', color='black', fontsize=12, ha='left', va='center')
 
-    # Vertical conditional slice at x0
-    x0 = 2.05
-    y0, _ = model.predict(np.array([x0]))
-    y0 = float(y0[0])
-
-    # Vertical slice line from baseline y=0 up to y=1.75
-    ax.plot([x0, x0], [0, 1.75], color='#555555', linewidth=1.2, zorder=2)
-    ax.text(x0, -0.1, r'$x_0$', fontsize=13, ha='center', va='top')
-
-    # Draw Gaussian bell curve along vertical line at x0 (rotated 90 deg)
-    t_slice = np.linspace(y0 - 3.2 * noise_sigma, y0 + 3.2 * noise_sigma, 400)
-    gauss_slice = Gaussian1D(mu=y0, sigma2=noise_sigma**2)
-    pdf_vals = gauss_slice.pdf(t_slice)
-    # Scale density horizontally for visual display
-    h_scale = 0.12 / np.max(pdf_vals)
-    x_curve = x0 + pdf_vals * h_scale
-
-    # Plot rotated Gaussian in blue
-    ax.plot(x_curve, t_slice, color='blue', linewidth=1.8, zorder=5)
-
-    # Label for conditional distribution
-    ax.text(x0 + 0.14, y0 - 0.28, r'$p(t|x_0, \mathbf{w}, \sigma^2)$', fontsize=11, color='black', ha='left', va='center')
-
-    ax.set_xlim(-0.1, 3.5)
-    ax.set_ylim(-0.15, 2.15)
+    # Limits and spines
+    ax.set_xlim(-1.18, 1.25)
+    ax.set_ylim(-1.0, 1.05)
     ax.set_xticks([])
     ax.set_yticks([])
+    for s in ['top', 'right', 'left', 'bottom']:
+        ax.spines[s].set_visible(False)
     ax.grid(False)
 
     plt.tight_layout()
-
     for sdir in save_dirs:
-        out_path = os.path.join(sdir, "fig2_11_linear_regression_conditional_gaussian.png")
-        save_plot(fig, out_path)
-
+        os.makedirs(sdir, exist_ok=True)
+        save_plot(fig, os.path.join(sdir, "fig2_11_linear_regression.png"))
+        save_plot(fig, os.path.join(sdir, "fig2_11_linear_regression_conditional_gaussian.png"))
     plt.close(fig)
 
 
-def generate_all_figures():
-    """Generate all figures for Section 2.3."""
-    print("Generating Figure 2.8...")
-    generate_figure_2_8()
-    print("Generating Figure 2.9...")
-    generate_figure_2_9()
-    print("Generating Figure 2.10...")
-    generate_figure_2_10()
-    print("Generating Figure 2.11...")
-    generate_figure_2_11()
-    print("All Chapter 2 Section 2.3 figures generated successfully!")
-
-
 if __name__ == "__main__":
-    generate_all_figures()
+    generate_figure_2_8()
+    generate_figure_2_9()
+    generate_figure_2_10()
+    generate_figure_2_11()
+    print("Figures 2.8, 2.9, 2.10, and 2.11 successfully generated and saved!")

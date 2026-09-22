@@ -754,3 +754,349 @@ class GaussianLinearRegression:
         sse = np.sum(residuals ** 2)
         ll = -0.5 * sse / self.sigma2_ml - 0.5 * N * np.log(self.sigma2_ml) - 0.5 * N * np.log(2.0 * np.pi)
         return float(ll)
+
+
+# ==============================================================================
+# Chapter 2 Section 2.4: Transformation of Densities
+# ==============================================================================
+
+def transform_density_1d(
+    px_func: Callable[[Union[float, np.ndarray]], Union[float, np.ndarray]],
+    g_func: Callable[[Union[float, np.ndarray]], Union[float, np.ndarray]],
+    g_prime_func: Callable[[Union[float, np.ndarray]], Union[float, np.ndarray]],
+    y: Union[float, np.ndarray]
+) -> Union[float, np.ndarray]:
+    """
+    Compute transformed 1D probability density py(y) according to Bishop (2024) Eq (2.71):
+      py(y) = px(g(y)) * |g'(y)|
+    where x = g(y).
+    """
+    y_arr = np.asarray(y, dtype=np.float64)
+    x_val = g_func(y_arr)
+    px_val = px_func(x_val)
+    abs_det = np.abs(g_prime_func(y_arr))
+    res = px_val * abs_det
+    if np.isscalar(y):
+        return float(res)
+    return res
+
+
+class DensityTransformation1DExample:
+    """
+    Encapsulates the 1D density transformation example from Section 2.4 and Figure 2.12.
+
+    Variables and Mapping:
+      - x follows a Gaussian distribution: px(x) = N(x | mu, sigma^2) (default mu=6.0, sigma=1.0)
+      - Change of variables: x = g(y) = ln(y) - ln(1 - y) + 5 (Eq 2.74, logit shifted by 5)
+      - Inverse mapping: y = g^{-1}(x) = 1 / (1 + exp(-x + 5)) = sigmoid(x - 5) (Eq 2.75)
+      - Derivative: g'(y) = 1 / (y * (1 - y))
+      - Second derivative: g''(y) = (2*y - 1) / (y^2 * (1 - y)^2)
+      - Naive function transformation: px(g(y))
+      - True density transformation: py(y) = px(g(y)) * |g'(y)| (Eq 2.71)
+      - Derivative of py(y) (Eq 2.73):
+          py'(y) = s * px'(g(y)) * (g'(y))^2 + s * px(g(y)) * g''(y)
+    """
+    def __init__(self, mu: float = 6.0, sigma: float = 1.0, offset: float = 5.0):
+        self.mu = float(mu)
+        self.sigma = float(sigma)
+        self.sigma2 = self.sigma ** 2
+        self.offset = float(offset)
+
+    def px(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Gaussian density px(x) = N(x | mu, sigma^2)."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        norm = 1.0 / (np.sqrt(2.0 * np.pi) * self.sigma)
+        val = norm * np.exp(-0.5 * ((x_arr - self.mu) / self.sigma) ** 2)
+        if np.isscalar(x):
+            return float(val)
+        return val
+
+    def px_prime(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Derivative of Gaussian density d px(x) / dx = - ((x - mu) / sigma^2) * px(x)."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        val = - ((x_arr - self.mu) / self.sigma2) * self.px(x_arr)
+        if np.isscalar(x):
+            return float(val)
+        return val
+
+    def g(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Forward mapping x = g(y) = ln(y) - ln(1 - y) + offset (Eq 2.74)."""
+        y_arr = np.asarray(y, dtype=np.float64)
+        val = np.log(y_arr) - np.log(1.0 - y_arr) + self.offset
+        if np.isscalar(y):
+            return float(val)
+        return val
+
+    def g_inv(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Inverse mapping y = g^{-1}(x) = 1 / (1 + exp(-(x - offset))) (Eq 2.75)."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        val = 1.0 / (1.0 + np.exp(-(x_arr - self.offset)))
+        if np.isscalar(x):
+            return float(val)
+        return val
+
+    def g_prime(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Derivative dg/dy = 1 / (y * (1 - y))."""
+        y_arr = np.asarray(y, dtype=np.float64)
+        val = 1.0 / (y_arr * (1.0 - y_arr))
+        if np.isscalar(y):
+            return float(val)
+        return val
+
+    def g_double_prime(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Second derivative d^2g/dy^2 = (2*y - 1) / (y * (1 - y))^2."""
+        y_arr = np.asarray(y, dtype=np.float64)
+        val = (2.0 * y_arr - 1.0) / ((y_arr * (1.0 - y_arr)) ** 2)
+        if np.isscalar(y):
+            return float(val)
+        return val
+
+    def px_transformed_as_function(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Naive function transformation px(g(y)). Peak occurs at y = g^{-1}(mu)."""
+        y_arr = np.asarray(y, dtype=np.float64)
+        return self.px(self.g(y_arr))
+
+    def py(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """True transformed probability density py(y) = px(g(y)) * |g'(y)| (Eq 2.71)."""
+        y_arr = np.asarray(y, dtype=np.float64)
+        return self.px(self.g(y_arr)) * np.abs(self.g_prime(y_arr))
+
+    def py_prime(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """
+        Derivative of transformed density d py(y) / dy (Eq 2.73):
+          py'(y) = s * px'(g(y)) * (g'(y))^2 + s * px(g(y)) * g''(y)
+        Here s = +1 because g'(y) > 0 for y in (0, 1).
+        """
+        y_arr = np.asarray(y, dtype=np.float64)
+        x_val = self.g(y_arr)
+        px_val = self.px(x_val)
+        px_prime_val = self.px_prime(x_val)
+        gp = self.g_prime(y_arr)
+        gpp = self.g_double_prime(y_arr)
+        val = px_prime_val * (gp ** 2) + px_val * gpp
+        if np.isscalar(y):
+            return float(val)
+        return val
+
+    def mode_x(self) -> float:
+        """Mode of Gaussian density px(x), which is mu."""
+        return self.mu
+
+    def mode_function_transform(self) -> float:
+        """Mode of naive function transform px(g(y)), which is g^{-1}(mu)."""
+        return float(self.g_inv(self.mu))
+
+    def mode_py(self) -> float:
+        """
+        Mode of true density py(y).
+        Satisfies Eq (2.73) with py'(y) = 0:
+          (g(y) - mu) / sigma^2 = (2y - 1)
+        """
+        from scipy.optimize import root_scalar
+        def f_root(y_val):
+            return self.g(y_val) - self.mu - self.sigma2 * (2.0 * y_val - 1.0)
+        sol = root_scalar(f_root, bracket=[0.5, 0.999], method='brentq')
+        return float(sol.root)
+
+    def sample(self, N: int = 50000, seed: Optional[int] = None) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Sample N points from px(x) and transform via y = g^{-1}(x).
+        Returns (x_samples, y_samples).
+        """
+        rng = np.random.default_rng(seed)
+        x_samples = rng.normal(loc=self.mu, scale=self.sigma, size=N)
+        y_samples = self.g_inv(x_samples)
+        return x_samples, y_samples
+
+
+class LinearTransformation1D:
+    """
+    Demonstrates that mode transformation equivariance hat{x} = g(hat{y}) holds
+    for LINEAR transformations x = g(y) = a * y + b, because g''(y) = 0 vanishes (Eq 2.73).
+    """
+    def __init__(self, a: float = 2.5, b: float = 1.0, mu_x: float = 4.0, sigma_x: float = 1.2):
+        if a == 0:
+            raise ValueError("Linear transformation slope 'a' cannot be zero.")
+        self.a = float(a)
+        self.b = float(b)
+        self.mu_x = float(mu_x)
+        self.sigma_x = float(sigma_x)
+
+    def g(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Forward mapping x = g(y) = a * y + b."""
+        return self.a * np.asarray(y, dtype=np.float64) + self.b
+
+    def g_inv(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Inverse mapping y = g^{-1}(x) = (x - b) / a."""
+        return (np.asarray(x, dtype=np.float64) - self.b) / self.a
+
+    def g_prime(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """First derivative g'(y) = a."""
+        return np.full_like(y, self.a, dtype=np.float64) if hasattr(y, "__len__") else float(self.a)
+
+    def g_double_prime(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Second derivative g''(y) = 0."""
+        return np.zeros_like(y, dtype=np.float64) if hasattr(y, "__len__") else 0.0
+
+    def px(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Gaussian density px(x) = N(x | mu_x, sigma_x^2)."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        norm = 1.0 / (np.sqrt(2.0 * np.pi) * self.sigma_x)
+        return norm * np.exp(-0.5 * ((x_arr - self.mu_x) / self.sigma_x) ** 2)
+
+    def py(self, y: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Transformed density py(y) = px(g(y)) * |a|."""
+        return self.px(self.g(y)) * abs(self.a)
+
+    def mode_x(self) -> float:
+        """Mode of px(x), which is mu_x."""
+        return self.mu_x
+
+    def mode_y(self) -> float:
+        """
+        Mode of py(y). For linear transformation, hat{y} = g^{-1}(hat{x}) = (mu_x - b) / a.
+        """
+        return float(self.g_inv(self.mu_x))
+
+
+class BivariateTransformation2DExample:
+    """
+    Encapsulates the 2D density transformation example from Section 2.4.1 and Figure 2.13.
+
+    Transformation Equations (Eq 2.78, 2.79):
+      y1 = x1 + tanh(5 * x1)
+      y2 = x2 + tanh(5 * x2) + (x1^3) / 3
+
+    Jacobian Matrix (Exercise 2.20):
+      J = [ [ 1 + 5*sech^2(5*x1),           0           ],
+            [          x1^2,        1 + 5*sech^2(5*x2) ] ]
+
+    Jacobian Determinant:
+      det J = (1 + 5*sech^2(5*x1)) * (1 + 5*sech^2(5*x2))
+
+    Base Distribution px(x):
+      Standard 2D Gaussian: N(x | 0, sigma^2 * I) (default sigma=0.4)
+    """
+    def __init__(self, sigma: float = 0.4):
+        self.sigma = float(sigma)
+        self.sigma2 = self.sigma ** 2
+        # Initialize fine 1D spline for ultra-fast vector inversion
+        from scipy.interpolate import CubicSpline
+        u_fine = np.linspace(-6.0, 6.0, 4000)
+        v_fine = u_fine + np.tanh(5.0 * u_fine)
+        self._inv_spline = CubicSpline(v_fine, u_fine)
+
+    def forward(self, x1: np.ndarray, x2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Evaluate forward transformation y = f(x) (Eq 2.78, 2.79)."""
+        x1_arr = np.asarray(x1, dtype=np.float64)
+        x2_arr = np.asarray(x2, dtype=np.float64)
+        y1 = x1_arr + np.tanh(5.0 * x1_arr)
+        y2 = x2_arr + np.tanh(5.0 * x2_arr) + (x1_arr ** 3) / 3.0
+        return y1, y2
+
+    def jacobian_matrix(self, x1: float, x2: float) -> np.ndarray:
+        """
+        Evaluate 2x2 Jacobian matrix J_yx = d(y1, y2) / d(x1, x2) at (x1, x2) (Exercise 2.20).
+        """
+        x1_f = float(x1)
+        x2_f = float(x2)
+        sech1_sq = 1.0 / (np.cosh(5.0 * x1_f) ** 2)
+        sech2_sq = 1.0 / (np.cosh(5.0 * x2_f) ** 2)
+        j11 = 1.0 + 5.0 * sech1_sq
+        j12 = 0.0
+        j21 = x1_f ** 2
+        j22 = 1.0 + 5.0 * sech2_sq
+        return np.array([[j11, j12], [j21, j22]], dtype=np.float64)
+
+    def jacobian_det(self, x1: np.ndarray, x2: np.ndarray) -> np.ndarray:
+        """
+        Evaluate Jacobian determinant det J_yx = (1 + 5*sech^2(5*x1)) * (1 + 5*sech^2(5*x2)).
+        """
+        x1_arr = np.asarray(x1, dtype=np.float64)
+        x2_arr = np.asarray(x2, dtype=np.float64)
+        sech1_sq = 1.0 / (np.cosh(5.0 * x1_arr) ** 2)
+        sech2_sq = 1.0 / (np.cosh(5.0 * x2_arr) ** 2)
+        det_j = (1.0 + 5.0 * sech1_sq) * (1.0 + 5.0 * sech2_sq)
+        return det_j
+
+    def log_jacobian_det(self, x1: np.ndarray, x2: np.ndarray) -> np.ndarray:
+        """Evaluate log determinant ln |det J_yx|."""
+        x1_arr = np.asarray(x1, dtype=np.float64)
+        x2_arr = np.asarray(x2, dtype=np.float64)
+        sech1_sq = 1.0 / (np.cosh(5.0 * x1_arr) ** 2)
+        sech2_sq = 1.0 / (np.cosh(5.0 * x2_arr) ** 2)
+        j11 = 1.0 + 5.0 * sech1_sq
+        j22 = 1.0 + 5.0 * sech2_sq
+        return np.log(j11) + np.log(j22)
+
+    def inverse_single(self, y1: float, y2: float) -> Tuple[float, float]:
+        """
+        Compute inverse mapping (x1, x2) = f^{-1}(y1, y2) using exact 1D root finding.
+        Because J is lower-triangular:
+          y1 = x1 + tanh(5*x1) is strictly monotonic in x1 -> solve for x1.
+          y2 - x1^3/3 = x2 + tanh(5*x2) is strictly monotonic in x2 -> solve for x2.
+        """
+        from scipy.optimize import root_scalar
+        y1_f = float(y1)
+        y2_f = float(y2)
+
+        def eq1(x):
+            return x + np.tanh(5.0 * x) - y1_f
+        x1_sol = root_scalar(eq1, bracket=[y1_f - 1.05, y1_f + 1.05], method='brentq').root
+
+        target2 = y2_f - (x1_sol ** 3) / 3.0
+        def eq2(x):
+            return x + np.tanh(5.0 * x) - target2
+        x2_sol = root_scalar(eq2, bracket=[target2 - 1.05, target2 + 1.05], method='brentq').root
+
+        return float(x1_sol), float(x2_sol)
+
+    def inverse(self, y1: np.ndarray, y2: np.ndarray, use_spline: bool = True) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Vectorized evaluation of inverse mapping (x1, x2) = f^{-1}(y1, y2).
+        If use_spline is True, evaluates instantaneously using high-precision cubic spline.
+        """
+        y1_arr = np.asarray(y1, dtype=np.float64)
+        y2_arr = np.asarray(y2, dtype=np.float64)
+        if use_spline:
+            x1 = self._inv_spline(y1_arr)
+            target2 = y2_arr - (x1 ** 3) / 3.0
+            x2 = self._inv_spline(target2)
+            return x1, x2
+
+        shape = y1_arr.shape
+        y1_flat = y1_arr.ravel()
+        y2_flat = y2_arr.ravel()
+        x1_out = np.empty_like(y1_flat)
+        x2_out = np.empty_like(y2_flat)
+        for i in range(len(y1_flat)):
+            x1_out[i], x2_out[i] = self.inverse_single(y1_flat[i], y2_flat[i])
+        return x1_out.reshape(shape), x2_out.reshape(shape)
+
+    def px(self, x1: np.ndarray, x2: np.ndarray) -> np.ndarray:
+        """Standard 2D isotropic Gaussian density N(x | 0, sigma^2 * I)."""
+        x1_arr = np.asarray(x1, dtype=np.float64)
+        x2_arr = np.asarray(x2, dtype=np.float64)
+        norm = 1.0 / (2.0 * np.pi * self.sigma2)
+        return norm * np.exp(-0.5 * (x1_arr ** 2 + x2_arr ** 2) / self.sigma2)
+
+    def py(self, y1: np.ndarray, y2: np.ndarray, use_spline: bool = True) -> np.ndarray:
+        """
+        Transformed 2D density py(y) = px(f^{-1}(y)) / |det J_yx(f^{-1}(y))| (Eq 2.76).
+        """
+        x1, x2 = self.inverse(y1, y2, use_spline=use_spline)
+        px_val = self.px(x1, x2)
+        det_j = self.jacobian_det(x1, x2)
+        return px_val / np.abs(det_j)
+
+    def sample(self, N: int = 800, seed: Optional[int] = 42) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Sample N points from px(x) and transform to y-space via forward mapping.
+        Returns (x1_samples, x2_samples, y1_samples, y2_samples).
+        """
+        rng = np.random.default_rng(seed)
+        x1_samples = rng.normal(loc=0.0, scale=self.sigma, size=N)
+        x2_samples = rng.normal(loc=0.0, scale=self.sigma, size=N)
+        y1_samples, y2_samples = self.forward(x1_samples, x2_samples)
+        return x1_samples, x2_samples, y1_samples, y2_samples
+
