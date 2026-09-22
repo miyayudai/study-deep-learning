@@ -3,4 +3,5 @@ Common utilities for Deep Learning: Foundations and Concepts (Bishop & Bishop 20
 """
 from . import linear_models
 from . import decision_theory
+from . import bias_variance
 
