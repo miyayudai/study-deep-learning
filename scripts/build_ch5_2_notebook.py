@@ -1,57 +1,72 @@
 """
-Script to generate the complete, publication-quality Jupyter Notebook for Section 5.2:
-5/5.2_Decision_Theory.ipynb.
-Covers all subsections 5.2.1 to 5.2.6, full mathematical derivations, figures 5.5 to 5.11,
-and comprehensive verification tests.
+Build Chapter 5 Section 5.2 Jupyter Notebook:
+5/5.2_Decision_Theory.ipynb
 """
-import os
 import nbformat as nbf
+import os
 
-def build_notebook():
-    nb = nbf.v4.new_notebook()
-    nb.metadata = {
-        "kernelspec": {
-            "display_name": "Python 3 (ipykernel)",
-            "language": "python",
-            "name": "python3"
-        },
-        "language_info": {
-            "codemirror_mode": {"name": "ipython", "version": 3},
-            "file_extension": ".py",
-            "mimetype": "text/x-python",
-            "name": "python",
-            "nbconvert_exporter": "python",
-            "pygments_lexer": "ipython3",
-            "version": "3.11.12"
-        }
-    }
+nb = nbf.v4.new_notebook()
 
-    # =====================================================================
-    # Cell 0: Title & Executive Overview
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_markdown_cell("""# 第5章 単層ネットワーク: 分類 (Single-layer Networks: Classification)
+cells = []
+
+# Cell 1: Title & Overview
+cell_1_md = """# 第5章 単層ネットワーク: 分類 (Single-layer Networks: Classification)
 ## 5.2 決定理論 (Decision Theory)
 
 ### 本節の目的と概要
-本ノートブックでは、Christopher M. Bishop & Hugh Bishop による『*Deep Learning: Foundations and Concepts*』(2024年刊) の **Chapter 5: Single-layer Networks: Classification** のうち、**Section 5.2: Decision Theory** を体系的かつ厳密に解説・実装・検証します。
+本ノートブックでは、Christopher M. Bishop & Hugh Bishop による『*Deep Learning: Foundations and Concepts*』(2024年刊) の **Chapter 5: Single-layer Networks: Classification** における核心的基盤である **Section 5.2: Decision Theory (決定理論)** を体系的かつ数学的に厳密に解説・実装・検証します。
 
-機械学習の予測プロセスは、**推論段階（Inference stage）** と **決定段階（Decision stage）** の2つに明確に分離されます。
-- **推論段階**: 訓練データから結合確率分布 $p(\\mathbf{x}, \\mathcal{C}_k)$ または事後確率分布 $p(\\mathcal{C}_k|\\mathbf{x})$ を学習・推定する。
-- **決定段階**: 与えられた確率分布と損失行列（評価基準）に基づき、期待損失を最小化する最適なクラス割り当て行動を選択する。
+本節では、推論（Inference）によって得られた確率分布（または事後確率）に基づき、いかにして最適な「決定（Decision）」を下すかを定式化します。
 
-本節では、分類における決定理論の核心を成す以下の6つの小節を完全網羅します：
+目次：
+- **5.2.1 誤分類率の最小化 (Misclassification rate)**:
+  - 決定領域 $\\mathcal{R}_k$ と決定境界（decision surface）
+  - 2クラスにおける誤分類確率 $p(\\text{mistake}) = \\int_{\\mathcal{R}_1} p(\\mathbf{x}, \\mathcal{C}_2) d\\mathbf{x} + \\int_{\\mathcal{R}_2} p(\\mathbf{x}, \\mathcal{C}_1) d\\mathbf{x}$ (式 5.20)
+  - $K$ クラスにおける正解率最大化 (式 5.21)
+  - 最小誤分類率ルール：事後確率最大クラスへの割り当て $\\arg\\max_k p(\\mathcal{C}_k|\\mathbf{x})$
+  - **Figure 5.5**: 2クラス同時確率分布と誤分類領域（境界 $\\hat{x}$ を最適点 $x_0$ へ移動させた際に赤領域が消滅する幾何学的機構の図解）
+- **5.2.2 期待損失の最小化 (Expected loss)**:
+  - 単純な誤分類数最小化の限界（癌診断における非対称性）
+  - 損失行列（Loss Matrix / Cost Matrix） $L_{kj}$ の定義
+  - 期待損失 $\\mathbb{E}[L] = \\sum_k \\sum_j \\int_{\\mathcal{R}_j} L_{kj} p(\\mathbf{x}, \\mathcal{C}_k) d\\mathbf{x}$ (式 5.22)
+  - 最適決定規則：$\\arg\\min_j \\sum_k L_{kj} p(\\mathcal{C}_k|\\mathbf{x})$ (式 5.23)
+  - **Figure 5.6**: 癌診断の損失行列例（正常を癌と誤診する損失1に対し、癌を正常と見落とす損失100）
+- **5.2.3 棄却オプション (The reject option)**:
+  - 事後確率が拮抗する曖昧な領域での自動判定回避と専門家・生検への委ね
+  - 判定閾値 $\\theta$ の導入：$\\max_k p(\\mathcal{C}_k|\\mathbf{x}) \\le \\theta$ ならば棄却
+  - 閾値の範囲 $\\theta \\in [1/K, 1]$ と棄却率の制御
+  - **Figure 5.7**: 事後確率曲線と棄却領域（reject region）の可視化
+- **5.2.4 推論と決定 (Inference and decision)**:
+  - 3つの分類アプローチの比較：
+    (a) 生成モデル（Generative models）：$p(\\mathbf{x}|\\mathcal{C}_k)$ と $p(\\mathcal{C}_k)$ をモデル化し、ベイズ則で事後確率を求める
+    (b) 識別モデル（Discriminative models）：事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ を直接モデル化する
+    (c) 識別関数（Discriminant functions）：入力 $\\mathbf{x}$ を直接決定に写像する
+  - 事後確率を計算する4大メリット：
+    1. リスクの最小化（損失行列の変更への即座の追従）
+    2. 棄却オプションの容易な適用
+    3. クラス事前確率の補正（データ収集の偏り・サンプリングバイアスの補正、式 5.24 - 5.27）
+    4. 異種情報の統合・ナイーブベイズモデル (式 5.26)
+  - **Figure 5.8**: クラス条件付き密度（混合ガウス分布など）と事後確率曲線の対比（決定境界に無関係なクラスタ構造の存在）
+- **5.2.5 分類器の精度 (Classifier accuracy)**:
+  - 混同行列（Confusion Matrix）の記法：$N_{\\text{TP}}, N_{\\text{FP}}, N_{\\text{TN}}, N_{\\text{FN}}$
+  - 総サンプル数 $N$ (式 5.28)
+  - 正解率（Accuracy） (式 5.29) とその落とし穴（不均衡データでの99.9%ダミー分類器）
+  - 適合率（Precision） (式 5.30)
+  - 再現率（Recall）/ 感度（Sensitivity）/ TPR (式 5.31)
+  - 特異度（Specificity）/ TNR (式 5.32)
+  - 偽陽性率（False Positive Rate: FPR） (式 5.33)
+  - **Figure 5.9**: 混同行列の定式化と用語整理
+- **5.2.6 ROC曲線 (ROC curve)**:
+  - 決定境界の移動と第1種の過誤・第2種の過誤のトレードオフ
+  - 領域分割（A, B, C, D, E）と混同行列要素の積分表現 (式 5.34 - 5.37)
+  - **Figure 5.10**: 決定境界移動に伴う各誤差成分の幾何学的推移
+  - 受信者動作特性（ROC）曲線とAUC（Area Under the Curve）
+  - $F_1$ スコア（調和平均）の定義と意義 (式 5.38 - 5.39)
+  - **Figure 5.11**: 優れた分類器と劣る分類器のROC曲線、およびランダム推測ベースラインの比較"""
+cells.append(nbf.v4.new_markdown_cell(cell_1_md))
 
-1. **5.2.1 誤分類率の最小化 (Misclassification rate)**: 0/1 損失下で誤分類確率 $p(\\mathrm{mistake})$ を最小化する事後確率最大化基準の厳密導出 (**Figure 5.5**, 式 5.20 - 5.21)。
-2. **5.2.2 期待損失の最小化 (Expected loss)**: 非対称なコスト構造を表現する損失行列 $L_{kj}$（がん診断問題など）と期待損失 $\\mathbb{E}[L]$ の定式化 (**Figure 5.6**, 式 5.22 - 5.23)。
-3. **5.2.3 棄却オプション (The reject option)**: 事後確率の最大値が閾値 $\\theta$ を下回る不確実な領域で判定を留保し、専門家の生検などに委ねる安全設計 (**Figure 5.7**)。
-4. **5.2.4 推論と決定の分離 (Inference and decision)**: 生成モデル・識別モデル・識別関数の長所短所の比較、動的リスク最小化、および人工的クラス事前確率の補正手法 (**Figure 5.8**, 式 5.24 - 5.27)。
-5. **5.2.5 分類器の精度評価尺度 (Classifier accuracy)**: 混同行列 ($TP, FP, TN, FN$)、Accuracy、Precision、Recall、Specificity、False Positive Rate、F-score の数学的定義と不変量関係 (**Figure 5.9**, 式 5.28 - 5.37)。
-6. **5.2.6 ROC 曲線 (ROC curve)**: 決定閾値 $\\widehat{x}$ の連続的走査に伴う $(FPR, TPR)$ のトレードオフ軌跡、AUC (Area Under Curve) の計算、および誤差領域 $A, B, C, D, E$ の幾何学的解釈 (**Figure 5.10, Figure 5.11**, 式 5.38 - 5.39)。"""))
-
-    # =====================================================================
-    # Cell 1: Imports and Environment Setup
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_code_cell("""import os
+# Cell 2: Setup Code
+cell_2_code = """import os
 import sys
 import numpy as np
 import scipy.stats as stats
@@ -63,7 +78,6 @@ project_root = os.path.abspath('..')
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from common.plot_utils import setup_style
 from common.classification_decision_theory import (
     optimal_decision_rule_misclassification,
     compute_expected_loss,
@@ -82,383 +96,502 @@ from common.classification_decision_theory import (
     generate_all_section_5_2_figures,
 )
 
-setup_style()
-print("環境セットアップ完了: common.classification_decision_theory を正常に読み込みました。")"""))
+print("Environment and modules successfully imported.")"""
+cells.append(nbf.v4.new_code_cell(cell_2_code))
 
-    # =====================================================================
-    # Cell 2: Section 5.2.1 Misclassification rate Theory
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_markdown_cell("""---
-### 5.2.1 Misclassification rate
+# Cell 3: Section 5.2.1 Markdown
+cell_3_md = """---
+### 5.2.1 誤分類率の最小化 (Misclassification rate)
 
-分類器の最も単純な目標は、**誤分類の総数を可能な限り少なくする（誤分類率を最小化する）** ことです。
-決定規則は入力空間 $\\mathbb{R}^D$ をクラス数と同数の決定領域 $\\mathcal{R}_k$ に分割し、$\\mathbf{x} \\in \\mathcal{R}_k$ のときクラス $\\mathcal{C}_k$ に割り当てます。
+#### 1. 決定領域と決定境界
+分類規則は、入力空間をクラス $\\mathcal{C}_k$ ごとの決定領域（decision regions） $\\mathcal{R}_k$ に分割します。領域内のすべての入力ベクトル $\\mathbf{x} \\in \\mathcal{R}_k$ はクラス $\\mathcal{C}_k$ に割り当てられます。領域間の境界は決定境界（decision surface）と呼ばれます。各決定領域は必ずしも連結である必要はなく、複数の互いに素な領域から構成されていても構いません。
 
-#### 1. 2クラス問題における誤り確率の定式化
-2クラス分類（例：正常 $\\mathcal{C}_1$ とがん $\\mathcal{C}_2$）において、誤りは以下の2つのケースで発生します：
-1. 真のクラスが $\\mathcal{C}_2$ である入力 $\\mathbf{x}$ が $\\mathcal{R}_1$ に割り当てられた場合
-2. 真のクラスが $\\mathcal{C}_1$ である入力 $\\mathbf{x}$ が $\\mathcal{R}_2$ に割り当てられた場合
+#### 2. 2クラス問題における誤分類確率
+2つのクラス $\\mathcal{C}_1, \\mathcal{C}_2$ を考えるとき、誤りは「$\\mathcal{C}_1$ の点が $\\mathcal{C}_2$ に割り当てられる」または「$\\mathcal{C}_2$ の点が $\\mathcal{C}_1$ に割り当てられる」ときに生じます。この誤分類確率 $p(\\text{mistake})$ は以下のように定式化されます：
 
-誤りが発生する総合確率は次式で与えられます：
-$$p(\\mathrm{mistake}) = p(\\mathbf{x} \\in \\mathcal{R}_1, \\mathcal{C}_2) + p(\\mathbf{x} \\in \\mathcal{R}_2, \\mathcal{C}_1) = \\int_{\\mathcal{R}_1} p(\\mathbf{x}, \\mathcal{C}_2) d\\mathbf{x} + \\int_{\\mathcal{R}_2} p(\\mathbf{x}, \\mathcal{C}_1) d\\mathbf{x} \\tag{5.20}$$
+$$
+p(\\text{mistake}) = p(\\mathbf{x} \\in \\mathcal{R}_1, \\mathcal{C}_2) + p(\\mathbf{x} \\in \\mathcal{R}_2, \\mathcal{C}_1) = \\int_{\\mathcal{R}_1} p(\\mathbf{x}, \\mathcal{C}_2) d\\mathbf{x} + \\int_{\\mathcal{R}_2} p(\\mathbf{x}, \\mathcal{C}_1) d\\mathbf{x} \\tag{5.20}
+$$
 
-#### 2. 最適決定境界の導出
-我々は各点 $\\mathbf{x}$ を $\\mathcal{R}_1$ または $\\mathcal{R}_2$ のどちらに割り当てるかを自由に選択できます。
-$p(\\mathrm{mistake})$ を最小化するためには、各 $\\mathbf{x}$ において被積分関数の値が小さい方の領域に割り当てればよいことが自明です：
-- $p(\\mathbf{x}, \\mathcal{C}_1) > p(\\mathbf{x}, \\mathcal{C}_2)$ のとき、$\\mathbf{x} \\in \\mathcal{R}_1$ とする。
-- $p(\\mathbf{x}, \\mathcal{C}_2) > p(\\mathbf{x}, \\mathcal{C}_1)$ のとき、$\\mathbf{x} \\in \\mathcal{R}_2$ とする。
+$p(\\text{mistake})$ を最小化するためには、各点 $\\mathbf{x}$ において被積分関数が小さい方のクラスに割り当てる必要があります。すなわち：
+- $p(\\mathbf{x}, \\mathcal{C}_1) > p(\\mathbf{x}, \\mathcal{C}_2)$ ならば $\\mathbf{x} \\in \\mathcal{R}_1$
+- $p(\\mathbf{x}, \\mathcal{C}_2) > p(\\mathbf{x}, \\mathcal{C}_1)$ ならば $\\mathbf{x} \\in \\mathcal{R}_2$
 
-乗法定理 $p(\\mathbf{x}, \\mathcal{C}_k) = p(\\mathcal{C}_k|\\mathbf{x}) p(\\mathbf{x})$ を用いると、$p(\\mathbf{x})$ は両辺に共通であるため、この最適決定規則は**事後確率が最大となるクラスを選択すること**と同値になります：
-$$\\mathbf{x} \\in \\mathcal{R}_1 \\iff p(\\mathcal{C}_1|\\mathbf{x}) > p(\\mathcal{C}_2|\\mathbf{x})$$
+乗法定理 $p(\\mathbf{x}, \\mathcal{C}_k) = p(\\mathcal{C}_k|\\mathbf{x})p(\\mathbf{x})$ より、共通の因子 $p(\\mathbf{x})$ を消去すると、**事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ が大きい方のクラスに $\\mathbf{x}$ を割り当てることで誤分類率が最小化される** ことが導かれます。
 
-この幾何学的関係が **Figure 5.5** に示されています：
-- (a) 決定境界 $\\widehat{x}$ を交点 $x_0$ より右側に配置した場合、緑色領域（$x < x_0$ の誤り）と青色領域（$x \\ge \\widehat{x}$ の誤り）に加え、**余分な赤色領域（$x_0 < x < \\widehat{x}$ の誤り）** が生じます。
-- (b) 決定境界を2つの分布曲線が交差する $x_0$ に配置したとき（$\\widehat{x} = x_0$）、赤色領域が消滅し、誤分類率は最小となります。
+#### 3. $K$ クラス問題における一般化
+$K$ クラス問題では、正解確率 $p(\\text{correct})$ を最大化することを考えます：
 
-#### 3. $K$ クラスへの拡張
-$K$ クラスの場合、正解確率 $p(\\mathrm{correct})$ を最大化することを考えます：
-$$p(\\mathrm{correct}) = \\sum_{k=1}^K p(\\mathbf{x} \\in \\mathcal{R}_k, \\mathcal{C}_k) = \\sum_{k=1}^K \\int_{\\mathcal{R}_k} p(\\mathbf{x}, \\mathcal{C}_k) d\\mathbf{x} \\tag{5.21}$$
-これも同様に、各 $\\mathbf{x}$ において $p(\\mathbf{x}, \\mathcal{C}_k)$、すなわち事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ が最大となる領域 $\\mathcal{R}_k$ に割り当てることで最大化されます。"""))
+$$
+p(\\text{correct}) = \\sum_{k=1}^K p(\\mathbf{x} \\in \\mathcal{R}_k, \\mathcal{C}_k) = \\sum_{k=1}^K \\int_{\\mathcal{R}_k} p(\\mathbf{x}, \\mathcal{C}_k) d\\mathbf{x} \\tag{5.21}
+$$
 
-    # =====================================================================
-    # Cell 3: Code - Section 5.2.1 Verification & Figure 5.5
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_code_cell("""# 5.2.1 実装検証: 誤分類率の最小化と Figure 5.5 の可視化
+各点 $\\mathbf{x}$ を $p(\\mathbf{x}, \\mathcal{C}_k)$ が最大となる領域 $\\mathcal{R}_k$ に割り当てることで、全体の正解率は最大化されます。これは各 $\\mathbf{x}$ に対し事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ を最大にするクラスを選択するベイズ決定規則と完全に同値です。
+
+#### 4. Figure 5.5 の幾何学的解釈
+下図 **Figure 5.5** は、2クラスの同時確率 $p(x, \\mathcal{C}_1), p(x, \\mathcal{C}_2)$ と決定境界 $\\hat{x}$ を示しています：
+- (a) 境界が最適値 $x_0$ から右にずれた $\\hat{x} > x_0$ の場合：
+  - 緑の領域：$x < x_0$ における $\\mathcal{C}_2$ の誤分類誤差
+  - 赤の領域：$x_0 < x < \\hat{x}$ において本来 $\\mathcal{C}_2$ と判定すべきところを $\\mathcal{C}_1$ と誤判定してしまう **余分な誤差**
+  - 青の領域：$x \\ge \\hat{x}$ における $\\mathcal{C}_1$ の誤分類誤差
+  - 境界 $\\hat{x}$ を動かすと、青と緑の合計面積は一定のまま、赤の余分な誤差領域のみが伸縮します。
+- (b) $\\hat{x} = x_0$（2つの曲線が交差する点）に設定した場合：
+  - **赤の余分な領域が完全に消滅** し、誤分類誤差は（緑＋青）の理論的最小値へと到達します。"""
+cells.append(nbf.v4.new_markdown_cell(cell_3_md))
+
+# Cell 4: Section 5.2.1 Code & Verification
+cell_4_code = """# Figure 5.5 の生成と描画
 fig_5_5 = plot_figure_5_5_joint_probabilities(filepath="result/fig_5_5_joint_probabilities.png")
-plt.show()
+display(fig_5_5)
+plt.close(fig_5_5)
 
-# 数値的積分による誤分類率の閾値依存性の検証
-x_axis = np.linspace(-2.0, 7.0, 1000)
-p_xC1 = 0.7 * stats.norm.pdf(x_axis, loc=1.0, scale=0.8)
-p_xC2 = 0.6 * stats.norm.pdf(x_axis, loc=3.5, scale=1.0)
+# 数値的検証: 決定境界 x_hat を動かしたときの誤分類率の変化
+x_grid = np.linspace(-1.5, 6.5, 1000)
+dx = x_grid[1] - x_grid[0]
+p1 = 0.65 * stats.norm.pdf(x_grid, 1.2, 0.75) + 0.35 * stats.norm.pdf(x_grid, 3.8, 1.4)
+p2 = 0.65 * stats.norm.pdf(x_grid, 3.8, 0.95)
 
-# 交点 x0 の探索
-diff_p = p_xC1 - p_xC2
-idx_x0 = np.where(np.diff(np.sign(diff_p)))[0][0]
-x0_analytical = float(x_axis[idx_x0])
+# 最適境界 x0 (p1 == p2)
+idx_cross = np.where(np.diff(np.sign(p1 - p2)))[0]
+mid_idx = [i for i in idx_cross if 1.5 < x_grid[i] < 3.5][0]
+x0_opt = x_grid[mid_idx]
 
-# 閾値を連続的に走査して p(mistake) を計算
-thresholds = np.linspace(0.0, 5.0, 100)
-mistake_rates = []
-dx = x_axis[1] - x_axis[0]
+# 様々な境界候補 x_hat について誤分類率を計算
+threshold_candidates = np.linspace(1.5, 4.5, 100)
+errors = []
+for th in threshold_candidates:
+    # R1: x < th (predict C1, error if C2) -> int_{x < th} p2 dx
+    # R2: x >= th (predict C2, error if C1) -> int_{x >= th} p1 dx
+    err = np.sum(p2[x_grid < th]) * dx + np.sum(p1[x_grid >= th]) * dx
+    errors.append(err)
 
-for th in thresholds:
-    # mistake = int_{x < th} p(x, C2) dx + int_{x >= th} p(x, C1) dx
-    err = np.sum(p_xC2[x_axis < th]) * dx + np.sum(p_xC1[x_axis >= th]) * dx
-    mistake_rates.append(err)
+min_th = threshold_candidates[np.argmin(errors)]
+print(f"Theoretical crossing point x0: {x0_opt:.4f}")
+print(f"Empirically minimized threshold: {min_th:.4f}")
+print(f"Minimum error rate: {np.min(errors):.4f}")
 
-opt_th = thresholds[np.argmin(mistake_rates)]
-min_err = np.min(mistake_rates)
+# 数値アサーション: 最小誤差を与える閾値が x0 に一致することを確認
+assert np.isclose(x0_opt, min_th, atol=0.05), "Threshold minimizing error must match crossing point x0."
+print("Assertion Passed: Optimal threshold precisely minimizes misclassification error.")"""
+cells.append(nbf.v4.new_code_cell(cell_4_code))
 
-print(f"--- 誤分類率最小化の検証 ---")
-print(f"曲線交点 x0: {x0_analytical:.4f}")
-print(f"数値的最小誤分類率を与える閾値: {opt_th:.4f} (誤差: {min_err:.4f})")
-print(f"理論交点と数値最適閾値の差: {abs(opt_th - x0_analytical):.4f} (完全一致)")"""))
+# Cell 5: Section 5.2.2 Markdown
+cell_5_md = """---
+### 5.2.2 期待損失の最小化 (Expected loss)
 
-    # =====================================================================
-    # Cell 4: Section 5.2.2 Expected loss Theory
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_markdown_cell("""---
-### 5.2.2 Expected loss
+#### 1. 単純な誤分類率最小化の限界
+現実の多くの問題では、誤りの種類によってその重大性（コスト・リスク）が著しく異なります。
+例えば癌診断において：
+1. **偽陽性 (False Positive)**: 健康な患者を癌と誤診する。精神的動揺や再検査の負担が生じるが、命に関わるわけではない。
+2. **偽陰性 (False Negative)**: 癌患者を健康と誤診する。早期治療の機会を逸し、患者が手遅れになって死亡するリスクがある。
 
-現実の多くの問題では、すべての誤分類が同等の重みを持つわけではありません。
-例えば**がん診断**において：
-1. 健康な患者を「がん」と誤診した場合（偽陽性）：再検査の手間や精神的負担が生じる（損失度 = 1）。
-2. がんを患っている患者を「健康」と誤診して見逃した場合（偽陰性）：早期治療の機会を失い、死に至る可能性がある（損失度 = 100）。
+したがって、全体の誤分類件数を単に最小化するのではなく、「重大な誤りをより重くペナルティする」基準が不可欠となります。
 
-このような非対称なコストは、**損失行列（Loss matrix）** $\\mathbf{L} = (L_{kj})$ で記述されます（**Figure 5.6**）。ここで $L_{kj}$ は**真のクラスが $\\mathcal{C}_k$ であるときに入力をクラス $\\mathcal{C}_j$ に割り当てた際に被る損失**を表します。
+#### 2. 損失行列 (Loss Matrix)
+この非対称性を定式化するために **損失行列 (Loss Matrix)** $L_{kj}$ を導入します：
+- $L_{kj}$：真のクラスが $\\mathcal{C}_k$ であるとき、決定規則がクラス $\\mathcal{C}_j$ を割り当てた場合に被る損失（コスト）。
+- 正解した場合は通常損失なし（$L_{kk} = 0$）。
 
-#### 1. 期待損失の定式化
-未知の真のクラスに対する不確実性を考慮した平均損失（期待損失）は次式で定義されます：
-$$\\mathbb{E}[L] = \\sum_k \\sum_j \\int_{\\mathcal{R}_j} L_{kj} p(\\mathbf{x}, \\mathcal{C}_k) d\\mathbf{x} \\tag{5.22}$$
+#### 3. 期待損失の定式化
+真のクラスは未知であるため、同時確率分布 $p(\\mathbf{x}, \\mathcal{C}_k)$ に関する平均（期待値）として **期待損失 (Expected Loss)** $\\mathbb{E}[L]$ を定義します：
 
-我々の目標は、期待損失 $\\mathbb{E}[L]$ を最小化するように決定領域 $\\mathcal{R}_j$ を決定することです。
-乗法定理 $p(\\mathbf{x}, \\mathcal{C}_k) = p(\\mathcal{C}_k|\\mathbf{x}) p(\\mathbf{x})$ を用いると、各点 $\\mathbf{x}$ において**次の量を最小化するクラス $j$ を選択すればよい**ことが分かります：
+$$
+\\mathbb{E}[L] = \\sum_{k} \\sum_j \\int_{\\mathcal{R}_j} L_{kj} p(\\mathbf{x}, \\mathcal{C}_k) d\\mathbf{x} \\tag{5.22}
+$$
 
-$$\\min_j \\sum_k L_{kj} p(\\mathcal{C}_k|\\mathbf{x}) \\tag{5.23}$$
+各点 $\\mathbf{x}$ は独立にいずれかの決定領域 $\\mathcal{R}_j$ に割り当てられるため、式 (5.22) を最小化するには、各 $\\mathbf{x}$ において以下の量を最小化するクラス $j$ を選択すればよいことになります：
 
-#### 2. 2クラス問題における決定基準の定量的シフト
-2クラス分類で正解時の損失がゼロ（$L_{11} = L_{22} = 0$）である場合、クラス $\\mathcal{C}_1$（正常）を選択する条件は：
-$$L_{21} p(\\mathcal{C}_2|\\mathbf{x}) < L_{12} p(\\mathcal{C}_1|\\mathbf{x})$$
-これを変形すると、がんクラス $\\mathcal{C}_2$ を宣告する最適基準は次のように書き直せます：
-$$\\frac{p(\\mathcal{C}_2|\\mathbf{x})}{p(\\mathcal{C}_1|\\mathbf{x})} > \\frac{L_{12}}{L_{21}} = \\frac{1}{100} = 0.01$$
-すなわち、$p(\\mathcal{C}_1|\\mathbf{x}) + p(\\mathcal{C}_2|\\mathbf{x}) = 1$ より、**たとえがんの事後確率がわずか $1\\%$ 程度であっても、見逃しコストの重大性ゆえに治療（がん判定）を選択することが数理的に最適**となります。"""))
+$$
+\\sum_k L_{kj} p(\\mathbf{x}, \\mathcal{C}_k)
+$$
 
-    # =====================================================================
-    # Cell 5: Code - Section 5.2.2 Verification & Figure 5.6
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_code_cell("""# 5.2.2 実装検証: 損失行列と期待損失最小化 (Figure 5.6)
+乗法定理 $p(\\mathbf{x}, \\mathcal{C}_k) = p(\\mathcal{C}_k|\\mathbf{x})p(\\mathbf{x})$ より、共通の正の因子 $p(\\mathbf{x})$ を除くと、**期待損失を最小化する最適決定規則** が得られます：
+
+$$
+j^* = \\arg\\min_j \\sum_k L_{kj} p(\\mathcal{C}_k|\\mathbf{x}) \\tag{5.23}
+$$
+
+#### 4. Figure 5.6 の癌診断損失行列の解析
+下図 **Figure 5.6** は、教科書で示される癌診断の損失行列です：
+
+$$
+L = \\begin{pmatrix} L_{11} & L_{12} \\\\ L_{21} & L_{22} \\end{pmatrix} = \\begin{pmatrix} 0 & 1 \\\\ 100 & 0 \\end{pmatrix}
+$$
+
+（行：真のクラス $\\mathcal{C}_1=\\text{normal}, \\mathcal{C}_2=\\text{cancer}$、列：決定 $\\mathcal{C}_1=\\text{normal}, \\mathcal{C}_2=\\text{cancer}$）
+
+この行列の下で、各決定 $j \\in \\{1, 2\\}$ の期待損失は：
+- 正常 ($j=1$) と診断したときの期待損失：
+  $$\\mathbb{E}[L|j=1, \\mathbf{x}] = L_{11} p(\\mathcal{C}_1|\\mathbf{x}) + L_{21} p(\\mathcal{C}_2|\\mathbf{x}) = 100 \\, p(\\mathcal{C}_2|\\mathbf{x})$$
+- 癌 ($j=2$) と診断したときの期待損失：
+  $$\\mathbb{E}[L|j=2, \\mathbf{x}] = L_{12} p(\\mathcal{C}_1|\\mathbf{x}) + L_{22} p(\\mathcal{C}_2|\\mathbf{x}) = 1 \\, p(\\mathcal{C}_1|\\mathbf{x}) = 1 - p(\\mathcal{C}_2|\\mathbf{x})$$
+
+癌と診断 ($j=2$) すべき条件は：
+$$1 - p(\\mathcal{C}_2|\\mathbf{x}) < 100 \\, p(\\mathcal{C}_2|\\mathbf{x}) \\iff p(\\mathcal{C}_2|\\mathbf{x}) > \\frac{1}{101} \\approx 0.0099$$
+
+すなわち、癌の事後確率がわずか **1%** を超えるだけで、直ちに癌（要精査）と診断を下すのが期待損失最小の観点から最適となります！"""
+cells.append(nbf.v4.new_markdown_cell(cell_5_md))
+
+# Cell 6: Section 5.2.2 Code & Verification
+cell_6_code = """# Figure 5.6 の生成と描画
 fig_5_6 = plot_figure_5_6_loss_matrix(filepath="result/fig_5_6_loss_matrix.png")
-plt.show()
+display(fig_5_6)
+plt.close(fig_5_6)
 
-# がん診断における損失行列の挙動検証
-loss_mat = np.array([
-    [0.0, 1.0],     # True Normal: [Assign Normal, Assign Cancer]
-    [100.0, 0.0]    # True Cancer: [Assign Normal, Assign Cancer]
+# 期待損失最小化の決定規則シミュレーション
+L_cancer = np.array([
+    [0.0, 1.0],     # normal
+    [100.0, 0.0]    # cancer
 ])
 
-# 確率が異なる患者のサンプル
-test_posteriors = np.array([
-    [0.995, 0.005],  # がん確率 0.5%
-    [0.985, 0.015],  # がん確率 1.5%
-    [0.900, 0.100],  # がん確率 10%
-    [0.500, 0.500],  # がん確率 50%
-])
+# p(cancer | x) を 0 から 1 までスイープ
+p_cancer = np.linspace(0.0, 0.05, 500)
+p_normal = 1.0 - p_cancer
+posteriors = np.column_stack([p_normal, p_cancer])
 
-print("--- 非対称損失行列下での最適決定 (Eq 5.23) ---")
-for post in test_posteriors:
-    p_norm, p_canc = post
-    exp_loss = compute_expected_loss(post, loss_mat)
-    dec = optimal_decision_rule_expected_loss(post, loss_mat)
-    dec_name = "正常 (Normal)" if dec == 0 else "がん治療 (Cancer)"
-    print(f"p(がん|x) = {p_canc*100:4.1f}% | 期待損失 [正常: {exp_loss[0]:5.2f}, がん: {exp_loss[1]:5.2f}] -> 最適決定: {dec_name}")"""))
+# 決定の計算
+decisions = optimal_decision_rule_expected_loss(posteriors, L_cancer)
+expected_losses = compute_expected_loss(posteriors, L_cancer)
 
-    # =====================================================================
-    # Cell 6: Section 5.2.3 The reject option Theory
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_markdown_cell("""---
-### 5.2.3 The reject option
+# 決定が normal (0) から cancer (1) に切り替わる臨界点
+switch_idx = np.where(decisions == 1)[0][0]
+p_crit_empirical = p_cancer[switch_idx]
+p_crit_theoretical = 1.0 / 101.0
 
-事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ の最大値が 1 に近い領域では、分類器は高い確信度を持って決定を下すことができます。しかし、複数のクラスの確率が拮抗している領域（例えば $p(\\mathcal{C}_1|\\mathbf{x}) \\approx p(\\mathcal{C}_2|\\mathbf{x}) \\approx 0.5$）では、誤分類のリスクが非常に高くなります。
+print(f"Theoretical critical probability p(cancer|x): {p_crit_theoretical:.6f}")
+print(f"Empirical switching probability:              {p_crit_empirical:.6f}")
 
-このような高リスク領域において、機械的な自動決定を回避し、**判定を留保（棄却: Reject）して人間の専門家（医師の精密検査や生検）に回送する枠組み**を **棄却オプション (The reject option)** と呼びます。
+# アサーション検証
+assert np.isclose(p_crit_empirical, p_crit_theoretical, atol=1e-3)
+print("Assertion Passed: Expected loss decision boundary matches theoretical 1 / (L_12 + L_21) threshold.")"""
+cells.append(nbf.v4.new_code_cell(cell_6_code))
 
-#### 1. 決定規則の定式化
-閾値パラメータ $\\theta$（ただし $1/K \\le \\theta < 1$）を設定し、以下のルールを適用します（**Figure 5.7**）：
-- $\\max_k p(\\mathcal{C}_k|\\mathbf{x}) \\ge \\theta$ の場合：通常通り最も事後確率の高いクラス $k^\\star = \\arg\\max_k p(\\mathcal{C}_k|\\mathbf{x})$ に割り当てる。
-- $\\max_k p(\\mathcal{C}_k|\\mathbf{x}) < \\theta$ の場合：判定を**棄却（Reject）** する。
+# Cell 7: Section 5.2.3 Markdown
+cell_7_md = """---
+### 5.2.3 棄却オプション (The reject option)
 
-#### 2. 棄却率と誤り率のトレードオフ
-- $\\theta = 1.0$ と設定すると、完全な確信度（確率 1.0）を持たないすべてのサンプルが棄却されます。
-- $\\theta < 1/K$ と設定すると、どのサンプルも棄却されず、通常の分類器に退化します。
-- $\\theta$ を適切に設定することで、**「判定を下したサンプル集合における誤り率」を劇的に低減**させることが可能となります。"""))
+#### 1. 棄却オプションの動機
+事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ がどのクラスに対しても接近しており拮抗している領域では、分類器の確信度が低く、誤判定のリスクが極めて高くなります。
+このような困難な症例に対して無理に自動分類を行うのではなく、**判定を保留・棄却 (reject) して人間の専門医による追加検査（生検など）に回す** のが「棄却オプション」です。
 
-    # =====================================================================
-    # Cell 7: Code - Section 5.2.3 Verification & Figure 5.7
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_code_cell("""# 5.2.3 実装検証: 棄却オプションの可視化 (Figure 5.7) と閾値感度分析
+#### 2. 判定基準の定式化
+閾値 $\\theta \\in [1/K, 1.0]$ を導入し、以下の規則を適用します：
+- 最大事後確率が $\\theta$ 以上の場合：
+  $$\\max_k p(\\mathcal{C}_k|\\mathbf{x}) \\ge \\theta \\implies k^* = \\arg\\max_k p(\\mathcal{C}_k|\\mathbf{x}) \\text{ に分類}$$
+- すべての事後確率が $\\theta$ 未満の場合：
+  $$\\max_k p(\\mathcal{C}_k|\\mathbf{x}) < \\theta \\implies \\text{判定を棄却 (Reject)}$$
+
+- $\\theta = 1.0$ とすると、事後確率が 100% 確実でない限りすべて棄却されます。
+- $\\theta < 1/K$ とすると、最大値は常に $1/K$ 以上であるため棄却は一切発生しません。
+- したがって、$\\theta$ を $[1/K, 1.0]$ の範囲で調整することにより、許容する誤り率と自動処理率（スループット）のトレードオフを自在に制御できます。
+
+#### 3. Figure 5.7 の可視化
+下図 **Figure 5.7** は、2クラスの事後確率 $p(\\mathcal{C}_1|x)$ と $p(\\mathcal{C}_2|x)$ に対する棄却領域を図示しています。
+緑の破線で示された閾値 $\\theta$ 以下の領域（中央の帯状区間）が棄却領域（reject region）となります。"""
+cells.append(nbf.v4.new_markdown_cell(cell_7_md))
+
+# Cell 8: Section 5.2.3 Code & Verification
+cell_8_code = """# Figure 5.7 の生成と描画
 fig_5_7 = plot_figure_5_7_reject_option(filepath="result/fig_5_7_reject_option.png")
-plt.show()
+display(fig_5_7)
+plt.close(fig_5_7)
 
-# 棄却閾値 theta による誤り率と棄却率のトレードオフ分析
+# 棄却オプションの性能シミュレーション
+# 確信度が低いサンプルを棄却することで、採択されたサンプルの精度が向上することを確認
 np.random.seed(42)
-N_test = 2000
-# 1次元入力 x ~ N(0, 1) と N(1.5, 1)
-x0 = np.random.normal(0.0, 1.0, N_test // 2)
-x1 = np.random.normal(1.5, 1.0, N_test // 2)
-X_eval = np.concatenate([x0, x1])
-y_true = np.array([0] * (N_test // 2) + [1] * (N_test // 2))
+N_sim = 1000
+# 2クラスのシミュレーション事後確率
+logits = np.random.normal(0, 1.5, N_sim)
+p1_sim = 1.0 / (1.0 + np.exp(-logits))
+p2_sim = 1.0 - p1_sim
+sim_posteriors = np.column_stack([p1_sim, p2_sim])
+# 真のラベルは事後確率に従ってサンプリング
+true_labels = (np.random.rand(N_sim) < p2_sim).astype(int)
 
-# ベイズ事後確率の計算
-dens0 = stats.norm.pdf(X_eval, loc=0.0, scale=1.0)
-dens1 = stats.norm.pdf(X_eval, loc=1.5, scale=1.0)
-post_eval = np.column_stack([dens0, dens1]) / (dens0 + dens1)[:, None]
-
-thetas = np.linspace(0.5, 0.98, 25)
-error_rates = []
-reject_rates = []
+thetas = np.linspace(0.5, 0.98, 20)
+rejection_rates = []
+accuracy_on_accepted = []
 
 for th in thetas:
-    dec, rej = decision_rule_with_reject(post_eval, theta=th)
+    dec, rej = decision_rule_with_reject(sim_posteriors, theta=th)
     rej_rate = np.mean(rej)
-    # 棄却されなかったサンプルのみで誤り率を計算
-    acc_samples = ~rej
-    if np.sum(acc_samples) > 0:
-        err_rate = np.mean(dec[acc_samples] != y_true[acc_samples])
+    rejection_rates.append(rej_rate)
+    
+    accepted_mask = ~rej
+    if np.sum(accepted_mask) > 0:
+        acc = np.mean(dec[accepted_mask] == true_labels[accepted_mask])
     else:
-        err_rate = 0.0
-    error_rates.append(err_rate)
-    reject_rates.append(rej_rate)
+        acc = 1.0
+    accuracy_on_accepted.append(acc)
 
-print(f"--- 棄却オプションによる高信頼性化 ---")
-print(f"theta = 0.50 (棄却なし): 棄却率 = {reject_rates[0]*100:.1f}%, 受理後誤り率 = {error_rates[0]*100:.2f}%")
-print(f"theta = 0.85 (中程度):   棄却率 = {reject_rates[14]*100:.1f}%, 受理後誤り率 = {error_rates[14]*100:.2f}%")
-print(f"theta = 0.95 (高厳格):   棄却率 = {reject_rates[22]*100:.1f}%, 受理後誤り率 = {error_rates[22]*100:.2f}%")
-print("事後確率による棄却により、受理データの誤り率が大幅に抑制されることを確認しました。")"""))
+print(f"Theta = 0.50 (No reject): Acc = {accuracy_on_accepted[0]:.3f}, Rejection rate = {rejection_rates[0]:.3f}")
+print(f"Theta = 0.90 (High conf): Acc = {accuracy_on_accepted[-4]:.3f}, Rejection rate = {rejection_rates[-4]:.3f}")
 
-    # =====================================================================
-    # Cell 8: Section 5.2.4 Inference and decision Theory
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_markdown_cell("""---
-### 5.2.4 Inference and decision
+# 精度が単調非減少であることを検証
+assert accuracy_on_accepted[-1] >= accuracy_on_accepted[0]
+print("Assertion Passed: Reject option systematically improves accuracy on accepted samples.")"""
+cells.append(nbf.v4.new_code_cell(cell_8_code))
 
-分類問題を「推論」と「決定」の2段階に分離するアプローチには、直接クラスを割り当てる識別関数法と比較して多くの決定的なメリットが存在します。
+# Cell 9: Section 5.2.4 Markdown
+cell_9_md = """---
+### 5.2.4 推論と決定 (Inference and decision)
 
-#### 1. 分類手法の3大アプローチの比較
-1. **生成的モデル (Generative models)**:
-   - クラス条件付き密度 $p(\\mathbf{x}|\\mathcal{C}_k)$ と事前確率 $p(\\mathcal{C}_k)$ を個別にモデル化し、ベイズの定理を用いて事後確率を求める：
-     $$p(\\mathcal{C}_k|\\mathbf{x}) = \\frac{p(\\mathbf{x}|\\mathcal{C}_k)p(\\mathcal{C}_k)}{p(\\mathbf{x})} \\tag{5.24}$$
-   - **利点**: データ生成プロセスの理解、外れ値検出 $p(\\mathbf{x})$ の算出、欠損値補完が可能。
-   - **欠点**: 入力が高次元の場合、$p(\\mathbf{x}|\\mathcal{C}_k)$ の正確な推定に膨大なデータが必要。
-2. **識別的モデル (Discriminative models)**:
-   - 事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ を直接パラメトリックモデル（ロジスティック回帰など）でモデル化する。
-   - **利点**: 決定境界付近の確率モデリングに集中でき、データ効率と予測精度が高い。
-3. **識別関数 (Discriminant functions)**:
-   - 確率を一切計算せず、入力 $\\mathbf{x}$ を直接決定クラスに写像する。
-   - **利点**: 最もシンプルで計算が高速。
+#### 1. 分類問題における2段階アプローチ
+分類問題は根本的に以下の2つの独立したステージに分離されます：
+1. **推論段階 (Inference stage)**：訓練データからモデルを学習し、事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ を推定する。
+2. **決定段階 (Decision stage)**：得られた事後確率と損失関数に基づいて、最適な決定（クラス割り当て）を下す。
 
-#### 2. 事後確率を計算することの4大メリット
-事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ を保持することには、実世界での実用上極めて重要な以下の利点があります：
+#### 2. 分類における3つのアプローチ
+実用上、この決定問題に対する解法は以下の3通りが存在します（計算複雑さの降順）：
 
-1. **損失行列の動的変更への対応 (Minimizing risk)**:
-   金融リスクや医療基準の改定により損失行列 $L_{kj}$ が変更された場合でも、事後確率が既知であればモデルを再訓練することなく、式 (5.23) の決定ステップを即座に修正できます。
-2. **棄却オプションの利用 (Reject option)**:
-   事後確率の最大値を用いて、安全かつ直感的に判定保留基準を設計できます。
-3. **人工的な訓練事前確率の補正 (Compensating for class priors)**:
-   稀少疾患（1,000人に1人しか罹患しないがん）の学習では、データを集めるために疾患群と健康群を同数（1:1）で収集することが一般的です。この場合、訓練セットの事前確率は人工的です。
-   推論モデルから得られた事後確率 $p_{\\mathrm{train}}(\\mathcal{C}_k|\\mathbf{x})$ は、母集団の真の事前確率 $p_{\\mathrm{target}}(\\mathcal{C}_k)$ を用いて次のように厳密に補正できます：
-   $$p_{\\mathrm{target}}(\\mathcal{C}_k|\\mathbf{x}) \\propto p_{\\mathrm{train}}(\\mathcal{C}_k|\\mathbf{x}) \\frac{p_{\\mathrm{target}}(\\mathcal{C}_k)}{p_{\\mathrm{train}}(\\mathcal{C}_k)}$$
-4. **モデルの統合 (Combining models)**:
-   複数の独立な特徴量（画像と血液検査値など）を条件付き独立性の下で簡潔に統合できます。"""))
+1. **(a) 生成モデル (Generative models)**:
+   - 各クラスの条件付き密度 $p(\\mathbf{x}|\\mathcal{C}_k)$ および事前確率 $p(\\mathcal{C}_k)$ を個別にモデル化する。
+   - ベイズの定理によって事後確率を求める：
+     $$p(\\mathcal{C}_k|\\mathbf{x}) = \\frac{p(\\mathbf{x}|\\mathcal{C}_k)p(\\mathcal{C}_k)}{\\sum_j p(\\mathbf{x}|\\mathcal{C}_j)p(\\mathcal{C}_j)} \\tag{5.24}$$
+   - メリット：入力の周辺分布 $p(\\mathbf{x})$ も得られるため外れ値検出が可能、データの生成が可能。
+   - デメリット：入力の高次元密度推定は非常に困難であり、決定境界に無関係な特徴まで忠実にモデル化してしまう過剰なコストがかかる。
 
-    # =====================================================================
-    # Cell 9: Code - Section 5.2.4 Verification & Figure 5.8
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_code_cell("""# 5.2.4 実装検証: クラス条件付き密度と事後確率 (Figure 5.8)
+2. **(b) 識別モデル (Discriminative models)**:
+   - 事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ を直接パラメトリックモデル（ロジスティック回帰、ニューラルネットワーク等）として学習する。
+   - メリット：決定に必要な事後確率のみを直接最適化するため、データ効率が高く性能が良い。
+
+3. **(c) 識別関数 (Discriminant functions)**:
+   - 確率を一切計算せず、入力 $\\mathbf{x}$ を直接決定ラベルに写像する関数 $f(\\mathbf{x})$ を学習する（SVM、パーセプトロン等）。
+   - デメリット：事後確率へのアクセスが失われるため、損失行列の変更や棄却オプションに柔軟に対応できない。
+
+#### 3. 事後確率を陽に計算するメリット
+事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ を求めることには、以下の極めて強力な利点があります：
+1. **リスクの最小化**: 財務アプリケーションなどで損失行列 $L_{kj}$ が頻繁に変更・改訂された場合でも、推論モデルを再学習することなく、式 (5.23) の最小化規則を即座に更新できる。
+2. **棄却オプション**: 確信度の低いサンプルの棄却閾値を容易に設定・調整できる。
+3. **クラス事前確率の補正 (Compensating for class priors)**:
+   - 希少疾患のスクリーニングなどで、母集団では癌患者が 1/1000 であるのに対し、学習を効率化するために癌と正常を 50:50 で均等に収集してモデルを学習した場合。
+   - 学習時の事前確率 $p_{\\text{train}}(\\mathcal{C}_k)$ と実際のターゲット母集団の事前確率 $p_{\\text{target}}(\\mathcal{C}_k)$ が異なるとき、クラス条件付き密度 $p(\\mathbf{x}|\\mathcal{C}_k)$ が不変であると仮定すると：
+     $$p(\\mathbf{x}|\\mathcal{C}_k) \\propto \\frac{p_{\\text{train}}(\\mathcal{C}_k|\\mathbf{x})}{p_{\\text{train}}(\\mathcal{C}_k)}$$
+   - したがって、ターゲット母集団における事後確率は以下のように厳密に補正できます (式 5.27)：
+     $$p_{\\text{target}}(\\mathcal{C}_k|\\mathbf{x}) = \\frac{p_{\\text{target}}(\\mathcal{C}_k) \\frac{p_{\\text{train}}(\\mathcal{C}_k|\\mathbf{x})}{p_{\\text{train}}(\\mathcal{C}_k)}}{\\sum_j p_{\\text{target}}(\\mathcal{C}_j) \\frac{p_{\\text{train}}(\\mathcal{C}_j|\\mathbf{x})}{p_{\\text{train}}(\\mathcal{C}_j)}} \\tag{5.27}$$
+4. **モデルの結合**:
+   - 異なるデータ源 $\\mathbf{x}_1, \\mathbf{x}_2$ に対し、クラス条件付き独立性 $p(\\mathbf{x}_1, \\mathbf{x}_2|\\mathcal{C}_k) = p(\\mathbf{x}_1|\\mathcal{C}_k)p(\\mathbf{x}_2|\\mathcal{C}_k)$ を仮定すれば（Naive Bayes モデル）、別々に学習した事後確率を事後的に統合できる (式 5.26)。
+
+#### 4. Figure 5.8 の可視化
+下図 **Figure 5.8** は、左側にクラス条件付き密度、右側に事後確率を示しています。
+左側の密度 $p(x|\\mathcal{C}_1)$ に存在する左側のピーク（$x \\approx 0.2$）は、決定境界（$x \\approx 0.58$）付近の事後確率に対して何の影響も及ぼしていません。生成モデルではこの無関係なピークのモデリングにパラメータを割く必要がありますが、識別モデルや事後確率直結アプローチでは決定境界に必要な情報のみに集中できることが直感的に理解できます。"""
+cells.append(nbf.v4.new_markdown_cell(cell_9_md))
+
+# Cell 10: Section 5.2.4 Code & Verification
+cell_10_code = """# Figure 5.8 の生成と描画
 fig_5_8 = plot_figure_5_8_class_densities_posteriors(filepath="result/fig_5_8_class_densities_posteriors.png")
-plt.show()
+display(fig_5_8)
+plt.close(fig_5_8)
 
-# 人工的な訓練事前確率の補正 (Class Prior Compensation) の数値検証
-# 訓練時: 正常 50%, がん 50% (人工的バランス)
-# 母集団: 正常 99.9%, がん 0.1% (現実の希少疾患)
+# 事前確率補正 (Compensating for class priors) の数値検証
+# 学習環境: 人工的に 50:50 で学習
 p_train = np.array([0.5, 0.5])
+# 実際の母集団: 正常 99.9%, 癌 0.1%
 p_target = np.array([0.999, 0.001])
 
-# 訓練モデルの予測事後確率: p_train(Cancer|x) = 0.80 (80%と判定)
-train_posterior = np.array([0.20, 0.80])
-compensated_posterior = compensate_for_class_priors(train_posterior, p_train, p_target)
+# 学習済みモデルがある患者 x に対して出力した予測事後確率
+train_posteriors = np.array([
+    [0.5, 0.5],     # 境界付近で五分五分の判定
+    [0.1, 0.9],     # 癌とかなり強く判定
+    [0.01, 0.99]    # 癌と極めて強く判定 (99%)
+])
 
-print("--- 訓練事前確率の母集団補正 (Compensating for Class Priors) ---")
-print(f"訓練セット事後確率: 正常 = {train_posterior[0]:.2f}, がん = {train_posterior[1]:.2f}")
-print(f"真の母集団事後確率: 正常 = {compensated_posterior[0]:.4f}, がん = {compensated_posterior[1]:.4f}")
-print("希少疾患では、訓練時に80%と判定されても、母集団事前確率の稀少性により実際のがん事後確率は 1% 未満に補正されます。")"""))
+target_posteriors = compensate_for_class_priors(train_posteriors, p_train, p_target)
 
-    # =====================================================================
-    # Cell 10: Section 5.2.5 Classifier accuracy Theory
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_markdown_cell("""---
-### 5.2.5 Classifier accuracy
+print("--- Prior Compensation Results ---")
+for i, (tp, tgt) in enumerate(zip(train_posteriors, target_posteriors)):
+    print(f"Sample {i+1}: Train P(cancer|x)={tp[1]:.2f} -> Corrected Target P(cancer|x)={tgt[1]:.5f}")
 
-分類器の最も素朴な評価尺度は正解率（Accuracy）ですが、**クラス不均衡（Class imbalance）が存在するデータセットでは正解率は著しく不適切**となります。
-例えば 99.9% が正常、0.1% ががんの母集団において、「常に正常と答える」無能な分類器の正解率は 99.9% に達してしまいます。
+# 数値検証: 50:50 の曖昧な点は、補正後は母集団事前確率 0.001 に等しくなる
+assert np.isclose(target_posteriors[0, 1], 0.001)
+# 確率の和が1に正規化されていることを検証
+assert np.allclose(np.sum(target_posteriors, axis=1), 1.0)
+print("Assertion Passed: Class prior compensation formula (Eq 5.27) rigorously verified.")"""
+cells.append(nbf.v4.new_code_cell(cell_10_code))
 
-このため、分類器の性能を多面的に評価するための **混同行列 (Confusion Matrix)** と派生評価尺度を定義します（**Figure 5.9**）。
+# Cell 11: Section 5.2.5 Markdown
+cell_11_md = """---
+### 5.2.5 分類器の精度 (Classifier accuracy)
 
-#### 1. 混同行列の構造 (Eq 5.28)
-全サンプル数 $N$ は以下の4つの排他事象に分解されます：
-$$N = N_{\\mathrm{TP}} + N_{\\mathrm{FP}} + N_{\\mathrm{TN}} + N_{\\mathrm{FN}} \\tag{5.28}$$
-- $N_{\\mathrm{TP}}$ (True Positive / 真陽性): がんを正しくがんと予測
-- $N_{\\mathrm{TN}}$ (True Negative / 真陰性): 正常を正しく正常と予測
-- $N_{\\mathrm{FP}}$ (False Positive / 偽陽性, Type 1 error): 正常を誤ってがんと予測
-- $N_{\\mathrm{FN}}$ (False Negative / 偽陰性, Type 2 error): がんを誤って正常と予測（見逃し）
+#### 1. 混同行列 (Confusion Matrix)
+分類器の性能を詳細に把握するため、予測ラベルと真のラベルのクロス集計を行う **混同行列** を導入します (**Figure 5.9**)。
+2クラス分類（正常: 陰性 Negative / 癌: 陽性 Positive）において：
 
-#### 2. 主要評価尺度
-$$\\mathrm{Accuracy} = \\frac{N_{\\mathrm{TP}} + N_{\\mathrm{TN}}}{N_{\\mathrm{TP}} + N_{\\mathrm{FP}} + N_{\\mathrm{TN}} + N_{\\mathrm{FN}}} \\tag{5.29}$$
+$$
+\\begin{pmatrix}
+\\text{真: normal} \\\\
+\\text{真: cancer}
+\\end{pmatrix}
+\\begin{pmatrix}
+N_{\\text{TN}} & N_{\\text{FP}} \\\\
+N_{\\text{FN}} & N_{\\text{TP}}
+\\end{pmatrix}
+\\quad \\text{（列: 決定 normal, 決定 cancer）}
+$$
 
-$$\\mathrm{Precision} = \\frac{N_{\\mathrm{TP}}}{N_{\\mathrm{TP}} + N_{\\mathrm{FP}}} \\tag{5.30}$$
+- $N_{\\text{TP}}$ (True Positive, 真陽性)：癌患者を正しく癌と判定。
+- $N_{\\text{FP}}$ (False Positive, 偽陽性, 第1種の過誤)：正常患者を誤って癌と判定。
+- $N_{\\text{TN}}$ (True Negative, 真陰性)：正常患者を正しく正常と判定。
+- $N_{\\text{FN}}$ (False Negative, 偽陰性, 第2種の過誤)：癌患者を誤って正常と判定。
 
-$$\\mathrm{Recall} = \\frac{N_{\\mathrm{TP}}}{N_{\\mathrm{TP}} + N_{\\mathrm{FN}}} \\quad (\\text{Sensitivity / True Positive Rate}) \\tag{5.31}$$
+総サンプル数は以下の関係を満たします：
+$$N = N_{\\text{TP}} + N_{\\text{FP}} + N_{\\text{TN}} + N_{\\text{FN}} \\tag{5.28}$$
 
-$$\\mathrm{Specificity} = \\frac{N_{\\mathrm{TN}}}{N_{\\mathrm{TN}} + N_{\\mathrm{FP}}} \\quad (\\text{True Negative Rate}) \\tag{5.32}$$
+#### 2. 各種評価指標の厳密な定義
+1. **正解率 (Accuracy)** (式 5.29):
+   $$\\text{Accuracy} = \\frac{N_{\\text{TP}} + N_{\\text{TN}}}{N_{\\text{TP}} + N_{\\text{FP}} + N_{\\text{TN}} + N_{\\text{FN}}} \\tag{5.29}$$
+   - **落とし穴**: 癌患者が 1000 人中 1 人の不均衡データの場合、「全員正常」と答える無能な分類器でも正解率 **99.9%** を達成してしまいます。そのため、不均衡データでの正解率評価は極めて危険です。
 
-$$\\mathrm{False\\;Positive\\;Rate\\;(FPR)} = \\frac{N_{\\mathrm{FP}}}{N_{\\mathrm{TN}} + N_{\\mathrm{FP}}} = 1 - \\mathrm{Specificity} \\tag{5.33}$$
+2. **適合率 (Precision)** (式 5.30):
+   $$\\text{Precision} = \\frac{N_{\\text{TP}}}{N_{\\text{TP}} + N_{\\text{FP}}} \\tag{5.30}$$
+   - 陽性と予測した中で、実際に陽性であった割合（検査陽性の信頼度）。
 
-$$F\\text{-score} = \\frac{2 \\times \\mathrm{Precision} \\times \\mathrm{Recall}}{\\mathrm{Precision} + \\mathrm{Recall}} = \\frac{2 N_{\\mathrm{TP}}}{2 N_{\\mathrm{TP}} + N_{\\mathrm{FP}} + N_{\\mathrm{FN}}} \\tag{5.38 - 5.39}$$"""))
+3. **再現率 (Recall) / 感度 (Sensitivity) / 真陽性率 (TPR)** (式 5.31):
+   $$\\text{Recall} = \\frac{N_{\\text{TP}}}{N_{\\text{TP}} + N_{\\text{FN}}} \\tag{5.31}$$
+   - 実際の陽性患者のうち、見落とさずに陽性と検出できた割合。
 
-    # =====================================================================
-    # Cell 11: Code - Section 5.2.5 Verification & Figure 5.9
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_code_cell("""# 5.2.5 実装検証: 混同行列と分類器評価尺度 (Figure 5.9)
+4. **特異度 (Specificity) / 真陰性率 (TNR)** (式 5.32):
+   $$\\text{Specificity} = \\frac{N_{\\text{TN}}}{N_{\\text{FP}} + N_{\\text{TN}}} \\tag{5.32}$$
+   - 実際の陰性患者のうち、正しく陰性と判定できた割合。
+
+5. **偽陽性率 (False Positive Rate: FPR)** (式 5.33):
+   $$\\text{FPR} = \\frac{N_{\\text{FP}}}{N_{\\text{FP}} + N_{\\text{TN}}} = 1 - \\text{Specificity} \\tag{5.33}$$
+   - 健常者を誤って陽性と判定してしまう割合。"""
+cells.append(nbf.v4.new_markdown_cell(cell_11_md))
+
+# Cell 12: Section 5.2.5 Code & Verification
+cell_12_code = """# Figure 5.9 の生成と描画
 fig_5_9 = plot_figure_5_9_confusion_matrix(filepath="result/fig_5_9_confusion_matrix.png")
-plt.show()
+display(fig_5_9)
+plt.close(fig_5_9)
 
-# 混同行列クラスの数値検証
-y_truth = np.array([1]*40 + [0]*60)  # 40 positive, 60 negative
-y_pred_model = np.array([1]*35 + [0]*5 + [0]*50 + [1]*10)
+# 混同行列と不均衡データの評価シミュレーション
+# 10,000 人の患者データ (正常 9,990 人, 癌 10 人)
+np.random.seed(42)
+N_patients = 10000
+n_cancer = 10
+y_true = np.array([0] * (N_patients - n_cancer) + [1] * n_cancer)
 
-cm = ConfusionMatrix2Class(y_truth, y_pred_model)
-metrics = cm.summary()
+# 分類器A: 「全員正常」と答えるダミー分類器
+y_pred_dummy = np.zeros(N_patients, dtype=int)
+cm_dummy = ConfusionMatrix2Class(y_true, y_pred_dummy)
 
-print("--- 混同行列と主要評価尺度の計算 ---")
-print(f"Confusion Matrix (Bishop Fig 5.9 format):\\n{cm.matrix}")
-print(f"Total samples N = {cm.N} (TP={cm.TP}, FP={cm.FP}, TN={cm.TN}, FN={cm.FN})")
-print(f"Accuracy:    {metrics['accuracy']:.4f}")
-print(f"Precision:   {metrics['precision']:.4f}")
-print(f"Recall:      {metrics['recall']:.4f} (TPR / Sensitivity)")
-print(f"Specificity: {metrics['specificity']:.4f} (TNR)")
-print(f"FPR:         {metrics['false_positive_rate']:.4f} (1 - Specificity = {1 - metrics['specificity']:.4f})")
-print(f"F-score:     {metrics['f_score']:.4f}")"""))
+# 分類器B: 感度 90% (癌 10 人中 9 人検出), 特異度 98% (偽陽性 2%) の実用モデル
+y_pred_model = np.zeros(N_patients, dtype=int)
+# 癌患者 10人中 9人正解
+y_pred_model[-n_cancer:] = [1]*9 + [0]*1
+# 正常 9990 人中 2% (約 200人) を偽陽性
+fp_indices = np.random.choice(N_patients - n_cancer, size=200, replace=False)
+y_pred_model[fp_indices] = 1
+cm_model = ConfusionMatrix2Class(y_true, y_pred_model)
 
-    # =====================================================================
-    # Cell 12: Section 5.2.6 ROC curve Theory
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_markdown_cell("""---
-### 5.2.6 ROC curve
+print("=== Classifier Comparison on Imbalanced Data ===")
+print(f"Dummy Classifier: Accuracy={cm_dummy.accuracy*100:.2f}%, Recall={cm_dummy.recall*100:.2f}%, Precision={cm_dummy.precision*100:.2f}%")
+print(f"Medical Model:    Accuracy={cm_model.accuracy*100:.2f}%, Recall={cm_model.recall*100:.2f}%, Precision={cm_model.precision*100:.2f}%")
 
-分類器の閾値 $\\widehat{x}$ を $-\\infty$ から $+\\infty$ まで連続的に変化させると、偽陽性率（FPR）と真陽性率（TPR）がトレードオフの関係を描きます。この軌跡をプロットしたものが **受託者動作特性曲線 (Receiver Operating Characteristic / ROC 曲線)** です（**Figure 5.11**）。
+# 指標の数式等価性のアサーション検証
+assert np.isclose(cm_model.false_positive_rate, 1.0 - cm_model.specificity)
+assert cm_model.N == cm_model.TP + cm_model.FP + cm_model.TN + cm_model.FN
+print("Assertion Passed: Confusion matrix identities (Eq 5.28 - 5.33) numerically confirmed.")"""
+cells.append(nbf.v4.new_code_cell(cell_12_code))
 
-#### 1. 誤差領域の幾何学的分解 (Figure 5.10)
-**Figure 5.10** では、閾値 $\\widehat{x}$ による領域分割と混同行列の要素の対応が視覚化されています：
-- **領域 $A$**: $\\mathcal{R}_1$（正常予測）かつ真のクラスが $\\mathcal{C}_1$（正常） $\\implies N_{\\mathrm{TN}}$
-- **領域 $B$**: $\\mathcal{R}_1$（正常予測）かつ真のクラスが $\\mathcal{C}_2$（がん） $\\implies N_{\\mathrm{FN}}$
-- **領域 $C$**: 閾値 $x_0$ より左で誤分類されるがんデータ
-- **領域 $D$**: $\\mathcal{R}_2$（がん予測）かつ真のクラスが $\\mathcal{C}_2$（がん） $\\implies N_{\\mathrm{TP}}$
-- **領域 $E$**: $\\mathcal{R}_2$（がん予測）かつ真のクラスが $\\mathcal{C}_1$（正常） $\\implies N_{\\mathrm{FP}}$
+# Cell 13: Section 5.2.6 Markdown
+cell_13_md = """---
+### 5.2.6 ROC曲線 (ROC curve)
 
-閾値 $\\widehat{x}$ を右に動かすと、偽陰性（見逃し $B$）が増加する代わりに偽陽性（誤報 $E$）が減少します。
+#### 1. 閾値移動と誤差のトレードオフ
+確率的分類器は事後確率を出力し、閾値 $\\hat{x}$ を設定することで最終決定を下します。
+閾値を変化させると、第1種の過誤（偽陽性）と第2種の過誤（偽陰性）の間にトレードオフが生じます。
 
-#### 2. ROC 曲線の幾何学的性質 (Figure 5.11)
-- 横軸: 偽陽性率 $\\mathrm{False\\;Positive\\;Rate} \\in [0, 1]$
-- 縦軸: 真陽性率 $\\mathrm{True\\;Positive\\;Rate} \\in [0, 1]$
-- **左上隅 $(0, 1)$**: 偽陽性ゼロ・真陽性 100% を達成する「理想的分類器（Perfect classifier）」。
-- **原点 $(0, 0)$**: すべてを陰性と判定する極限。
-- **右上隅 $(1, 1)$**: すべてを陽性と判定する極限。
-- **対角線 (Diagonal line)**: 確率 $\\rho$ でランダムに陽性と判定するランダム分類器（AUC = 0.5）。
-- **AUC (Area Under Curve)**: ROC 曲線の下側面積。分類器の閾値に依存しない総合識別能力を表し、0.5（ランダム予測）から 1.0（完全予測）の値をとります。"""))
+下図 **Figure 5.10** は、決定境界 $\\hat{x}$ と各誤差成分領域 $A, B, C, D, E$ の関係を示しています：
+- $N_{\\text{FP}} / N = E$ (式 5.34)：$\\hat{x}$ より右側の正常クラス面積
+- $N_{\\text{TP}} / N = D + E$ (式 5.35)：$\\hat{x}$ より右側の癌クラス総面積
+- $N_{\\text{FN}} / N = B + C$ (式 5.36)：$\\hat{x}$ より左側の癌クラス面積
+- $N_{\\text{TN}} / N = A + C$ (式 5.37)：$\\hat{x}$ より左側の正常クラス面積
 
-    # =====================================================================
-    # Cell 13: Code - Section 5.2.6 Verification & Figures 5.10, 5.11
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_code_cell("""# 5.2.6 実装検証: 誤差領域分解 (Figure 5.10) と ROC 曲線 (Figure 5.11)
-# 1. Figure 5.10: 閾値移動に伴う誤差領域 A, B, C, D, E の可視化
+境界 $\\hat{x}$ を $-\\infty$ から $+\\infty$ へ連続的に動かすと：
+- $\\hat{x} \\to -\\infty$：全員を癌と判定 $\\implies \\text{TPR} = 1, \\text{FPR} = 1$（右上の点 $(1, 1)$）
+- $\\hat{x} \\to +\\infty$：全員を正常と判定 $\\implies \\text{TPR} = 0, \\text{FPR} = 0$（左下の原点 $(0, 0)$）
+
+#### 2. 受信者動作特性 (ROC: Receiver Operating Characteristic) 曲線
+横軸に **偽陽性率 (FPR)**、縦軸に **真陽性率 (TPR / 感度)** をプロットした軌跡が **ROC 曲線** です (**Figure 5.11**)。
+- **理想的な分類器**: 左上隅 $(0, 1)$（誤診ゼロで全陽性を検出）を通過する。
+- **ランダム推測分類器**: 確率 $\\rho$ で陽性と判定する場合、$\\text{TPR} = \\rho, \\text{FPR} = \\rho$ となり、対角線 $y = x$ となる。
+- **AUC (Area Under the Curve)**: ROC 曲線下の面積。
+  - 完全分類器：$\\text{AUC} = 1.0$
+  - ランダム推測：$\\text{AUC} = 0.5$
+  - AUC は閾値の選択に依存しない分類器自体の識別能力（discriminability）の尺度となります。
+
+#### 3. $F_1$ スコア (F-score)
+Precision と Recall の調和平均として定義される $F_1$ スコアも広く使用されます：
+
+$$
+F_1 = \\frac{2 \\times \\text{Precision} \\times \\text{Recall}}{\\text{Precision} + \\text{Recall}} = \\frac{2 N_{\\text{TP}}}{2 N_{\\text{TP}} + N_{\\text{FP}} + N_{\\text{FN}}} \\tag{5.38 - 5.39}
+$$
+
+算術平均ではなく調和平均をとることで、Precision と Recall のいずれか一方が極端に低い場合に $F_1$ スコアが厳しくペナルティされます。"""
+cells.append(nbf.v4.new_markdown_cell(cell_13_md))
+
+# Cell 14: Section 5.2.6 Code & Verification
+cell_14_code = """# Figure 5.10 と Figure 5.11 の生成と描画
 fig_5_10 = plot_figure_5_10_roc_regions(filepath="result/fig_5_10_roc_regions.png")
-plt.show()
+display(fig_5_10)
+plt.close(fig_5_10)
 
-# 2. Figure 5.11: ROC 曲線と AUC の可視化
 fig_5_11 = plot_figure_5_11_roc_curve(filepath="result/fig_5_11_roc_curve.png")
-plt.show()"""))
+display(fig_5_11)
+plt.close(fig_5_11)
 
-    # =====================================================================
-    # Cell 14: Section 5.2 Summary & Future Outlook
-    # =====================================================================
-    nb.cells.append(nbf.v4.new_markdown_cell("""---
-### 本節のまとめと次節への展望
+# ROC曲線とAUCの数値計算検証
+np.random.seed(123)
+N_samples = 200
+y_true_roc = np.array([0]*(N_samples//2) + [1]*(N_samples//2))
 
-本節（Section 5.2: Decision Theory）では、分類における意思決定の数理的基盤を網羅的に探求しました：
+# 優れた分類器のスコア (平均分離度 d=2.0)
+scores_good = np.r_[np.random.normal(0, 1, N_samples//2), np.random.normal(2.0, 1, N_samples//2)]
+fpr_g, tpr_g, _, auc_g = compute_roc_curve(y_true_roc, scores_good)
 
-1. **誤分類率最小化 (Misclassification rate)**:
-   - 0/1 損失の下では、事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ が最大となるクラスを選択することが最適（式 5.20 - 5.21）。
-2. **期待損失最小化 (Expected loss)**:
-   - 損失行列 $L_{kj}$ を用いて非対称なリスクを定式化。医療診断などでは、わずかな確率であっても重篤なリスクを回避する決定が数理的に導かれる（式 5.22 - 5.23）。
-3. **棄却オプション (Reject option)**:
-   - 最大事後確率が閾値 $\\theta$ 未満の曖昧領域で判定を留保し、安全性を確保。
-4. **推論と決定の分離 (Inference and decision)**:
-   - 確率モデリングと決定基準を分離することで、リスク関数の動的変更や母集団事前確率の補正が容易になる。
-5. **混同行列と ROC 曲線**:
-   - 不均衡データにおける Accuracy の破綻と、Precision/Recall/F-score/Specificity による多面的評価。
-   - 閾値走査に伴う FPR と TPR のトレードオフを ROC 曲線と AUC で定量化。
+# 劣る分類器のスコア (平均分離度 d=0.8)
+scores_fair = np.r_[np.random.normal(0, 1, N_samples//2), np.random.normal(0.8, 1, N_samples//2)]
+fpr_f, tpr_f, _, auc_f = compute_roc_curve(y_true_roc, scores_fair)
 
-#### 次節 5.3 生成的分類器 (Generative Classifiers) への接続
-決定理論を適用するためには、まず高精度な事後確率 $p(\\mathcal{C}_k|\\mathbf{x})$ を求める「推論」が必要です。
-次節 **Section 5.3: Generative Classifiers** では、クラス条件付き確率密度 $p(\\mathbf{x}|\\mathcal{C}_k)$ をモデル化する生成的アプローチ（連続変数に対する多変量ガウス分布、最尤推定解、離散特徴に対する単純ベイズ、指数型分布族への一般化）を詳細に学びます。"""))
+print(f"Good Classifier AUC: {auc_g:.4f}")
+print(f"Fair Classifier AUC: {auc_f:.4f}")
 
-    # Save notebook file
-    out_dir = "5"
-    os.makedirs(out_dir, exist_ok=True)
-    nb_path = os.path.join(out_dir, "5.2_Decision_Theory.ipynb")
-    with open(nb_path, "w", encoding="utf-8") as f:
-        nbf.write(nb, f)
-    print(f"Notebook successfully written to: {nb_path}")
+# アサーション検証
+assert auc_g > auc_f > 0.5, "AUC of better classifier must exceed fair classifier, and both exceed random (0.5)."
+assert np.isclose(fpr_g[0], 0.0) and np.isclose(tpr_g[0], 0.0)
+assert np.isclose(fpr_g[-1], 1.0) and np.isclose(tpr_g[-1], 1.0)
+print("Assertion Passed: ROC curves correctly start at (0,0) and end at (1,1) with valid AUC ordering.")"""
+cells.append(nbf.v4.new_code_cell(cell_14_code))
 
-if __name__ == "__main__":
-    build_notebook()
+# Cell 15: Conclusion & Summary
+cell_15_md = """---
+### まとめと第5章 次節への展望
+
+本ノートブックでは、**Section 5.2: Decision Theory (決定理論)** の数学的基盤とアルゴリズムを網羅的に検証しました：
+
+1. **決定理論の本質**: 推論（確率分布の獲得）と決定（損失に基づく行動の選択）を峻別することの重要性。
+2. **ベイズ決定規則**: 
+   - 誤分類率最小化 $\\iff$ 事後確率最大のクラスへの割り当て。
+   - 期待損失最小化 $\\iff$ 損失行列重み付き事後確率の最小化。
+3. **実用的な拡張**:
+   - 確信度の低いサンプルを保留する **棄却オプション**。
+   - 人工的なデータ収集比率を現実の母集団へ適合させる **事前確率補正**。
+4. **評価体系**:
+   - 混同行列、Accuracy、Precision、Recall、Specificity、FPR、$F_1$ スコアの体系的整理。
+   - 閾値移動に伴うトレードオフを可視化・定量化する **ROC 曲線と AUC**。
+
+**次節への展望**:
+次節 **Section 5.3: Generative Classifiers (生成的分類器)** では、本節で前提としたクラス条件付き確率 $p(\\mathbf{x}|\\mathcal{C}_k)$ を実際にデータから最尤推定によりモデル化する生成的アプローチ（連続変数に対するガウス判別分析、離散変数に対するナイーブベイズモデル等）へと進みます。"""
+cells.append(nbf.v4.new_markdown_cell(cell_15_md))
+
+nb.cells = cells
+
+# Save notebook
+os.makedirs("5", exist_ok=True)
+notebook_path = "5/5.2_Decision_Theory.ipynb"
+with open(notebook_path, "w", encoding="utf-8") as f:
+    nbf.write(nb, f)
+
+print(f"Successfully generated {notebook_path} with {len(cells)} cells.")
