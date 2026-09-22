@@ -3,9 +3,11 @@ Probability utilities for Chapter 2: The Rules of Probability.
 Provides exact derivations, calculations, and simulation helpers for discrete distributions,
 Bayes' theorem, medical screening problem, and uncertainty demonstrations.
 """
-from typing import Dict, Tuple, Optional, Callable, Union, List
+import os
+from typing import Dict, Tuple, Optional, Callable, Union, List, Any
 import numpy as np
 from scipy import special
+import matplotlib.pyplot as plt
 
 
 def compute_joint_marginal_conditional(
@@ -1329,4 +1331,461 @@ def efron_dice_win_probability(die_a: np.ndarray, die_b: np.ndarray) -> float:
     return wins / total
 
 
+def alpha_divergence_discrete(p: np.ndarray, q: np.ndarray, alpha: float) -> float:
+    """
+    Compute alpha-divergence between two discrete probability distributions:
+        D_alpha(p || q) = 4 / (1 - alpha^2) * (1 - sum_i p_i^{(1+alpha)/2} * q_i^{(1-alpha)/2})
+    Handles the limits alpha -> 1 (KL(p || q)) and alpha -> -1 (KL(q || p)).
+    (Bishop Eq 2.129).
+    """
+    p = np.asarray(p, dtype=np.float64)
+    q = np.asarray(q, dtype=np.float64)
+    if np.isclose(alpha, 1.0, atol=1e-5):
+        return kl_divergence_discrete(p, q, base='e')
+    elif np.isclose(alpha, -1.0, atol=1e-5):
+        return kl_divergence_discrete(q, p, base='e')
+    
+    a = (1.0 + alpha) / 2.0
+    b = (1.0 - alpha) / 2.0
+    integral_val = np.sum((p ** a) * (q ** b))
+    return float((4.0 / (1.0 - alpha ** 2)) * (1.0 - integral_val))
 
+
+def bent_coin_bayes(
+    p_heads_given_H1: float = 0.4,
+    p_heads_given_H2: float = 0.6,
+    prior_H1: float = 0.1,
+    n_heads: int = 8,
+    n_tails: int = 2
+) -> Dict[str, float]:
+    """
+    Solve Exercise 2.40: Bent coin Bayesian inference.
+    H1: convex side is heads -> P(heads | H1) = 0.40
+    H2: concave side is heads -> P(heads | H2) = 0.60
+    Prior P(H1) = 0.10, P(H2) = 0.90.
+    Observed: n_heads=8, n_tails=2.
+    """
+    import math
+    n_total = n_heads + n_tails
+    comb = math.comb(n_total, n_heads)
+    
+    prior_H2 = 1.0 - prior_H1
+    lik_H1 = comb * (p_heads_given_H1 ** n_heads) * ((1.0 - p_heads_given_H1) ** n_tails)
+    lik_H2 = comb * (p_heads_given_H2 ** n_heads) * ((1.0 - p_heads_given_H2) ** n_tails)
+    
+    evidence = lik_H1 * prior_H1 + lik_H2 * prior_H2
+    post_H1 = (lik_H1 * prior_H1) / evidence
+    post_H2 = (lik_H2 * prior_H2) / evidence
+    
+    p_next_heads = p_heads_given_H1 * post_H1 + p_heads_given_H2 * post_H2
+    
+    return {
+        'prior_H1': prior_H1,
+        'prior_H2': prior_H2,
+        'likelihood_H1': lik_H1,
+        'likelihood_H2': lik_H2,
+        'evidence': evidence,
+        'posterior_H1': post_H1,
+        'posterior_H2': post_H2,
+        'p_next_heads': p_next_heads
+    }
+
+
+def binary_joint_entropy_analysis(p_xy: np.ndarray) -> Dict[str, float]:
+    """
+    Analyze all information theoretic quantities for a 2D discrete joint distribution:
+    H[X], H[Y], H[X, Y], H[Y|X], H[X|Y], I[X; Y].
+    (Exercise 2.36).
+    """
+    p_xy = np.asarray(p_xy, dtype=np.float64)
+    p_x = np.sum(p_xy, axis=1)
+    p_y = np.sum(p_xy, axis=0)
+    
+    # Entropy helper in nats
+    def _ent(prob):
+        nz = prob[prob > 0]
+        return -float(np.sum(nz * np.log(nz)))
+    
+    h_x = _ent(p_x)
+    h_y = _ent(p_y)
+    h_xy = _ent(p_xy.flatten())
+    h_y_given_x = h_xy - h_x
+    h_x_given_y = h_xy - h_y
+    mi = h_x + h_y - h_xy
+    
+    return {
+        'H_X_nats': h_x,
+        'H_Y_nats': h_y,
+        'H_XY_nats': h_xy,
+        'H_Y_given_X_nats': h_y_given_x,
+        'H_X_given_Y_nats': h_x_given_y,
+        'I_XY_nats': mi,
+        'H_X_bits': h_x / np.log(2),
+        'H_Y_bits': h_y / np.log(2),
+        'H_XY_bits': h_xy / np.log(2),
+        'H_Y_given_X_bits': h_y_given_x / np.log(2),
+        'H_X_given_Y_bits': h_x_given_y / np.log(2),
+        'I_XY_bits': mi / np.log(2),
+    }
+
+
+# ==============================================================================
+# Chapter 3: Standard Distributions - 3.1 Discrete Variables
+# ==============================================================================
+
+class BernoulliDistribution:
+    """
+    Bernoulli distribution for a single binary variable x in {0, 1} (Section 3.1.1).
+    
+    Formula:
+      p(x | mu) = mu^x * (1 - mu)^(1 - x)   (Eq 3.2)
+      E[x] = mu                               (Eq 3.3)
+      var[x] = mu * (1 - mu)                  (Eq 3.4)
+    """
+    def __init__(self, mu: float):
+        if not (0.0 <= mu <= 1.0):
+            raise ValueError(f"Parameter mu must be in [0, 1], got {mu}")
+        self.mu = float(mu)
+
+    def pmf(self, x: Union[int, float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute probability mass p(x | mu) (Eq 3.2)."""
+        x_arr = np.asarray(x)
+        # Check support: x must be in {0, 1}
+        if not np.all(np.isin(x_arr, [0, 1])):
+            raise ValueError("Bernoulli variable x must be 0 or 1")
+        # Direct calculation: p(1) = mu, p(0) = 1 - mu
+        prob = np.where(x_arr == 1, self.mu, 1.0 - self.mu)
+        if np.isscalar(x):
+            return float(prob)
+        return prob
+
+    def log_pmf(self, x: Union[int, float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute log probability ln p(x | mu) = x ln(mu) + (1-x) ln(1-mu)."""
+        x_arr = np.asarray(x)
+        if not np.all(np.isin(x_arr, [0, 1])):
+            raise ValueError("Bernoulli variable x must be 0 or 1")
+        eps = 1e-15
+        mu_clamped = np.clip(self.mu, eps, 1.0 - eps)
+        log_prob = x_arr * np.log(mu_clamped) + (1.0 - x_arr) * np.log(1.0 - mu_clamped)
+        if np.isscalar(x):
+            return float(log_prob)
+        return log_prob
+
+    @property
+    def mean(self) -> float:
+        """E[x] = mu (Eq 3.3)."""
+        return self.mu
+
+    @property
+    def variance(self) -> float:
+        """var[x] = mu * (1 - mu) (Eq 3.4)."""
+        return self.mu * (1.0 - self.mu)
+
+    def sample(self, size: Union[int, Tuple[int, ...]] = 1, seed: Optional[int] = None) -> np.ndarray:
+        """Draw random samples from Bern(x | mu)."""
+        rng = np.random.default_rng(seed)
+        return rng.binomial(n=1, p=self.mu, size=size)
+
+    @staticmethod
+    def log_likelihood(data: np.ndarray, mu: float) -> float:
+        """
+        Compute log-likelihood ln p(D | mu) (Eq 3.6):
+          ln p(D | mu) = sum_{n=1}^N { x_n ln(mu) + (1 - x_n) ln(1 - mu) }
+        """
+        data = np.asarray(data)
+        if not np.all(np.isin(data, [0, 1])):
+            raise ValueError("Data elements must be 0 or 1")
+        eps = 1e-15
+        mu_clamped = np.clip(mu, eps, 1.0 - eps)
+        m = np.sum(data == 1)
+        N = data.size
+        return float(m * np.log(mu_clamped) + (N - m) * np.log(1.0 - mu_clamped))
+
+    @staticmethod
+    def fit_mle(data: np.ndarray) -> float:
+        """
+        Compute Maximum Likelihood Estimator mu_ML = m / N (Eq 3.7, 3.8).
+        """
+        data = np.asarray(data)
+        if data.size == 0:
+            raise ValueError("Data cannot be empty")
+        if not np.all(np.isin(data, [0, 1])):
+            raise ValueError("Data elements must be 0 or 1")
+        return float(np.mean(data))
+
+
+class BinomialDistribution:
+    """
+    Binomial distribution Bin(m | N, mu) for the number of successes m in N trials (Section 3.1.2).
+    
+    Formula:
+      Bin(m | N, mu) = (N choose m) * mu^m * (1 - mu)^(N - m)   (Eq 3.9)
+      (N choose m) = N! / ((N - m)! * m!)                       (Eq 3.10)
+      E[m] = N * mu                                             (Eq 3.11)
+      var[m] = N * mu * (1 - mu)                                (Eq 3.12)
+    """
+    def __init__(self, N: int, mu: float):
+        if not isinstance(N, (int, np.integer)) or N < 0:
+            raise ValueError(f"N must be a non-negative integer, got {N}")
+        if not (0.0 <= mu <= 1.0):
+            raise ValueError(f"Parameter mu must be in [0, 1], got {mu}")
+        self.N = int(N)
+        self.mu = float(mu)
+
+    def pmf(self, m: Union[int, float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute Bin(m | N, mu) (Eq 3.9)."""
+        m_arr = np.asarray(m)
+        is_scalar = np.isscalar(m)
+        
+        # Valid domain: 0 <= m <= N and integer
+        valid_mask = (m_arr >= 0) & (m_arr <= self.N) & (np.floor(m_arr) == m_arr)
+        
+        result = np.zeros_like(m_arr, dtype=np.float64)
+        if np.any(valid_mask):
+            m_valid = m_arr[valid_mask].astype(int)
+            # Use log-factorial / gammaln for numerical stability
+            log_comb = (
+                special.gammaln(self.N + 1)
+                - special.gammaln(m_valid + 1)
+                - special.gammaln(self.N - m_valid + 1)
+            )
+            # Handle boundary probabilities 0 and 1
+            if self.mu == 0.0:
+                prob = np.where(m_valid == 0, 1.0, 0.0)
+            elif self.mu == 1.0:
+                prob = np.where(m_valid == self.N, 1.0, 0.0)
+            else:
+                log_prob = (
+                    log_comb
+                    + m_valid * np.log(self.mu)
+                    + (self.N - m_valid) * np.log(1.0 - self.mu)
+                )
+                prob = np.exp(log_prob)
+            result[valid_mask] = prob
+            
+        if is_scalar:
+            return float(result)
+        return result
+
+    def log_pmf(self, m: Union[int, float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute ln Bin(m | N, mu)."""
+        prob = self.pmf(m)
+        eps = 1e-300
+        return np.log(np.maximum(prob, eps))
+
+    @property
+    def mean(self) -> float:
+        """E[m] = N * mu (Eq 3.11)."""
+        return self.N * self.mu
+
+    @property
+    def variance(self) -> float:
+        """var[m] = N * mu * (1 - mu) (Eq 3.12)."""
+        return self.N * self.mu * (1.0 - self.mu)
+
+    def pmf_all(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Return all possible outcomes m = 0, 1, ..., N and their probabilities.
+        Useful for reproducing Figure 3.1.
+        """
+        m_vals = np.arange(self.N + 1, dtype=int)
+        probs = self.pmf(m_vals)
+        return m_vals, probs
+
+    def sample(self, size: Union[int, Tuple[int, ...]] = 1, seed: Optional[int] = None) -> np.ndarray:
+        """Draw samples from Bin(m | N, mu)."""
+        rng = np.random.default_rng(seed)
+        return rng.binomial(n=self.N, p=self.mu, size=size)
+
+    @staticmethod
+    def fit_mle(m: int, N: int) -> float:
+        """Maximum likelihood estimator for binomial: mu_ML = m / N."""
+        if N <= 0:
+            raise ValueError("N must be strictly positive")
+        if not (0 <= m <= N):
+            raise ValueError(f"m must be between 0 and N, got m={m}, N={N}")
+        return float(m / N)
+
+
+class MultinomialDistribution:
+    """
+    Multinomial distribution and 1-of-K categorical scheme (Section 3.1.3).
+    
+    Formula:
+      Categorical: p(x | mu) = prod_{k=1}^K mu_k^{x_k}                     (Eq 3.14)
+      E[x | mu] = mu                                                       (Eq 3.16)
+      Sufficient statistics: m_k = sum_{n=1}^N x_{nk}                       (Eq 3.18)
+      MLE via Lagrange multipliers: mu_k^ML = m_k / N                       (Eq 3.22)
+      Multinomial: Mult(m_1, ..., m_K | mu, N) = (N! / prod m_k!) prod mu_k^{m_k} (Eq 3.23)
+    """
+    def __init__(self, mu: Union[List[float], np.ndarray], N: int = 1):
+        self.mu = np.asarray(mu, dtype=np.float64)
+        if self.mu.ndim != 1:
+            raise ValueError(f"mu must be a 1D probability vector, got shape {self.mu.shape}")
+        if np.any(self.mu < 0.0):
+            raise ValueError("Probabilities mu_k must be non-negative")
+        s = np.sum(self.mu)
+        if not np.isclose(s, 1.0, atol=1e-5):
+            raise ValueError(f"Probabilities must sum to 1, got sum {s}")
+        # Normalize slightly to ensure exact sum of 1.0
+        self.mu = self.mu / np.sum(self.mu)
+        self.K = len(self.mu)
+        if not isinstance(N, (int, np.integer)) or N < 0:
+            raise ValueError(f"N must be a non-negative integer, got {N}")
+        self.N = int(N)
+
+    def pmf_categorical(self, x: np.ndarray) -> Union[float, np.ndarray]:
+        """
+        Probability p(x | mu) = prod_{k=1}^K mu_k^{x_k} for 1-of-K vectors (Eq 3.14).
+        """
+        x = np.asarray(x)
+        if x.shape[-1] != self.K:
+            raise ValueError(f"Last dimension of x must equal K={self.K}, got {x.shape}")
+        # Check one-hot condition
+        if not np.all(np.isclose(np.sum(x, axis=-1), 1.0)) or not np.all(np.isin(x, [0, 1])):
+            raise ValueError("Input x must be valid 1-of-K (one-hot) vector")
+        # For one-hot vector, prod mu_k^{x_k} is simply mu_k for the active k
+        active_indices = np.argmax(x, axis=-1)
+        prob = self.mu[active_indices]
+        if prob.ndim == 0:
+            return float(prob)
+        return prob
+
+    def pmf(self, m: np.ndarray) -> float:
+        """
+        Multinomial distribution Mult(m_1, ..., m_K | mu, N) (Eq 3.23, 3.24).
+        """
+        m = np.asarray(m, dtype=int)
+        if m.shape != (self.K,):
+            raise ValueError(f"m must have shape ({self.K},), got {m.shape}")
+        if np.any(m < 0):
+            raise ValueError("Counts m_k must be non-negative")
+        if np.sum(m) != self.N:
+            raise ValueError(f"Counts m_k must sum to N={self.N}, got sum {np.sum(m)}")
+        
+        # log Mult = ln(N!) - sum ln(m_k!) + sum m_k ln(mu_k)
+        log_coef = special.gammaln(self.N + 1) - np.sum(special.gammaln(m + 1))
+        
+        eps = 1e-300
+        # If m_k == 0, m_k * ln(mu_k) = 0 even if mu_k == 0
+        log_term = np.where(m > 0, m * np.log(np.maximum(self.mu, eps)), 0.0)
+        log_prob = log_coef + np.sum(log_term)
+        return float(np.exp(log_prob))
+
+    @property
+    def mean(self) -> np.ndarray:
+        """E[m] = N * mu (Eq 3.16 when N=1)."""
+        return self.N * self.mu
+
+    @property
+    def covariance(self) -> np.ndarray:
+        """
+        Covariance matrix of counts m:
+          Cov[m_i, m_j] = - N * mu_i * mu_j (i != j)
+          Var[m_i] = N * mu_i * (1 - mu_i) (i == j)
+        """
+        cov = - self.N * np.outer(self.mu, self.mu)
+        diag = self.N * self.mu * (1.0 - self.mu)
+        np.fill_diagonal(cov, diag)
+        return cov
+
+    def sample(self, size: int = 1, seed: Optional[int] = None) -> np.ndarray:
+        """Draw count vector samples from Mult(m | mu, N)."""
+        rng = np.random.default_rng(seed)
+        return rng.multinomial(n=self.N, pvals=self.mu, size=size)
+
+    @staticmethod
+    def compute_sufficient_statistics(data_one_hot: np.ndarray) -> np.ndarray:
+        """
+        Compute sufficient statistics m_k = sum_{n=1}^N x_{nk} (Eq 3.18).
+        """
+        data_one_hot = np.asarray(data_one_hot)
+        if data_one_hot.ndim != 2:
+            raise ValueError(f"Expected 2D array of one-hot vectors (N, K), got shape {data_one_hot.shape}")
+        return np.sum(data_one_hot, axis=0)
+
+    @staticmethod
+    def fit_mle(data_or_counts: np.ndarray, is_counts: bool = False) -> np.ndarray:
+        """
+        Compute Maximum Likelihood Estimator mu_k^ML = m_k / N (Eq 3.22)
+        derived via Lagrange multipliers.
+        """
+        arr = np.asarray(data_or_counts, dtype=np.float64)
+        if is_counts:
+            counts = arr
+            N = np.sum(counts)
+            if N <= 0:
+                raise ValueError("Total count must be positive")
+            return counts / N
+        else:
+            if arr.ndim != 2:
+                raise ValueError(f"Expected 2D array of one-hot vectors (N, K), got {arr.shape}")
+            counts = np.sum(arr, axis=0)
+            N = arr.shape[0]
+            if N <= 0:
+                raise ValueError("Data points N must be positive")
+            return counts / N
+
+
+def plot_figure_3_1(
+    N: int = 10,
+    mu: float = 0.25,
+    save_paths: Optional[List[str]] = None,
+    ax: Optional[plt.Axes] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, plt.Axes]:
+    """
+    Faithfully reproduce Figure 3.1 from Bishop & Bishop (2024), page 68:
+    Histogram plot of the binomial distribution (3.9) as a function of m for N = 10 and mu = 0.25.
+    """
+    binom = BinomialDistribution(N=N, mu=mu)
+    m_vals, probs = binom.pmf_all()
+
+    created_fig = False
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(5.5, 4.2), dpi=300)
+        created_fig = True
+    else:
+        fig = ax.get_figure()
+
+    # Bishop textbook blue style
+    bar_color = '#0000FF'
+    edge_color = 'black'
+    
+    bars = ax.bar(
+        m_vals,
+        probs,
+        width=0.72,
+        color=bar_color,
+        edgecolor=edge_color,
+        linewidth=0.8,
+        zorder=3
+    )
+
+    ax.set_xlim(-0.6, N + 0.6)
+    ax.set_ylim(0.0, 0.3)
+    ax.set_xticks(np.arange(0, N + 1))
+    ax.set_yticks([0.0, 0.1, 0.2, 0.3])
+    ax.set_xlabel(r'$m$', fontsize=12)
+    ax.tick_params(axis='both', which='major', direction='in', top=True, right=True, labelsize=10)
+
+    # Clean styling
+    for spine in ax.spines.values():
+        spine.set_visible(True)
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+        
+    ax.grid(False) # Textbook figure has no grid lines
+
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.1 saved successfully to: {p}")
+
+    if show and created_fig:
+        plt.show()
+
+    return fig, ax
