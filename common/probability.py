@@ -2670,3 +2670,398 @@ def plot_figure_3_8(
     if show:
         plt.show()
     return fig, (ax1, ax2, ax3)
+
+
+# =====================================================================
+# Chapter 3 Section 3.3: Periodic Variables (Von Mises Distribution)
+# =====================================================================
+
+class VonMisesDistribution:
+    """
+    Von Mises Distribution (Circular Normal) for periodic variables (Section 3.3.1):
+      p(theta | theta_0, m) = 1 / (2*pi*I_0(m)) * exp{m * cos(theta - theta_0)}  (Eq 3.129)
+    where:
+      theta_0: mean angle (location parameter)
+      m: concentration parameter (analogous to inverse variance / precision)
+      I_0(m): zeroth-order modified Bessel function of the first kind (Eq 3.130)
+    """
+    def __init__(self, theta_0: float = 0.0, m: float = 1.0):
+        if m < 0:
+            raise ValueError(f"Concentration parameter m must be non-negative, got {m}")
+        self.theta_0 = float(theta_0) % (2 * np.pi)
+        self.m = float(m)
+
+    def pdf(self, theta: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """
+        Compute probability density p(theta | theta_0, m) (Eq 3.129).
+        Uses exponentially scaled Bessel function i0e(m) = exp(-m)*i0(m) for numerical stability.
+        """
+        th = np.asarray(theta, dtype=np.float64)
+        is_scalar = (th.ndim == 0)
+        
+        if self.m == 0.0:
+            val = np.full_like(th, 1.0 / (2 * np.pi))
+        else:
+            # exp(m * cos(th - th0)) / (2*pi * i0(m)) = exp(m * (cos(th - th0) - 1)) / (2*pi * i0e(m))
+            cos_diff = np.cos(th - self.theta_0)
+            val = np.exp(self.m * (cos_diff - 1.0)) / (2 * np.pi * special.i0e(self.m))
+            
+        if is_scalar:
+            return float(val)
+        return val
+
+    def log_pdf(self, theta: Union[float, List[float], np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute log probability density ln p(theta | theta_0, m) (Eq 3.131)."""
+        th = np.asarray(theta, dtype=np.float64)
+        is_scalar = (th.ndim == 0)
+        
+        if self.m == 0.0:
+            val = np.full_like(th, -np.log(2 * np.pi))
+        else:
+            cos_diff = np.cos(th - self.theta_0)
+            val = -np.log(2 * np.pi) - np.log(special.i0e(self.m)) + self.m * (cos_diff - 1.0)
+            
+        if is_scalar:
+            return float(val)
+        return val
+
+    def sample(self, size: int = 1, seed: Optional[int] = None) -> Union[float, np.ndarray]:
+        """Draw samples from von Mises distribution."""
+        rng = np.random.default_rng(seed)
+        samples = rng.vonmises(self.theta_0, self.m, size=size) % (2 * np.pi)
+        if size == 1:
+            return float(samples[0])
+        return samples
+
+    @staticmethod
+    def circular_mean(thetas: Union[List[float], np.ndarray]) -> float:
+        """
+        Compute sample circular mean direction theta_bar (Eq 3.119, 3.134):
+          theta_bar = atan2(1/N sum sin theta_n, 1/N sum cos theta_n)
+        """
+        th = np.asarray(thetas, dtype=np.float64)
+        s = np.mean(np.sin(th))
+        c = np.mean(np.cos(th))
+        return float(np.arctan2(s, c) % (2 * np.pi))
+
+    @staticmethod
+    def circular_resultant_length(thetas: Union[List[float], np.ndarray]) -> float:
+        """
+        Compute sample mean resultant vector length r_bar in [0, 1] (Eq 3.118, 3.135):
+          r_bar = ||1/N sum x_n|| = sqrt((1/N sum cos theta_n)^2 + (1/N sum sin theta_n)^2)
+        """
+        th = np.asarray(thetas, dtype=np.float64)
+        s = np.mean(np.sin(th))
+        c = np.mean(np.cos(th))
+        return float(np.sqrt(s**2 + c**2))
+
+    @staticmethod
+    def circular_variance(thetas: Union[List[float], np.ndarray]) -> float:
+        """Compute sample circular variance V = 1 - r_bar in [0, 1]."""
+        return 1.0 - VonMisesDistribution.circular_resultant_length(thetas)
+
+    @staticmethod
+    def bessel_ratio_A(m: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """Compute A(m) = I_1(m) / I_0(m) (Eq 3.136)."""
+        m_arr = np.asarray(m, dtype=np.float64)
+        is_scalar = (m_arr.ndim == 0)
+        res = np.zeros_like(m_arr)
+        mask = (m_arr > 0)
+        if np.any(mask):
+            # i1e(m) / i0e(m) = i1(m) / i0(m)
+            res[mask] = special.i1e(m_arr[mask]) / special.i0e(m_arr[mask])
+        if is_scalar:
+            return float(res)
+        return res
+
+    @classmethod
+    def fit_mle(cls, thetas: Union[List[float], np.ndarray]) -> "VonMisesDistribution":
+        """
+        Compute Maximum Likelihood Estimator for von Mises distribution (Section 3.3.1):
+          theta_0_ML = atan2(sum sin theta_n, sum cos theta_n)  (Eq 3.134)
+          A(m_ML) = 1/N sum cos(theta_n - theta_0_ML) = r_bar     (Eq 3.135, 3.137)
+        """
+        th = np.asarray(thetas, dtype=np.float64)
+        if len(th) == 0:
+            raise ValueError("Data array cannot be empty")
+        
+        theta_0_ml = cls.circular_mean(th)
+        r_bar = cls.circular_resultant_length(th)
+        
+        if r_bar < 1e-6:
+            m_ml = 0.0
+        elif r_bar >= 1.0 - 1e-6:
+            m_ml = 500.0  # highly concentrated
+        else:
+            # Mardia & Jupp (2000) initial approximation
+            if r_bar < 0.53:
+                m_init = 2 * r_bar + r_bar**3 + (5.0 / 6.0) * r_bar**5
+            elif r_bar < 0.85:
+                m_init = -0.4 + 1.39 * r_bar + 0.43 / (1.0 - r_bar)
+            else:
+                m_init = 1.0 / (r_bar**3 - 4 * r_bar**2 + 3 * r_bar)
+                
+            from scipy.optimize import root_scalar
+            def obj(m_val):
+                return cls.bessel_ratio_A(m_val) - r_bar
+            
+            bracket_low = max(0.0, m_init * 0.5)
+            bracket_high = min(1000.0, m_init * 2.0 + 1.0)
+            try:
+                sol = root_scalar(obj, bracket=[bracket_low, bracket_high], method='brentq')
+                m_ml = float(sol.root)
+            except Exception:
+                sol = root_scalar(obj, bracket=[0.0, 500.0], method='brentq')
+                m_ml = float(sol.root)
+                
+        return cls(theta_0=theta_0_ml, m=m_ml)
+
+
+def plot_figure_3_9(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, plt.Axes]:
+    """
+    Faithfully reproduce Figure 3.9 from Bishop & Bishop (2024), page 90:
+    Periodic variables on unit circle and sample mean vector.
+    """
+    fig, ax = plt.subplots(figsize=(5.5, 5.5), dpi=300)
+    theta = np.linspace(0, 2*np.pi, 200)
+    ax.plot(np.cos(theta), np.sin(theta), color='gray', linestyle='--', linewidth=1.2, zorder=1)
+    ax.axhline(0, color='black', linewidth=0.8, zorder=1)
+    ax.axvline(0, color='black', linewidth=0.8, zorder=1)
+
+    thetas = np.array([0.35, 1.1, 2.3, 3.2])
+    for i, th in enumerate(thetas):
+        x_i = np.cos(th)
+        y_i = np.sin(th)
+        ax.annotate('', xy=(x_i, y_i), xytext=(0, 0),
+                    arrowprops=dict(arrowstyle='->', color='#1E56A0', lw=1.5, mutation_scale=12))
+        ax.scatter([x_i], [y_i], color='#1E56A0', s=35, zorder=5)
+        offset = 0.12
+        ax.text(x_i + offset*np.cos(th), y_i + offset*np.sin(th), rf'$\mathbf{{x}}_{i+1}$',
+                fontsize=12, ha='center', va='center', color='#1E56A0', fontweight='bold')
+
+    x_vecs = np.column_stack([np.cos(thetas), np.sin(thetas)])
+    x_bar = np.mean(x_vecs, axis=0)
+    theta_bar = np.arctan2(x_bar[1], x_bar[0])
+
+    ax.annotate('', xy=(x_bar[0], x_bar[1]), xytext=(0, 0),
+                arrowprops=dict(arrowstyle='->', color='#E02020', lw=2.2, mutation_scale=14))
+    ax.scatter([x_bar[0]], [x_bar[1]], color='#E02020', s=45, zorder=6)
+    ax.text(x_bar[0] - 0.08, x_bar[1] + 0.08, r'$\bar{\mathbf{x}}$', fontsize=14, color='#E02020', fontweight='bold')
+
+    arc_theta = np.linspace(0, theta_bar, 50)
+    arc_r = 0.25
+    ax.plot(arc_r * np.cos(arc_theta), arc_r * np.sin(arc_theta), color='black', linewidth=1.0)
+    ax.text(0.30 * np.cos(theta_bar / 2), 0.30 * np.sin(theta_bar / 2), r'$\bar{\theta}$', fontsize=12)
+
+    mid_r = 0.5 * x_bar
+    ax.text(mid_r[0] + 0.05, mid_r[1] - 0.05, r'$r$', fontsize=12, color='#E02020')
+
+    ax.set_xlim(-1.3, 1.3)
+    ax.set_ylim(-1.3, 1.3)
+    ax.set_aspect('equal')
+    ax.set_xlabel(r'$x_1$', fontsize=12)
+    ax.set_ylabel(r'$x_2$', fontsize=12)
+
+    ax.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.9 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, ax
+
+
+def plot_figure_3_10(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, plt.Axes]:
+    """
+    Faithfully reproduce Figure 3.10 from Bishop & Bishop (2024), page 91:
+    2D Gaussian conditioned on unit circle yielding the von Mises distribution.
+    """
+    fig, ax = plt.subplots(figsize=(6, 5.5), dpi=300)
+    r0 = 1.6
+    theta0 = np.radians(45)
+    mu1 = r0 * np.cos(theta0)
+    mu2 = r0 * np.sin(theta0)
+    sigma = 0.8
+
+    x = np.linspace(-2.2, 2.6, 200)
+    y = np.linspace(-2.2, 2.6, 200)
+    X, Y = np.meshgrid(x, y)
+
+    dist_sq = (X - mu1)**2 + (Y - mu2)**2
+    density = np.exp(-0.5 * dist_sq / (sigma**2)) / (2 * np.pi * sigma**2)
+
+    levels = np.linspace(0.04, density.max() * 0.95, 6)
+    ax.contour(X, Y, density, levels=levels, colors='#1E56A0', linewidths=1.2)
+
+    circle_theta = np.linspace(0, 2*np.pi, 200)
+    ax.plot(np.cos(circle_theta), np.sin(circle_theta), color='#E02020', linewidth=2.2, label='Unit circle ($r=1$)')
+
+    ax.axhline(0, color='black', linewidth=0.8, linestyle=':', alpha=0.7)
+    ax.axvline(0, color='black', linewidth=0.8, linestyle=':', alpha=0.7)
+
+    ax.scatter([mu1], [mu2], color='#1E56A0', s=40, zorder=5)
+    ax.text(mu1 + 0.1, mu2 + 0.1, r'$\boldsymbol{\mu} = (r_0 \cos\theta_0, r_0 \sin\theta_0)$',
+            fontsize=10, color='#1E56A0', fontweight='bold')
+
+    ax.text(0.65, -0.9, r'$r = 1$', fontsize=12, color='#E02020', fontweight='bold')
+    ax.text(-1.8, 1.8, r'$p(\mathbf{x})$', fontsize=13, color='#1E56A0')
+
+    ax.set_xlim(-2.2, 2.6)
+    ax.set_ylim(-2.2, 2.6)
+    ax.set_aspect('equal')
+    ax.set_xlabel(r'$x_1$', fontsize=12)
+    ax.set_ylabel(r'$x_2$', fontsize=12)
+    ax.legend(loc='lower left', frameon=True, facecolor='white', framealpha=0.9, fontsize=10)
+
+    ax.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.10 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, ax
+
+
+def plot_figure_3_11(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """
+    Faithfully reproduce Figure 3.11 from Bishop & Bishop (2024), page 92:
+    The von Mises distribution plotted for two different parameter values:
+    Left: Cartesian plot. Right: Polar plot.
+    m = 5, theta0 = pi/4 (red)
+    m = 1, theta0 = 3*pi/4 (blue)
+    """
+    fig = plt.figure(figsize=(11, 4.8), dpi=300)
+
+    m1, th1 = 5.0, np.pi / 4.0
+    m2, th2 = 1.0, 3.0 * np.pi / 4.0
+
+    theta = np.linspace(0, 2*np.pi, 500)
+    pdf1 = np.exp(m1 * (np.cos(theta - th1) - 1.0)) / (2 * np.pi * special.i0e(m1))
+    pdf2 = np.exp(m2 * (np.cos(theta - th2) - 1.0)) / (2 * np.pi * special.i0e(m2))
+
+    # 1. Cartesian plot (left)
+    ax1 = fig.add_subplot(1, 2, 1)
+    ax1.plot(theta, pdf1, color='#E02020', linewidth=2.0, label=r'$m=5, \theta_0 = \pi/4$')
+    ax1.plot(theta, pdf2, color='#1E56A0', linewidth=2.0, label=r'$m=1, \theta_0 = 3\pi/4$')
+
+    ax1.set_xlim(0, 2*np.pi)
+    ax1.set_ylim(0, 1.0)
+    ax1.set_xticks([0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi])
+    ax1.set_xticklabels([r'$0$', r'$\pi/2$', r'$\pi$', r'$3\pi/2$', r'$2\pi$'])
+    ax1.set_xlabel(r'$\theta$', fontsize=12)
+    ax1.set_ylabel(r'$p(\theta)$', fontsize=12)
+    ax1.set_title('(a) Cartesian plot', fontsize=12)
+    ax1.legend(loc='upper right', frameon=True, facecolor='white', framealpha=0.9, fontsize=10)
+    ax1.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax1.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    # 2. Polar plot (right)
+    ax2 = fig.add_subplot(1, 2, 2, projection='polar')
+    ax2.plot(theta, pdf1, color='#E02020', linewidth=2.0)
+    ax2.plot(theta, pdf2, color='#1E56A0', linewidth=2.0)
+
+    ax2.plot([th1, th1], [0, np.max(pdf1)], color='#E02020', linestyle='--', linewidth=1.2)
+    ax2.plot([th2, th2], [0, np.max(pdf2)], color='#1E56A0', linestyle='--', linewidth=1.2)
+
+    ax2.set_theta_zero_location('E')
+    ax2.set_theta_direction(1)
+    ax2.set_title('(b) Polar plot', fontsize=12, pad=15)
+    ax2.tick_params(labelsize=9)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.11 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, (ax1, ax2)
+
+
+def plot_figure_3_12(
+    save_paths: Optional[List[str]] = None,
+    show: bool = False
+) -> Tuple[plt.Figure, Any]:
+    """
+    Faithfully reproduce Figure 3.12 from Bishop & Bishop (2024), page 93:
+    Left: Modified Bessel function I0(m) defined by (3.130).
+    Right: Function A(m) = I1(m) / I0(m) defined by (3.136).
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.2), dpi=300)
+
+    m = np.linspace(0, 10, 300)
+    I0 = special.i0(m)
+    I1 = special.i1(m)
+    A = np.zeros_like(m)
+    A[m > 0] = I1[m > 0] / I0[m > 0]
+    A[0] = 0.0
+
+    # (a) I0(m)
+    ax1.plot(m, I0, color='#1E56A0', linewidth=2.0)
+    ax1.set_xlim(0, 10)
+    ax1.set_ylim(0, 3000)
+    ax1.set_xlabel(r'$m$', fontsize=12)
+    ax1.set_ylabel(r'$I_0(m)$', fontsize=12)
+    ax1.set_title(r'(a) Zeroth-order Bessel function $I_0(m)$', fontsize=11)
+    ax1.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax1.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    # (b) A(m) = I1(m) / I0(m)
+    ax2.plot(m, A, color='#E02020', linewidth=2.0)
+    ax2.set_xlim(0, 10)
+    ax2.set_ylim(0, 1.0)
+    ax2.set_yticks([0.0, 0.5, 1.0])
+    ax2.set_xlabel(r'$m$', fontsize=12)
+    ax2.set_ylabel(r'$A(m)$', fontsize=12)
+    ax2.set_title(r'(b) Ratio function $A(m) = I_1(m) / I_0(m)$', fontsize=11)
+    ax2.tick_params(axis='both', which='major', direction='in', top=True, right=True)
+    for spine in ax2.spines.values():
+        spine.set_color('black')
+        spine.set_linewidth(0.8)
+
+    plt.tight_layout()
+    if save_paths:
+        for p in save_paths:
+            d = os.path.dirname(p)
+            if d and not os.path.exists(d):
+                os.makedirs(d, exist_ok=True)
+            fig.savefig(p, dpi=300, bbox_inches='tight')
+            print(f"Figure 3.12 saved successfully to: {p}")
+    if show:
+        plt.show()
+    return fig, (ax1, ax2)
+
