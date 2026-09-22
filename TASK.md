@@ -74,7 +74,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第2章** | 確率の基礎 (Probabilities) | 6 | 23 | Figure 2.1 〜 2.16 (全16枚) | 全41問 | 完了 (`[x]`) |
 | **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 完了 (`[x]`) |
 | **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 完了 (`[x]`) |
-| **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 進行中 (0/5 ユニット完了) |
+| **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 未着手 |
 | **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 4 | 14 | Figure 6.1 〜 6.13 (全13枚) | 全17問 | 未着手 |
 | **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 未着手 |
 | **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 未着手 |
@@ -95,8 +95,8 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 5.1 Discriminant Functions
-- **担当セクション**: 第5章 第1節 (5.1.1 〜 5.1.4)
+- **現在実行中のタスク**: 5.2 Decision Theory
+- **担当セクション**: 第5章 5.2 決定理論 (Decision Theory)
 - **ステータス**: 実行中 (`[-]`)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
@@ -314,17 +314,17 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `5/`
 - 再現図版目標: Figure 5.1 〜 5.17 (全17枚)
 
-- [-] **5.1 Discriminant Functions**
+- [x] **5.1 Discriminant Functions**
   - ノートブック: `5/5.1_Discriminant_Functions.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 5.1.1 Two classes
-    - [ ] 5.1.2 Multiple classes
-    - [ ] 5.1.3 1-of-K coding
-    - [ ] 5.1.4 Least squares for classification
+    - [x] 5.1.1 Two classes
+    - [x] 5.1.2 Multiple classes
+    - [x] 5.1.3 1-of-K coding
+    - [x] 5.1.4 Least squares for classification
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 5.1 〜 5.4)
   - テスト: `tests/test_ch5_discriminant_fu.py`
 
-- [ ] **5.2 Decision Theory**
+- [-] **5.2 Decision Theory**
   - ノートブック: `5/5.2_Decision_Theory.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 5.2.1 Misclassification rate

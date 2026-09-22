@@ -1,0 +1,401 @@
+2σ n=1
+q
+
+(4.69)
+
+where ‘const’ denotes terms independent of both w and σ 2 . Note that, as a function
+of w, this is the Lq error function considered in Section 4.2.
+4.12 (? ?) Consider the expected loss for regression problems under the Lq loss function
+given by (4.40). Write down the condition that y(x) must satisfy to minimize E[Lq ].
+Show that, for q = 1, this solution represents the conditional median, i.e., the function y(x) such that the probability mass for t < y(x) is the same as for t ⩾ y(x).
+Also show that the minimum expected Lq loss for q → 0 is given by the conditional
+mode, i.e., by the function y(x) being equal to the value of t that maximizes p(t|x)
+for each x.
+
+5
+Single-layer
+Networks:
+Classification
+
+In the previous chapter, we explored a class of regression models in which the output variables were linear functions of the model parameters and which can therefore
+be expressed as simple neural networks having a single layer of weight and bias
+parameters. We turn now to a discussion of classification problems, and in this chapter, we will focus on an analogous class of models that again can be expressed as
+single-layer neural networks. These will allow us to introduce many of the key concepts of classification before dealing with more general deep neural networks in later
+chapters.
+The goal in classification is to take an input vector x ∈ RD and assign it to one
+of K discrete classes Ck where k = 1, . . . , K. In the most common scenario, the
+classes are taken to be disjoint, so that each input is assigned to one and only one
+class. The input space is thereby divided into decision regions whose boundaries are
+called decision boundaries or decision surfaces. In this chapter, we consider linear
+
+© The Author(s), under exclusive license to Springer Nature Switzerland AG 2024
+C. M. Bishop, H. Bishop, Deep Learning, https://doi.org/10.1007/978-3-031-45468-4_5
+
+131
+
+132
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+
+Section 5.2.4
+
+models for classification, by which we mean that the decision surfaces are linear
+functions of the input vector x and, hence, are defined by (D − 1)-dimensional
+hyperplanes within the D-dimensional input space. Data sets whose classes can
+be separated exactly by linear decision surfaces are said to be linearly separable.
+Linear classification models can be applied to data sets that are not linearly separable,
+although not all inputs will be correctly classified.
+We can broadly identify three distinct approaches to solving classification problems. The simplest involves constructing a discriminant function that directly assigns
+each vector x to a specific class. A more powerful approach, however, models the
+conditional probability distributions p(Ck |x) in an inference stage and subsequently
+uses these distributions to make optimal decisions. Separating inference and decision brings numerous benefits. There are two different approaches to determining
+the conditional probabilities p(Ck |x). One technique is to model them directly, for
+example by representing them as parametric models and then optimizing the parameters using a training set. This will be called a discriminative probabilistic model.
+Alternatively, we can model the class-conditional densities p(x|Ck ), together with
+the prior probabilities p(Ck ) for the classes, and then compute the required posterior
+probabilities using Bayes’ theorem:
+p(Ck |x) =
+
+p(x|Ck )p(Ck )
+.
+p(x)
+
+(5.1)
+
+This will be called a generative probabilistic model because it offers the opportunity
+to generate samples from each of the class-conditional densities p(x|Ck ). In this
+chapter, we will discuss examples of all three approaches: discriminant functions,
+generative probabilistic models, and discriminative probabilistic models.
+
+5.1. Discriminant Functions
+A discriminant is a function that takes an input vector x and assigns it to one of K
+classes, denoted Ck . In this chapter, we will restrict attention to linear discriminants,
+namely those for which the decision surfaces are hyperplanes. To simplify the discussion, we consider first two classes and then investigate the extension to K > 2
+classes.
+
+5.1.1
+
+Two classes
+
+The simplest representation of a linear discriminant function is obtained by taking a linear function of the input vector so that
+y(x) = wT x + w0
+
+(5.2)
+
+where w is called a weight vector, and w0 is a bias (not to be confused with bias in
+the statistical sense). An input vector x is assigned to class C1 if y(x) ⩾ 0 and to
+class C2 otherwise. The corresponding decision boundary is therefore defined by the
+relation y(x) = 0, which corresponds to a (D − 1)-dimensional hyperplane within
+
+133
+
+5.1. Discriminant Functions
+Figure 5.1 Illustration of the geometry of
+a linear discriminant function in two dimensions. The decision surface, shown in red,
+is perpendicular to w, and its displacement
+from the origin is controlled by the bias parameter w0 . Also, the signed orthogonal
+distance of a general point x from the decision surface is given by y(x)/kwk.
+
+x2
+
+y>0
+y=0
+y<0
+
+R1
+R2
+
+x
+w
+
+y(x)
+kwk
+
+x⊥
+x1
+−w0
+kwk
+
+the D-dimensional input space. Consider two points xA and xB both of which lie on
+the decision surface. Because y(xA ) = y(xB ) = 0, we have wT (xA − xB ) = 0 and
+hence the vector w is orthogonal to every vector lying within the decision surface,
+and so w determines the orientation of the decision surface. Similarly, if x is a point
+on the decision surface, then y(x) = 0, and so the normal distance from the origin
+to the decision surface is given by
+w0
+wT x
+=−
+.
+kwk
+kwk
+
+(5.3)
+
+We therefore see that the bias parameter w0 determines the location of the decision
+surface. These properties are illustrated for the case of D = 2 in Figure 5.1.
+Furthermore, note that the value of y(x) gives a signed measure of the perpendicular distance r of the point x from the decision surface. To see this, consider an
+arbitrary point x and let x⊥ be its orthogonal projection onto the decision surface,
+so that
+w
+x = x⊥ + r
+.
+(5.4)
+kwk
+
+Multiplying both sides of this result by wT and adding w0 , and making use of y(x) =
+wT x + w0 and y(x⊥ ) = wT x⊥ + w0 = 0, we have
+r=
+
+Section 4.1.1
+
+y(x)
+.
+kwk
+
+(5.5)
+
+This result is illustrated in Figure 5.1.
+As with linear regression models, it is sometimes convenient to use a more compact notation in which we introduce an additional dummy ‘input’ value x0 = 1 and
+e = (w0 , w) and x
+e = (x0 , x) so that
+then define w
+e Tx
+e.
+y(x) = w
+
+(5.6)
+
+134
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+
+C3
+
+C1
+?
+R1
+
+R3
+
+R1
+
+C1
+
+R2
+
+?
+C3
+
+C1
+R3
+
+R2
+C2
+
+C2
+
+not C1
+
+C2
+
+not C2
+
+Figure 5.2 Attempting to construct a K-class discriminant from a set of two-class discriminant functions leads
+to ambiguous regions, as shown in green. On the left is an example with two discriminant functions designed to
+distinguish points in class Ck from points not in class Ck . On the right is an example involving three discriminant
+functions each of which is used to separate a pair of classes Ck and Cj .
+
+In this case, the decision surfaces are D-dimensional hyperplanes passing through
+the origin of the (D + 1)-dimensional expanded input space.
+
+5.1.2
+
+Multiple classes
+
+Now consider the extension of linear discriminant functions to K > 2 classes.
+We might be tempted to build a K-class discriminant by combining a number of
+two-class discriminant functions. However, this leads to some serious difficulties
+(Duda and Hart, 1973), as we now show.
+Consider a model with K − 1 classifiers, each of which solves a two-class problem of separating points in a particular class Ck from points not in that class. This
+is known as a one-versus-the-rest classifier. The left-hand example in Figure 5.2
+shows an example involving three classes where this approach leads to regions of
+input space that are ambiguously classified.
+An alternative is to introduce K(K − 1)/2 binary discriminant functions, one
+for every possible pair of classes. This is known as a one-versus-one classifier. Each
+point is then classified according to a majority vote amongst the discriminant functions. However, this too runs into the problem of ambiguous regions, as illustrated
+in the right-hand diagram of Figure 5.2.
+We can avoid these difficulties by considering a single K-class discriminant
+comprising K linear functions of the form
+yk (x) = wkT x + wk0
+
+(5.7)
+
+and then assigning a point x to class Ck if yk (x) > yj (x) for all j 6= k. The decision
+boundary between class Ck and class Cj is therefore given by yk (x) = yj (x) and
+
+5.1. Discriminant Functions
+Figure 5.3
+
+Illustration of the decision regions for a
+multi-class linear discriminant, with the
+decision boundaries shown in red. If
+two points xA and xB both lie inside the
+same decision region Rk , then any point
+b that lies on the line connecting these
+x
+two points must also lie in Rk , and hence,
+the decision region must be singly connected and convex.
+
+135
+
+Rj
+Ri
+Rk
+xB
+xA
+
+b
+x
+
+hence corresponds to a (D − 1)-dimensional hyperplane defined by
+(wk − wj )T x + (wk0 − wj 0 ) = 0.
+
+(5.8)
+
+This has the same form as the decision boundary for the two-class case discussed in
+Section 5.1.1, and so analogous geometrical properties apply.
+The decision regions of such a discriminant are always singly connected and
+convex. To see this, consider two points xA and xB both of which lie inside decision
+b that lies on the line connecting
+region Rk , as illustrated in Figure 5.3. Any point x
+xA and xB can be expressed in the form
+b = λxA + (1 − λ)xB
+x
+
+(5.9)
+
+where 0 ⩽ λ ⩽ 1. From the linearity of the discriminant functions, it follows that
+yk (b
+x) = λyk (xA ) + (1 − λ)yk (xB ).
+
+Section 5.1.1
+
+(5.10)
+
+Because both xA and xB lie inside Rk , it follows that yk (xA ) > yj (xA ) and that
+b also lies inside
+yk (xB ) > yj (xB ), for all j 6= k, and hence yk (b
+x) > yj (b
+x), and so x
+Rk . Thus, Rk is singly connected and convex.
+Note that for two classes, we can either employ the formalism discussed here,
+based on two discriminant functions y1 (x) and y2 (x), or else use the simpler but
+essentially equivalent formulation based on a single discriminant function y(x).
+
+5.1.3
+
+1-of-K coding
+
+For regression problems, the target variable t was simply the vector of real numbers whose values we wish to predict. In classification, there are various ways of
+using target values to represent class labels. For two-class problems, the most convenient is the binary representation in which there is a single target variable t ∈ {0, 1}
+such that t = 1 represents class C1 and t = 0 represents class C2 . We can interpret
+the value of t as the probability that the class is C1 , with the probability values taking
+only the extreme values of 0 and 1. For K > 2 classes, it is convenient to use a
+1-of-K coding scheme, also known as the one-hot encoding scheme, in which t is
+a vector of length K such that if the class is Cj , then all elements tk of t are zero
+
+136
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+except element tj , which takes the value 1. For instance, if we have K = 5 classes,
+then a data point from class 2 would be given the target vector
+t = (0, 1, 0, 0, 0)T .
+
+(5.11)
+
+Again, we can interpret the value of tk as the probability that the class is Ck in which
+the probabilities take only the values 0 and 1.
+
+5.1.4
+Section 4.1.3
+
+Exercise 5.1
+
+Least squares for classification
+
+With linear regression models, the minimization of a sum-of-squares error function leads to a simple closed-form solution for the parameter values. It is therefore
+tempting to see if we can apply the same least-squares formalism to classification
+problems. Consider a general classification problem with K classes and a 1-of-K
+binary coding scheme for the target vector t. One justification for using least squares
+in such a context is that it approximates the conditional expectation E[t|x] of the
+target values given the input vector. For a binary coding scheme, this conditional expectation is given by the vector of posterior class probabilities. Unfortunately, these
+probabilities are typically approximated rather poorly, and indeed the approximations can have values outside the range (0, 1). However, it is instructional to explore
+these simple models and to understand how these limitations arise.
+Each class Ck is described by its own linear model so that
+yk (x) = wkT x + wk0
+
+(5.12)
+
+where k = 1, . . . , K. We can conveniently group these together using vector notation so that
+f Tx
+e
+y(x) = W
+(5.13)
+f is a matrix whose kth column comprises the (D + 1)-dimensional vector
+where W
+e is the corresponding augmented input vector (1, xT )T with
+e k = (wk0 , wkT )T and x
+w
+a dummy input x0 = 1. A new input x is then assigned to the class for which the
+e is largest.
+e kT x
+output yk = w
+f by minimizing a sum-of-squares
+We now determine the parameter matrix W
+error function. Consider a training data set {xn , tn } where n = 1, . . . , N , and
+e
+define a matrix T whose nth row is the vector tT
+n , together with a matrix X whose
+T
+en . The sum-of-squares error function can then be written as
+nth row is x
+n
+o
+f = 1 Tr (X
+eW
+f − T)T (X
+eW
+f − T) .
+ED (W)
+2
+
+(5.14)
+
+f to zero and rearranging, we obtain the soluSetting the derivative with respect to W
+f in the form
+tion for W
+f = (X
+e T X)
+e −1 X
+e TT = X
+e †T
+W
+Section 4.1.3
+
+(5.15)
+
+e † is the pseudo-inverse of the matrix X.
+e We then obtain the discriminant
+where X
+
+5.1. Discriminant Functions
+function in the form
+
+ T
+f Tx
+e† x
+e = TT X
+e.
+y(x) = W
+
+137

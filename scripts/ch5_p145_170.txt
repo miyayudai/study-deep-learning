@@ -1,0 +1,1728 @@
+126
+
+4. SINGLE-LAYER NETWORKS: REGRESSION
+N = 25 data points, from the sinusoidal curve h(x) = sin(2πx). The data sets are
+indexed by l = 1, . . . , L, where L = 100. For each data set D(l) , we fit a model
+with M = 24 Gaussian basis functions along with a constant ‘bias’ basis function to
+give a total of 25 parameters. By minimizing the regularized error function (4.26),
+we obtain a prediction function f (l) (x), as shown in Figure 4.7.
+The top row corresponds to a large value of the regularization coefficient λ that
+gives low variance (because the red curves in the left plot look similar) but high
+bias (because the two curves in the right plot are very different). Conversely on
+the bottom row, for which λ is small, there is large variance (shown by the high
+variability between the red curves in the left plot) but low bias (shown by the good
+fit between the average model fit and the original sinusoidal function). Note that
+the result of averaging many solutions for the complex model with M = 25 is a
+very good fit to the regression function, which suggests that averaging may be a
+beneficial procedure. Indeed, a weighted averaging of multiple solutions lies at the
+heart of a Bayesian approach, although the averaging is with respect to the posterior
+distribution of parameters, not with respect to multiple data sets.
+We can also examine the bias–variance trade-off quantitatively for this example.
+The average prediction is estimated from
+L
+
+f (x) =
+
+1 X (l)
+f (x),
+L
+
+(4.50)
+
+l=1
+
+and the integrated squared bias and integrated variance are then given by
+N
+
+(bias)2 =
+
+1 X
+2
+f (xn ) − h(xn )
+N n=1
+
+variance =
+
+1 X 1 X  (l)
+2
+f (xn ) − f (xn )
+N n=1 L
+
+N
+
+(4.51)
+
+L
+
+(4.52)
+
+l=1
+
+where the integral over x, weighted by the distribution p(x), is approximated by a
+finite sum over data points drawn from that distribution. These quantities, along with
+their sum, are plotted as a function of ln λ in Figure 4.8. We see that small values
+of λ allow the model to become finely tuned to the noise on each individual data set
+leading to large variance. Conversely, a large value of λ pulls the weight parameters
+towards zero leading to large bias.
+Note that the bias–variance decomposition is of limited practical value because
+it is based on averages with respect to ensembles of data sets, whereas in practice
+we have only the single observed data set. If we had a large number of independent
+training sets of a given size, we would be better off combining them into a single
+larger training set, which of course would reduce the level of over-fitting for a given
+model complexity. Nevertheless, the bias–variance decomposition often provides
+useful insights into the model complexity issue, and although we have introduced it
+in this chapter from the perspective of regression problems, the underlying intuition
+has broad applicability.
+
+4.3. The Bias–Variance Trade-off
+
+1
+
+1
+
+ln λ = 3
+
+t
+
+t
+
+−1
+
+−1
+0
+
+1
+
+x
+
+1
+
+t
+
+t
+
+−1
+
+−1
+1
+
+x
+
+1
+
+t
+
+t
+
+−1
+
+−1
+x
+
+x
+
+1
+
+0
+
+x
+
+1
+
+0
+
+x
+
+1
+
+1
+
+ln λ = −3
+
+0
+
+0
+
+1
+
+ln λ = 1
+
+0
+
+127
+
+1
+
+Figure 4.7 Illustration of the dependence of bias and variance on model complexity governed by a regularization parameter λ, using the sinusoidal data from Chapter 1. There are L = 100 data sets, each having N = 25
+data points, and there are 24 Gaussian basis functions in the model so that the total number of parameters is
+M = 25 including the bias parameter. The left column shows the result of fitting the model to the data sets for
+various values of ln λ (for clarity, only 20 of the 100 fits are shown). The right column shows the corresponding
+average of the 100 fits (red) along with the sinusoidal function from which the data sets were generated (green).
+
+128
+
+4. SINGLE-LAYER NETWORKS: REGRESSION
+
+Figure 4.8 Plot of squared bias and variance, together with their sum, corresponding to the results shown in Figure 4.7. Also
+shown is the average test set error for a
+test data set size of 1,000 points. The minimum value of (bias)2 + variance occurs
+around ln λ = 0.43, which is close to the
+value that gives the minimum error on the
+test data.
+
+0.25
+
+(bias)2
+variance
+(bias)2 + variance
+test error
+0
+−3
+
+0
+
+3
+
+ln λ
+
+Exercises
+
+4.1 (?) Consider the sum-of-squares error function given by (1.2) in which the function
+y(x, w) is given by the polynomial (1.1). Show that the coefficients w = {wi } that
+minimize this error function are given by the solution to the following set of linear
+equations:
+M
+X
+Aij wj = Ti
+(4.53)
+j =0
+
+where
+Aij =
+
+N
+X
+
+(xn )i+j ,
+
+Ti =
+
+n=1
+
+N
+X
+
+(xn )i tn .
+
+(4.54)
+
+n=1
+
+Here a suffix i or j denotes the index of a component, whereas (x)i denotes x raised
+to the power of i.
+4.2 (?) Write down the set of coupled linear equations, analogous to (4.53), satisfied by
+the coefficients wi that minimize the regularized sum-of-squares error function given
+by (1.4).
+4.3 (?) Show that the tanh function defined by
+tanh(a) =
+
+ea − e−a
+ea + e−a
+
+(4.55)
+
+and the logistic sigmoid function defined by (4.6) are related by
+tanh(a) = 2σ(2a) − 1.
+
+(4.56)
+
+Hence, show that a general linear combination of logistic sigmoid functions of the
+form
+
+
+M
+X
+x − µj
+(4.57)
+y(x, w) = w0 +
+wj σ
+s
+j =1
+
+Exercises
+
+129
+
+is equivalent to a linear combination of tanh functions of the form
+y(x, u) = u0 +
+
+M
+X
+
+
+uj tanh
+
+j =1
+
+x − µj
+2s
+
+
+(4.58)
+
+and find expressions to relate the new parameters {u1 , . . . , uM } to the original parameters {w1 , . . . , wM }.
+4.4 (? ? ?) Show that the matrix
+
+Φ(ΦT Φ)−1 ΦT
+
+(4.59)
+
+takes any vector v and projects it onto the space spanned by the columns of Φ. Use
+this result to show that the least-squares solution (4.14) corresponds to an orthogonal
+projection of the vector t onto the manifold S, as shown in Figure 4.3.
+4.5 (?) Consider a data set in which each data point tn is associated with a weighting
+factor rn > 0, so that the sum-of-squares error function becomes
+N
+
+ED (w) =
+
+1X 
+2
+rn tn − wT φ(xn ) .
+2 n=1
+
+(4.60)
+
+Find an expression for the solution w? that minimizes this error function. Give two
+alternative interpretations of the weighted sum-of-squares error function in terms of
+(i) data-dependent noise variance and (ii) replicated data points.
+4.6 (?) By setting the gradient of (4.26) with respect to w to zero, show that the exact
+minimum of the regularized sum-of-squares error function for linear regression is
+given by (4.27).
+4.7 (? ?) Consider a linear basis function regression model for a multivariate target variable t having a Gaussian distribution of the form
+p(t|W, Σ) = N (t|y(x, W), Σ)
+
+(4.61)
+
+y(x, W) = WT φ(x)
+
+(4.62)
+
+where
+together with a training data set comprising input basis vectors φ(xn ) and corresponding target vectors tn , with n = 1, . . . , N . Show that the maximum likelihood
+solution WML for the parameter matrix W has the property that each column is
+given by an expression of the form (4.14), which was the solution for an isotropic
+noise distribution. Note that this is independent of the covariance matrix Σ. Show
+that the maximum likelihood solution for Σ is given by
+N
+
+
+T
+1 X
+T
+T
+Σ=
+tn − WML
+φ(xn ) tn − WML
+φ(xn ) .
+N n=1
+
+(4.63)
+
+130
+
+4. SINGLE-LAYER NETWORKS: REGRESSION
+4.8 (?) Consider the generalization of the squared-loss function (4.35) for a single target
+variable t to multiple target variables described by the vector t given by
+ZZ
+E[L(t, f (x))] =
+kf (x) − tk2 p(x, t) dx dt.
+(4.64)
+Using the calculus of variations, show that the function f (x) for which this expected
+loss is minimized is given by
+f (x) = Et [t|x].
+
+(4.65)
+
+4.9 (?) By expansion of the square in (4.64), derive a result analogous to (4.39) and,
+hence, show that the function f (x) that minimizes the expected squared loss for a
+vector t of target variables is again given by the conditional expectation of t in the
+form (4.65).
+4.10 (? ?) Rederive the result (4.65) by first expanding (4.64) analogous to (4.39).
+4.11 (? ?) The following distribution
+p(x|σ 2 , q) =
+
+
+
+|x|q
+exp
+−
+2σ 2
+2(2σ 2 )1/q Γ(1/q)
+q
+
+(4.66)
+
+is a generalization of the univariate Gaussian distribution. Here Γ(x) is the gamma
+function defined by
+Z
+∞
+
+ux−1 e−u du.
+
+(4.67)
+
+Show that this distribution is normalized so that
+Z ∞
+p(x|σ 2 , q) dx = 1
+
+(4.68)
+
+Γ(x) =
+
+−∞
+
+−∞
+
+and that it reduces to the Gaussian when q = 2. Consider a regression model in
+which the target variable is given by t = y(x, w)+ and  is a random noise variable
+drawn from the distribution (4.66). Show that the log likelihood function over w and
+σ 2 , for an observed data set of input vectors X = {x1 , . . . , xN } and corresponding
+target variables t = (t1 , . . . , tN )T , is given by
+ln p(t|X, w, σ 2 ) = −
+
+N
+N
+1 X
+ln(2σ 2 ) + const
+|y(xn , w) − tn |q −
+2
+2σ n=1
+q
+
+(4.69)
+
+where ‘const’ denotes terms independent of both w and σ 2 . Note that, as a function
+of w, this is the Lq error function considered in Section 4.2.
+4.12 (? ?) Consider the expected loss for regression problems under the Lq loss function
+given by (4.40). Write down the condition that y(x) must satisfy to minimize E[Lq ].
+Show that, for q = 1, this solution represents the conditional median, i.e., the function y(x) such that the probability mass for t < y(x) is the same as for t ⩾ y(x).
+Also show that the minimum expected Lq loss for q → 0 is given by the conditional
+mode, i.e., by the function y(x) being equal to the value of t that maximizes p(t|x)
+for each x.
+
+5
+Single-layer
+Networks:
+Classification
+
+In the previous chapter, we explored a class of regression models in which the output variables were linear functions of the model parameters and which can therefore
+be expressed as simple neural networks having a single layer of weight and bias
+parameters. We turn now to a discussion of classification problems, and in this chapter, we will focus on an analogous class of models that again can be expressed as
+single-layer neural networks. These will allow us to introduce many of the key concepts of classification before dealing with more general deep neural networks in later
+chapters.
+The goal in classification is to take an input vector x ∈ RD and assign it to one
+of K discrete classes Ck where k = 1, . . . , K. In the most common scenario, the
+classes are taken to be disjoint, so that each input is assigned to one and only one
+class. The input space is thereby divided into decision regions whose boundaries are
+called decision boundaries or decision surfaces. In this chapter, we consider linear
+
+© The Author(s), under exclusive license to Springer Nature Switzerland AG 2024
+C. M. Bishop, H. Bishop, Deep Learning, https://doi.org/10.1007/978-3-031-45468-4_5
+
+131
+
+132
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+
+Section 5.2.4
+
+models for classification, by which we mean that the decision surfaces are linear
+functions of the input vector x and, hence, are defined by (D − 1)-dimensional
+hyperplanes within the D-dimensional input space. Data sets whose classes can
+be separated exactly by linear decision surfaces are said to be linearly separable.
+Linear classification models can be applied to data sets that are not linearly separable,
+although not all inputs will be correctly classified.
+We can broadly identify three distinct approaches to solving classification problems. The simplest involves constructing a discriminant function that directly assigns
+each vector x to a specific class. A more powerful approach, however, models the
+conditional probability distributions p(Ck |x) in an inference stage and subsequently
+uses these distributions to make optimal decisions. Separating inference and decision brings numerous benefits. There are two different approaches to determining
+the conditional probabilities p(Ck |x). One technique is to model them directly, for
+example by representing them as parametric models and then optimizing the parameters using a training set. This will be called a discriminative probabilistic model.
+Alternatively, we can model the class-conditional densities p(x|Ck ), together with
+the prior probabilities p(Ck ) for the classes, and then compute the required posterior
+probabilities using Bayes’ theorem:
+p(Ck |x) =
+
+p(x|Ck )p(Ck )
+.
+p(x)
+
+(5.1)
+
+This will be called a generative probabilistic model because it offers the opportunity
+to generate samples from each of the class-conditional densities p(x|Ck ). In this
+chapter, we will discuss examples of all three approaches: discriminant functions,
+generative probabilistic models, and discriminative probabilistic models.
+
+5.1. Discriminant Functions
+A discriminant is a function that takes an input vector x and assigns it to one of K
+classes, denoted Ck . In this chapter, we will restrict attention to linear discriminants,
+namely those for which the decision surfaces are hyperplanes. To simplify the discussion, we consider first two classes and then investigate the extension to K > 2
+classes.
+
+5.1.1
+
+Two classes
+
+The simplest representation of a linear discriminant function is obtained by taking a linear function of the input vector so that
+y(x) = wT x + w0
+
+(5.2)
+
+where w is called a weight vector, and w0 is a bias (not to be confused with bias in
+the statistical sense). An input vector x is assigned to class C1 if y(x) ⩾ 0 and to
+class C2 otherwise. The corresponding decision boundary is therefore defined by the
+relation y(x) = 0, which corresponds to a (D − 1)-dimensional hyperplane within
+
+133
+
+5.1. Discriminant Functions
+Figure 5.1 Illustration of the geometry of
+a linear discriminant function in two dimensions. The decision surface, shown in red,
+is perpendicular to w, and its displacement
+from the origin is controlled by the bias parameter w0 . Also, the signed orthogonal
+distance of a general point x from the decision surface is given by y(x)/kwk.
+
+x2
+
+y>0
+y=0
+y<0
+
+R1
+R2
+
+x
+w
+
+y(x)
+kwk
+
+x⊥
+x1
+−w0
+kwk
+
+the D-dimensional input space. Consider two points xA and xB both of which lie on
+the decision surface. Because y(xA ) = y(xB ) = 0, we have wT (xA − xB ) = 0 and
+hence the vector w is orthogonal to every vector lying within the decision surface,
+and so w determines the orientation of the decision surface. Similarly, if x is a point
+on the decision surface, then y(x) = 0, and so the normal distance from the origin
+to the decision surface is given by
+w0
+wT x
+=−
+.
+kwk
+kwk
+
+(5.3)
+
+We therefore see that the bias parameter w0 determines the location of the decision
+surface. These properties are illustrated for the case of D = 2 in Figure 5.1.
+Furthermore, note that the value of y(x) gives a signed measure of the perpendicular distance r of the point x from the decision surface. To see this, consider an
+arbitrary point x and let x⊥ be its orthogonal projection onto the decision surface,
+so that
+w
+x = x⊥ + r
+.
+(5.4)
+kwk
+
+Multiplying both sides of this result by wT and adding w0 , and making use of y(x) =
+wT x + w0 and y(x⊥ ) = wT x⊥ + w0 = 0, we have
+r=
+
+Section 4.1.1
+
+y(x)
+.
+kwk
+
+(5.5)
+
+This result is illustrated in Figure 5.1.
+As with linear regression models, it is sometimes convenient to use a more compact notation in which we introduce an additional dummy ‘input’ value x0 = 1 and
+e = (w0 , w) and x
+e = (x0 , x) so that
+then define w
+e Tx
+e.
+y(x) = w
+
+(5.6)
+
+134
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+
+C3
+
+C1
+?
+R1
+
+R3
+
+R1
+
+C1
+
+R2
+
+?
+C3
+
+C1
+R3
+
+R2
+C2
+
+C2
+
+not C1
+
+C2
+
+not C2
+
+Figure 5.2 Attempting to construct a K-class discriminant from a set of two-class discriminant functions leads
+to ambiguous regions, as shown in green. On the left is an example with two discriminant functions designed to
+distinguish points in class Ck from points not in class Ck . On the right is an example involving three discriminant
+functions each of which is used to separate a pair of classes Ck and Cj .
+
+In this case, the decision surfaces are D-dimensional hyperplanes passing through
+the origin of the (D + 1)-dimensional expanded input space.
+
+5.1.2
+
+Multiple classes
+
+Now consider the extension of linear discriminant functions to K > 2 classes.
+We might be tempted to build a K-class discriminant by combining a number of
+two-class discriminant functions. However, this leads to some serious difficulties
+(Duda and Hart, 1973), as we now show.
+Consider a model with K − 1 classifiers, each of which solves a two-class problem of separating points in a particular class Ck from points not in that class. This
+is known as a one-versus-the-rest classifier. The left-hand example in Figure 5.2
+shows an example involving three classes where this approach leads to regions of
+input space that are ambiguously classified.
+An alternative is to introduce K(K − 1)/2 binary discriminant functions, one
+for every possible pair of classes. This is known as a one-versus-one classifier. Each
+point is then classified according to a majority vote amongst the discriminant functions. However, this too runs into the problem of ambiguous regions, as illustrated
+in the right-hand diagram of Figure 5.2.
+We can avoid these difficulties by considering a single K-class discriminant
+comprising K linear functions of the form
+yk (x) = wkT x + wk0
+
+(5.7)
+
+and then assigning a point x to class Ck if yk (x) > yj (x) for all j 6= k. The decision
+boundary between class Ck and class Cj is therefore given by yk (x) = yj (x) and
+
+5.1. Discriminant Functions
+Figure 5.3
+
+Illustration of the decision regions for a
+multi-class linear discriminant, with the
+decision boundaries shown in red. If
+two points xA and xB both lie inside the
+same decision region Rk , then any point
+b that lies on the line connecting these
+x
+two points must also lie in Rk , and hence,
+the decision region must be singly connected and convex.
+
+135
+
+Rj
+Ri
+Rk
+xB
+xA
+
+b
+x
+
+hence corresponds to a (D − 1)-dimensional hyperplane defined by
+(wk − wj )T x + (wk0 − wj 0 ) = 0.
+
+(5.8)
+
+This has the same form as the decision boundary for the two-class case discussed in
+Section 5.1.1, and so analogous geometrical properties apply.
+The decision regions of such a discriminant are always singly connected and
+convex. To see this, consider two points xA and xB both of which lie inside decision
+b that lies on the line connecting
+region Rk , as illustrated in Figure 5.3. Any point x
+xA and xB can be expressed in the form
+b = λxA + (1 − λ)xB
+x
+
+(5.9)
+
+where 0 ⩽ λ ⩽ 1. From the linearity of the discriminant functions, it follows that
+yk (b
+x) = λyk (xA ) + (1 − λ)yk (xB ).
+
+Section 5.1.1
+
+(5.10)
+
+Because both xA and xB lie inside Rk , it follows that yk (xA ) > yj (xA ) and that
+b also lies inside
+yk (xB ) > yj (xB ), for all j 6= k, and hence yk (b
+x) > yj (b
+x), and so x
+Rk . Thus, Rk is singly connected and convex.
+Note that for two classes, we can either employ the formalism discussed here,
+based on two discriminant functions y1 (x) and y2 (x), or else use the simpler but
+essentially equivalent formulation based on a single discriminant function y(x).
+
+5.1.3
+
+1-of-K coding
+
+For regression problems, the target variable t was simply the vector of real numbers whose values we wish to predict. In classification, there are various ways of
+using target values to represent class labels. For two-class problems, the most convenient is the binary representation in which there is a single target variable t ∈ {0, 1}
+such that t = 1 represents class C1 and t = 0 represents class C2 . We can interpret
+the value of t as the probability that the class is C1 , with the probability values taking
+only the extreme values of 0 and 1. For K > 2 classes, it is convenient to use a
+1-of-K coding scheme, also known as the one-hot encoding scheme, in which t is
+a vector of length K such that if the class is Cj , then all elements tk of t are zero
+
+136
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+except element tj , which takes the value 1. For instance, if we have K = 5 classes,
+then a data point from class 2 would be given the target vector
+t = (0, 1, 0, 0, 0)T .
+
+(5.11)
+
+Again, we can interpret the value of tk as the probability that the class is Ck in which
+the probabilities take only the values 0 and 1.
+
+5.1.4
+Section 4.1.3
+
+Exercise 5.1
+
+Least squares for classification
+
+With linear regression models, the minimization of a sum-of-squares error function leads to a simple closed-form solution for the parameter values. It is therefore
+tempting to see if we can apply the same least-squares formalism to classification
+problems. Consider a general classification problem with K classes and a 1-of-K
+binary coding scheme for the target vector t. One justification for using least squares
+in such a context is that it approximates the conditional expectation E[t|x] of the
+target values given the input vector. For a binary coding scheme, this conditional expectation is given by the vector of posterior class probabilities. Unfortunately, these
+probabilities are typically approximated rather poorly, and indeed the approximations can have values outside the range (0, 1). However, it is instructional to explore
+these simple models and to understand how these limitations arise.
+Each class Ck is described by its own linear model so that
+yk (x) = wkT x + wk0
+
+(5.12)
+
+where k = 1, . . . , K. We can conveniently group these together using vector notation so that
+f Tx
+e
+y(x) = W
+(5.13)
+f is a matrix whose kth column comprises the (D + 1)-dimensional vector
+where W
+e is the corresponding augmented input vector (1, xT )T with
+e k = (wk0 , wkT )T and x
+w
+a dummy input x0 = 1. A new input x is then assigned to the class for which the
+e is largest.
+e kT x
+output yk = w
+f by minimizing a sum-of-squares
+We now determine the parameter matrix W
+error function. Consider a training data set {xn , tn } where n = 1, . . . , N , and
+e
+define a matrix T whose nth row is the vector tT
+n , together with a matrix X whose
+T
+en . The sum-of-squares error function can then be written as
+nth row is x
+n
+o
+f = 1 Tr (X
+eW
+f − T)T (X
+eW
+f − T) .
+ED (W)
+2
+
+(5.14)
+
+f to zero and rearranging, we obtain the soluSetting the derivative with respect to W
+f in the form
+tion for W
+f = (X
+e T X)
+e −1 X
+e TT = X
+e †T
+W
+Section 4.1.3
+
+(5.15)
+
+e † is the pseudo-inverse of the matrix X.
+e We then obtain the discriminant
+where X
+
+5.1. Discriminant Functions
+function in the form
+
+ T
+f Tx
+e† x
+e = TT X
+e.
+y(x) = W
+
+137
+
+(5.16)
+
+An interesting property of least-squares solutions with multiple target variables
+is that if every target vector in the training set satisfies some linear constraint
+aT t n + b = 0
+Exercise 5.3
+
+Section 2.3.4
+
+Section 5.4.3
+
+(5.17)
+
+for some constants a and b, then the model prediction for any value of x will satisfy
+the same constraint so that
+aT y(x) + b = 0.
+(5.18)
+Thus, if we use a 1-of-K coding scheme for K classes, then the predictions made
+by the model will have the property that the elements of y(x) will sum to 1 for any
+value of x. However, this summation constraint alone is not sufficient to allow the
+model outputs to be interpreted as probabilities because they are not constrained to
+lie within the interval (0, 1).
+The least-squares approach gives an exact closed-form solution for the discriminant function parameters. However, even as a discriminant function (where we use
+it to make decisions directly and dispense with any probabilistic interpretation), it
+suffers from some severe problems. We have seen that the sum-of-squares error
+function can be viewed as the negative log likelihood under the assumption of a
+Gaussian noise distribution. If the true distribution of the data is markedly different
+from being Gaussian, then least squares can give poor results. In particular, least
+squares is very sensitive to the presence of outliers, which are data points located a
+long way from the bulk of the data. This is illustrated in Figure 5.4. Here we see that
+the additional data points in the right-hand figure produce a significant change in the
+location of the decision boundary, even though these points would be correctly classified by the original decision boundary in the left-hand figure. The sum-of-squares
+error function gives too much weight to data points that are a long way from the
+decision boundary, even though they are correctly classified. Outliers can arise due
+to rare events or may simply be due to mistakes in the data set. Techniques that are
+sensitive to a very few data points are said to lack robustness. For comparison, Figure 5.4 also shows results from a technique called logistic regression, which is more
+robust to outliers.
+The failure of least squares should not surprise us when we recall that it corresponds to maximum likelihood under the assumption of a Gaussian conditional
+distribution, whereas binary target vectors clearly have a distribution that is far from
+Gaussian. By adopting more appropriate probabilistic models, we can obtain classification techniques with much better properties than least squares, and which can
+also be generalized to give flexible nonlinear neural network models, as we will see
+in later chapters.
+
+138
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+4
+
+4
+
+2
+
+2
+
+0
+
+0
+
+−2
+
+−2
+
+−4
+
+−4
+
+−6
+
+−6
+
+−8
+
+−8
+
+−4
+
+−2
+
+0
+
+2
+
+4
+
+6
+
+8
+
+−4
+
+−2
+
+0
+
+2
+
+4
+
+6
+
+8
+
+Figure 5.4 The left-hand plot shows data from two classes, denoted by red crosses and blue circles, together
+with the decision boundaries found by least squares (magenta curve) and by a logistic regression model (green
+curve). The right-hand plot shows the corresponding results obtained when extra data points are added at the
+bottom right of the diagram, showing that least squares is highly sensitive to outliers, unlike logistic regression.
+
+5.2. Decision Theory
+
+Section 4.2
+
+When we discussed linear regression we saw how the process of making predictions
+in machine learning can be broken down into the two stages of inference and decision. We now explore this perspective in much greater depth specifically in the
+context of classifiers.
+Suppose we have an input vector x together with a corresponding vector t of
+target variables, and our goal is to predict t given a new value for x. For regression
+problems, t will comprise continuous variables and in general will be a vector as
+we may wish to predict several related quantities. For classification problems, t will
+represent class labels. Again, t will in general be a vector if we have more than
+two classes. The joint probability distribution p(x, t) provides a complete summary
+of the uncertainty associated with these variables. Determining p(x, t) from a set
+of training data is an example of inference and is typically a very difficult problem
+whose solution forms the subject of much of this book. In a practical application,
+however, we must often make a specific prediction for the value of t or more generally take a specific action based on our understanding of the values t is likely to
+take, and this aspect is the subject of decision theory.
+Consider, for example, our earlier medical diagnosis problem in which we have
+taken an image of a skin lesion on a patient, and we wish to determine whether the
+patient has cancer. In this case, the input vector x is the set of pixel intensities in
+
+5.2. Decision Theory
+
+139
+
+the image, and the output variable t will represent the absence of cancer, which we
+denote by the class C1 , or the presence of cancer, which we denote by the class C2 .
+We might, for instance, choose t to be a binary variable such that t = 0 corresponds
+to class C1 and t = 1 corresponds to class C2 . We will see later that this choice of
+label values is particularly convenient when working with probabilities. The general inference problem then involves determining the joint distribution p(x, Ck ), or
+equivalently p(x, t), which gives us the most complete probabilistic description of
+the variables. Although this can be a very useful and informative quantity, ultimately,
+we must decide either to give treatment to the patient or not, and we would like this
+choice to be optimal according to some appropriate criterion (Duda and Hart, 1973).
+This is the decision step, and the aim of decision theory is that it should tell us how
+to make optimal decisions given the appropriate probabilities. We will see that the
+decision stage is generally very simple, even trivial, once we have solved the inference problem. Here we give an introduction to the key ideas of decision theory
+as required for the rest of the book. Further background, as well as more detailed
+accounts, can be found in Berger (1985) and Bather (2000).
+Before giving a more detailed analysis, let us first consider informally how we
+might expect probabilities to play a role in making decisions. When we obtain the
+skin image x for a new patient, our goal is to decide which of the two classes to assign
+the image to. We are therefore interested in the probabilities of the two classes, given
+the image, which are given by p(Ck |x). Using Bayes’ theorem, these probabilities
+can be expressed in the form
+p(Ck |x) =
+
+p(x|Ck )p(Ck )
+.
+p(x)
+
+(5.19)
+
+Note that any of the quantities appearing in Bayes’ theorem can be obtained from
+the joint distribution p(x, Ck ) by either marginalizing or conditioning with respect to
+the appropriate variables. We can now interpret p(Ck ) as the prior probability for the
+class Ck and p(Ck |x) as the corresponding posterior probability. Thus, p(C1 ) represents the probability that a person has cancer, before the image is taken. Similarly,
+p(C1 |x) is the posterior probability, revised using Bayes’ theorem in light of the information contained in the image. If our aim is to minimize the chance of assigning
+x to the wrong class, then intuitively we would choose the class having the higher
+posterior probability. We now show that this intuition is correct, and we also discuss
+more general criteria for making decisions.
+
+5.2.1
+
+Misclassification rate
+
+Suppose that our goal is simply to make as few misclassifications as possible.
+We need a rule that assigns each value of x to one of the available classes. Such a
+rule will divide the input space into regions Rk called decision regions, one for each
+class, such that all points in Rk are assigned to class Ck . The boundaries between
+decision regions are called decision boundaries or decision surfaces. Note that each
+decision region need not be contiguous but could comprise some number of disjoint
+regions. To find the optimal decision rule, consider first the case of two classes, as in
+the cancer problem, for instance. A mistake occurs when an input vector belonging
+
+140
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+to class C1 is assigned to class C2 or vice versa. The probability of this occurring is
+given by
+p(mistake) = p(x ∈ R1 , C2 ) + p(x ∈ R2 , C1 )
+Z
+Z
+=
+p(x, C2 ) dx +
+p(x, C1 ) dx.
+R1
+
+(5.20)
+
+R2
+
+We are free to choose the decision rule that assigns each point x to one of the
+two classes. Clearly, to minimize p(mistake) we should arrange that each x is assigned to whichever class has the smaller value of the integrand in (5.20). Thus, if
+p(x, C1 ) > p(x, C2 ) for a given value of x, then we should assign that x to class
+C1 . From the product rule of probability, we have p(x, Ck ) = p(Ck |x)p(x). Because
+the factor p(x) is common to both terms, we can restate this result as saying that
+the minimum probability of making a mistake is obtained if each value of x is assigned to the class for which the posterior probability p(Ck |x) is largest. This result
+is illustrated for two classes and a single input variable x in Figure 5.5.
+For the more general case of K classes, it is slightly easier to maximize the
+probability of being correct, which is given by
+p(correct) =
+
+K
+X
+k=1
+
+=
+
+p(x ∈ Rk , Ck )
+
+K Z
+X
+k=1
+
+Rk
+
+p(x, Ck ) dx,
+
+(5.21)
+
+which is maximized when the regions Rk are chosen such that each x is assigned
+to the class for which p(x, Ck ) is largest. Again, using the product rule p(x, Ck ) =
+p(Ck |x)p(x), and noting that the factor of p(x) is common to all terms, we see
+that each x should be assigned to the class having the largest posterior probability
+p(Ck |x).
+
+5.2.2
+
+Expected loss
+
+For many applications, our objective will be more complex than simply minimizing the number of misclassifications. Let us consider again the medical diagnosis
+problem. We note that, if a patient who does not have cancer is incorrectly diagnosed
+as having cancer, the consequences may be that they experience some distress plus
+there is the need for further investigations. Conversely, if a patient with cancer is
+diagnosed as healthy, the result may be premature death due to lack of treatment.
+Thus, the consequences of these two types of mistake can be dramatically different.
+It would clearly be better to make fewer mistakes of the second kind, even if this was
+at the expense of making more mistakes of the first kind.
+We can formalize such issues through the introduction of a loss function, also
+called a cost function, which is a single, overall measure of loss incurred in taking
+any of the available decisions or actions. Our goal is then to minimize the total loss
+incurred. Note that some authors consider instead a utility function, whose value
+
+5.2. Decision Theory
+R1
+
+141
+
+R2
+
+p(x, C1 )
+p(x, C2 )
+
+x0
+
+x̂
+
+(a)
+R1
+
+R2
+
+p(x, C1 )
+p(x, C2 )
+
+x̂
+(b)
+Figure 5.5 Schematic illustration of the joint probabilities p(x, Ck ) for each of two classes plotted against x,
+together with the decision boundary x = x
+b. Values of x ⩾ x
+b are classified as class C2 and hence belong to
+decision region R2 , whereas points x < x
+b are classified as C1 and belong to R1 . Errors arise from the blue,
+green, and red regions, so that for x < x
+b, the errors are due to points from class C2 being misclassified as C1
+(represented by the sum of the red and green regions). Conversely for points in the region x ⩾ x
+b, the errors are
+due to points from class C1 being misclassified as C2 (represented by the blue region). By varying the location
+x
+b of the decision boundary, as indicated by the red double-headed arrow in (a), the combined areas of the blue
+and green regions remains constant, whereas the size of the red region varies. The optimal choice for x
+b is where
+the curves for p(x, C1 ) and p(x, C2 ) cross, as shown in (b) and corresponding to x
+b = x0 , because in this case
+the red region disappears. This is equivalent to the minimum misclassification rate decision rule, which assigns
+each value of x to the class having the higher posterior probability p(Ck |x).
+
+142
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+
+Figure 5.6 An example of a loss matrix with elements
+Lkj for the cancer treatment problem. The rows correspond to the true class, whereas the columns correspond to the assignment of class made by our decision
+criterion.
+
+normal
+cancer
+
+
+
+normal
+0
+100
+
+cancer
+
+1
+0
+
+they aim to maximize. These are equivalent concepts if we take the utility to be
+simply the negative of the loss. Throughout this text we will use the loss function
+convention. Suppose that, for a new value of x, the true class is Ck and that we assign
+x to class Cj (where j may or may not be equal to k). In so doing, we incur some
+level of loss that we denote by Lkj , which we can view as the k, j element of a loss
+matrix. For instance, in our cancer example, we might have a loss matrix of the form
+shown in Figure 5.6. This particular loss matrix says that there is no loss incurred if
+the correct decision is made, there is a loss of 1 if a healthy patient is diagnosed as
+having cancer, whereas there is a loss of 100 if a patient having cancer is diagnosed
+as healthy.
+The optimal solution is the one that minimizes the loss function. However, the
+loss function depends on the true class, which is unknown. For a given input vector x,
+our uncertainty in the true class is expressed through the joint probability distribution
+p(x, Ck ), and so we seek instead to minimize the average loss, where the average is
+computed with respect to this distribution and is given by
+XXZ
+Lkj p(x, Ck ) dx.
+(5.22)
+E[L] =
+j
+
+k
+
+Rj
+
+Each x can be assigned independently to one of the decision regions Rj . Our goal
+is to choose the regions Rj to minimize
+the expected loss (5.22), which implies that
+P
+for each x, we should minimize k Lkj p(x, Ck ). As before, we can use the product
+rule p(x, Ck ) = p(Ck |x)p(x) to eliminate the common factor of p(x). Thus, the
+decision rule that minimizes the expected loss assigns each new x to the class j for
+which the quantity
+X
+Lkj p(Ck |x)
+(5.23)
+k
+
+is a minimum. Once we have chosen values for the loss matrix elements Lkj , this is
+clearly trivial to do.
+
+5.2.3
+
+The reject option
+
+We have seen that classification errors arise from the regions of input space
+where the largest of the posterior probabilities p(Ck |x) is significantly less than unity
+or equivalently where the joint distributions p(x, Ck ) have comparable values. These
+are the regions where we are relatively uncertain about class membership. In some
+applications, it will be appropriate to avoid making decisions on the difficult cases
+in anticipation of obtaining a lower error rate on those examples for which a classification decision is made. This is known as the reject option. For example, in our
+hypothetical cancer screening example, it may be appropriate to use an automatic
+
+5.2. Decision Theory
+Figure 5.7
+
+Illustration of the reject option. Inputs
+x such that the larger of the two poste- 1.0
+rior probabilities is less than or equal to
+θ
+some threshold θ will be rejected.
+
+p(C1 |x)
+
+p(C2 |x)
+
+0.0
+reject region
+
+Exercise 5.10
+
+143
+
+x
+
+system to classify those images for which there is little doubt as to the correct class,
+while requesting a biopsy to classify the more ambiguous cases. We can achieve this
+by introducing a threshold θ and rejecting those inputs x for which the largest of
+the posterior probabilities p(Ck |x) is less than or equal to θ. This is illustrated for
+two classes and a single continuous input variable x in Figure 5.7. Note that setting
+θ = 1 will ensure that all examples are rejected, whereas if there are K classes, then
+setting θ < 1/K will ensure that no examples are rejected. Thus, the fraction of
+examples that are rejected is controlled by the value of θ.
+We can easily extend the reject criterion to minimize the expected loss, when a
+loss matrix is given, by taking account of the loss incurred when a reject decision is
+made.
+
+5.2.4
+
+Inference and decision
+
+We have broken the classification problem down into two separate stages, the
+inference stage in which we use training data to learn a model for p(Ck |x) and the
+subsequent decision stage in which we use these posterior probabilities to make optimal class assignments. An alternative possibility would be to solve both problems
+together and simply learn a function that maps inputs x directly into decisions. Such
+a function is called a discriminant function.
+In fact, we can identify three distinct approaches to solving decision problems,
+all of which have been used in practical applications. These are, in decreasing order
+of complexity, as follows:
+(a) First, solve the inference problem of determining the class-conditional densities p(x|Ck ) for each class Ck individually. Separately infer the prior class
+probabilities p(Ck ). Then use Bayes’ theorem in the form
+p(Ck |x) =
+
+p(x|Ck )p(Ck )
+p(x)
+
+(5.24)
+
+to find the posterior class probabilities p(Ck |x). As usual, the denominator in
+
+144
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+Bayes’ theorem can be found in terms of the quantities in the numerator, using
+X
+p(x) =
+p(x|Ck )p(Ck ).
+(5.25)
+k
+
+Equivalently, we can model the joint distribution p(x, Ck ) directly and then
+normalize to obtain the posterior probabilities. Having found the posterior
+probabilities, we use decision theory to determine the class membership for
+each new input x. Approaches that explicitly or implicitly model the distribution of inputs as well as outputs are known as generative models, because by
+sampling from them, it is possible to generate synthetic data points in the input
+space.
+(b) First, solve the inference problem of determining the posterior class probabilities p(Ck |x), and then subsequently use decision theory to assign each new x to
+one of the classes. Approaches that model the posterior probabilities directly
+are called discriminative models.
+(c) Find a function f (x), called a discriminant function, that maps each input x
+directly onto a class label. For instance, for two-class problems, f (·) might be
+binary valued and such that f = 0 represents class C1 and f = 1 represents
+class C2 . In this case, probabilities play no role.
+Let us consider the relative merits of these three alternatives. Approach (a) is the
+most demanding because it involves finding the joint distribution over both x and
+Ck . For many applications, x will have high dimensionality, and consequently, we
+may need a large training set to be able to determine the class-conditional densities to
+reasonable accuracy. Note that the class priors p(Ck ) can often be estimated simply
+from the fractions of the training set data points in each of the classes. One advantage
+of approach (a), however, is that it also allows the marginal density of data p(x) to
+be determined from (5.25). This can be useful for detecting new data points that
+have low probability under the model and for which the predictions may be of low
+accuracy, which is known as outlier detection or novelty detection (Bishop, 1994;
+Tarassenko, 1995).
+However, if we wish only to make classification decisions, then it can be wasteful of computational resources and excessively demanding of data to find the joint
+distribution p(x, Ck ) when in fact we really need only the posterior probabilities
+p(Ck |x), which can be obtained directly through approach (b). Indeed, the classconditional densities may contain a significant amount of structure that has little effect on the posterior probabilities, as illustrated in Figure 5.8. There has been much
+interest in exploring the relative merits of generative and discriminative approaches
+to machine learning and in finding ways to combine them (Jebara, 2004; Lasserre,
+Bishop, and Minka, 2006).
+An even simpler approach is (c) in which we use the training data to find a
+discriminant function f (x) that maps each x directly onto a class label, thereby
+combining the inference and decision stages into a single learning problem. In the
+example of Figure 5.8, this would correspond to finding the value of x shown by
+
+145
+
+5.2. Decision Theory
+5
+
+1.2
+p(x|C2 )
+
+class densities
+
+4
+
+p(C1 |x)
+
+1
+
+p(C2 |x)
+
+0.8
+
+3
+
+0.6
+2
+
+0.4
+
+p(x|C1 )
+1
+0
+
+0.2
+
+0
+
+0.2
+
+0.4
+
+0.6
+x
+
+0.8
+
+1
+
+0
+
+0
+
+0.2
+
+0.4
+
+x
+
+0.6
+
+0.8
+
+1
+
+Figure 5.8 Example of the class-conditional densities for two classes having a single input variable x (left
+plot) together with the corresponding posterior probabilities (right plot). Note that the left-hand mode of the
+class-conditional density p(x|C1 ), shown in blue on the left plot, has no effect on the posterior probabilities. The
+vertical green line in the right plot shows the decision boundary in x that gives the minimum misclassification
+rate, assuming the prior class probabilities, p(C1 ) and p(C2 ), are equal.
+
+the vertical green line, because this is the decision boundary giving the minimum
+probability of misclassification.
+With option (c), however, we no longer have access to the posterior probabilities
+p(Ck |x). There are many powerful reasons for wanting to compute the posterior
+probabilities, even if we subsequently use them to make decisions. These include:
+Minimizing risk. Consider a problem in which the elements of the loss matrix are
+subjected to revision from time to time (such as might occur in a financial
+application). If we know the posterior probabilities, we can trivially revise the
+minimum risk decision criterion by modifying (5.23) appropriately. If we have
+only a discriminant function, then any change to the loss matrix would require
+that we return to the training data and solve the inference problem afresh.
+Reject option. Posterior probabilities allow us to determine a rejection criterion that
+will minimize the misclassification rate, or more generally the expected loss,
+for a given fraction of rejected data points.
+Section 2.1.1
+
+Compensating for class priors. Consider our cancer screening example again, and
+suppose that we have collected a large number of images from the general population for use as training data, which we use to build an automated screening
+system. Because cancer is rare amongst the general population, we might find
+that, say, only 1 in every 1,000 examples corresponds to the presence of cancer.
+
+146
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+If we used such a data set to train an adaptive model, we could run into severe
+difficulties due to the small proportion of those in the cancer class. For instance, a classifier that assigned every point to the normal class would achieve
+99.9% accuracy, and it may be difficult to avoid this trivial solution. Also, even
+a large data set will contain very few examples of skin images corresponding
+to cancer, and so the learning algorithm will not be exposed to a broad range
+of examples of such images and hence is not likely to generalize well. A balanced data set with equal numbers of examples from each of the classes would
+allow us to find a more accurate model. However, we then have to compensate
+for the effects of our modifications to the training data. Suppose we have used
+such a modified data set and found models for the posterior probabilities. From
+Bayes’ theorem (5.24), we see that the posterior probabilities are proportional
+to the prior probabilities, which we can interpret as the fractions of points in
+each class. We can therefore simply take the posterior probabilities obtained
+from our artificially balanced data set, divide by the class fractions in that data
+set, and then multiply by the class fractions in the population to which we wish
+to apply the model. Finally, we need to normalize to ensure that the new posterior probabilities sum to one. Note that this procedure cannot be applied if we
+have learned a discriminant function directly instead of determining posterior
+probabilities.
+Combining models. For complex applications, we may wish to break the problem
+into a number of smaller sub-problems each of which can be tackled by a separate module. For example, in our hypothetical medical diagnosis problem,
+we may have information available from, say, blood tests as well as skin images. Rather than combine all of this heterogeneous information into one huge
+input space, it may be more effective to build one system to interpret the images and a different one to interpret the blood data. If each of the two models
+gives posterior probabilities for the classes, then we can combine the outputs
+systematically using the rules of probability. One simple way to do this is to
+assume that, for each class separately, the distributions of inputs for the images, denoted by xI , and the blood data, denoted by xB , are independent, so
+that
+p(xI , xB |Ck ) = p(xI |Ck )p(xB |Ck ).
+(5.26)
+
+Section 11.2
+
+This is an example of a conditional independence property, because the independence holds when the distribution is conditioned on the class Ck . The
+posterior probability, given both the image and blood data, is then given by
+p(Ck |xI , xB ) ∝ p(xI , xB |Ck )p(Ck )
+∝ p(xI |Ck )p(xB |Ck )p(Ck )
+p(Ck |xI )p(Ck |xB )
+.
+∝
+p(Ck )
+
+(5.27)
+
+Thus, we need the class prior probabilities p(Ck ), which we can easily estimate
+from the fractions of data points in each class, and then we need to normalize
+
+5.2. Decision Theory
+Figure 5.9 The confusion matrix for the cancer treatment problem, in which the rows correspond to the true
+class and the columns correspond to the assignment
+of class made by our decision criterion. The elements
+of the matrix show the numbers of true negatives, false
+positives, false negatives, and true positives.
+
+Section 11.2.3
+
+Chapter 7
+
+normal
+NTN
+NFN
+
+cancer
+
+NFP
+NTP
+
+the resulting posterior probabilities so they sum to one. The particular conditional independence assumption (5.26) is an example of a naive Bayes model.
+Note that the joint marginal distribution p(xI , xB ) will typically not factorize
+under this model. We will see in later chapters how to construct models for
+combining data that do not require the conditional independence assumption
+(5.26). A further advantage of using models that output probabilities rather
+than decisions is that they can easily be made differentiable with respect to
+any adjustable parameters (such as the weight coefficients in the polynomial
+regression example), which allows them to be composed and trained jointly
+using gradient-based optimization methods.
+
+5.2.5
+
+Section 2.1.1
+
+normal
+cancer
+
+
+
+147
+
+Classifier accuracy
+
+The simplest measure of performance for a classifier is the fraction of test set
+points that are correctly classified. However, we have seen that different types of
+error can have different consequences, as expressed through the loss matrix, and
+often we therefore do not simply wish to minimize the number of misclassifications.
+By changing the location of the decision boundary, we can make trade-offs between
+different kinds of error, for example with the goal of minimizing an expected loss.
+Because this is such an important concept, we will introduce some definitions and
+terminology so that the performance of a classifier can be better characterized.
+We will consider again our cancer screening example. For each person tested,
+there is a ‘true label’ of whether they have cancer or not, and there is also the prediction made by the classifier. If, for a particular person, the classifier predicts cancer
+and this is in fact the true label, then the prediction is called a true positive. However, if the person does not have cancer it is a false positive. Likewise, if the classifier
+predicts that a person does not have cancer and this is correct, then the prediction is
+called a true negative, otherwise it is a false negative. The false positives are also
+known as type 1 errors whereas the false negatives are called type 2 errors. If N is
+the total number of people taking the test, then NTP is the number of true positives,
+NFP is the number of false positives, NTN is the number of true negatives, and NFN
+is the number of false negatives, where
+N = NTP + NFP + NTN + NFN .
+
+(5.28)
+
+This can be represented as a confusion matrix as shown in Figure 5.9. Accuracy,
+measured by the fraction of correct classifications, is then given by
+Accuracy =
+
+NTP + NTN
+.
+NTP + NFP + NTN + NFN
+
+(5.29)
+
+148
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+We can see that accuracy can be misleading if there are strongly imbalanced classes.
+In our cancer screening example, for instance, where only 1 person in 1,000 has
+cancer, a naive classifier that simply decides that nobody has cancer will achieve
+99.9% accuracy and yet is completely useless.
+Several other quantities can be defined in terms of these numbers, of which the
+most commonly encountered are
+NTP
+NTP + NFP
+NTP
+Recall =
+NTP + NFN
+NFP
+False positive rate =
+NFP + NTN
+NFP
+False discovery rate =
+NFP + NTP
+Precision =
+
+(5.30)
+(5.31)
+(5.32)
+(5.33)
+
+In our cancer screening example, precision represents an estimate of the probability
+that a person who has a positive test does indeed have cancer, whereas recall is an
+estimate of the probability that a person who has cancer is correctly detected by
+the test. The false positive rate is an estimate of the probability that a person who is
+normal will be classified as having cancer, whereas the false discovery rate represents
+the fraction of those testing positive who do not in fact have cancer.
+By altering the location of the decision boundary, we can change the trade-offs
+between the two kinds of errors. To understand this trade-off, we revisit Figure 5.5,
+but now we label the various regions as shown in Figure 5.10. We can relate the
+labelled regions to the various true and false rates as follows:
+NFP /N = E
+NTP /N = D + E
+NFN /N = B + C
+NTN /N = A + C
+
+(5.34)
+(5.35)
+(5.36)
+(5.37)
+
+where we are implicitly considering the limit N → ∞ so that we can relate number
+of observations to probabilities.
+
+5.2.6
+
+ROC curve
+
+A probabilistic classifier will output a posterior probability, which can be converted to a decision by setting a threshold. As the value of the threshold is varied, we
+can reduce type 1 errors at the expense of increasing type 2 errors, or vice versa. To
+better understand this trade-off, it is useful to plot the receiver operating characteristic or ROC curve (Fawcett, 2006), a name that originates from procedures to measure
+the performance of radar receivers. This is a graph of true positive rate versus false
+positive rate, as shown in Figure 5.11.
+As the decision boundary in Figure 5.10 is moved from −∞ to ∞, the ROC
+curve is traced out and can then be generated by plotting the cumulative fraction of
+
+5.2. Decision Theory
+R1
+
+149
+
+R2
+
+p(x, C1 )
+p(x, C2 )
+B
+
+D
+
+A
+C
+x0
+
+E
+x̂
+
+Figure 5.10 As in Figure 5.5, with the various regions labelled. In the cancer classification problem, region R1
+is assigned to the normal class whereas region R2 is assigned to the cancer class.
+
+correct detection of cancer on the y-axis versus the cumulative fraction of incorrect
+detection on the x-axis. Note that a specific confusion matrix represents one point
+along the ROC curve. The best possible classifier would be represented by a point at
+the top left corner of the ROC diagram. The bottom left corner represents a simple
+classifier that assigns every point to the normal class and therefore has no true positives but also no false positives. Similarly, the top right corner represents a classifier
+that assigns everything to the cancer class and therefore has no false negatives but
+also no true negatives. In Figure 5.11, the classifiers represented by the blue curve
+are better than those of the red curve for any choice of, say, false positive rate. It
+is also possible, however, for such curves to cross over, in which case the choice of
+which is better will depend on the choice of operating point.
+As a baseline, we can consider a random classifier that simply assigns each data
+point to cancer with probability ρ and to normal with probability 1 − ρ. As we vary
+the value of ρ it will trace out an ROC curve given by a diagonal straight line, as
+shown in Figure 5.11. Any classifier below the diagonal line performs worse than
+random guessing.
+Sometimes it is useful to have a single number that characterises the whole ROC
+curve. One approach is to measure the area under the curve (AUC). A value of 0.5
+for the AUC represents random guessing whereas a value of 1.0 represents a perfect
+classifier.
+Another measure is the F-score, which is the geometric mean of precision and
+
+5. SINGLE-LAYER NETWORKS: CLASSIFICATION
+Figure 5.11
+
+The receiver operator characteristic
+(ROC) curve is a plot of true positive
+rate against false positive rate, and
+it characterizes the trade-off between
+type 1 and type 2 errors in a classification problem. The upper blue curve
+represents a better classifier than the
+lower red curve. Here the dashed
+curve represents the performance of
+a simple random classifier.
+
+1
+
+True positive rate
+
+150
+
+0
+0
+
+False positive rate
+
+1
+
+recall, and is therefore defined by
+2 × precision × recall
+precision + recall
+2NTP
+=
+.
+2NTP + NFP + NFN
+
+F =
+
+(5.38)
+(5.39)
+
+Of course, we can also combine the confusion matrix in Figure 5.9 with the loss matrix in Figure 5.6 to compute the expected loss by multiplying the elements pointwise
+and summing the resulting products.
+Although the ROC curve can be extended to more than two classes, it rapidly
+becomes cumbersome as the number of classes increases.
+
+5.3. Generative Classifiers
+
+Section 5.2.4
+
+We turn next to a probabilistic view of classification and show how models with
+linear decision boundaries arise from simple assumptions about the distribution of
+the data. We have already discussed the distinction between the discriminative and
+the generative approaches to classification. Here we will adopt a generative approach
+in which we model the class-conditional densities p(x|Ck ) as well as the class priors
+p(Ck ) and then use these to compute posterior probabilities p(Ck |x) through Bayes’
+theorem.
+First, consider problems having two classes. The posterior probability for class
+
+151
+
+5.3. Generative Classifiers
+Figure 5.12
+
+Plot of the logistic sigmoid
+function σ(a) defined by
+(5.42), shown in red, together
+with the scaled probit function
+Φ(λa), for λ2 = π/8, shown
+in dashed blue, where Φ(a)
+is defined by (5.86). The
+scaling factor π/8 is chosen
+so that the derivatives of
+the two curves are equal for
+a = 0.
+
+1
+
+0.5
+
+0
+
+−5
+
+0
+
+5
+
+C1 can be written as
+p(C1 |x) =
+=
+
+p(x|C1 )p(C1 )
+p(x|C1 )p(C1 ) + p(x|C2 )p(C2 )
+1
+= σ(a)
+1 + exp(−a)
+
+where we have defined
+a = ln
+
+p(x|C1 )p(C1 )
+p(x|C2 )p(C2 )
+
+(5.40)
+
+(5.41)
+
+and σ(a) is the logistic sigmoid function defined by
+σ(a) =
+
+1
+,
+1 + exp(−a)
+
+(5.42)
+
+which is plotted in Figure 5.12. The term ‘sigmoid’ means S-shaped. This type of
+function is sometimes also called a ‘squashing function’ because it maps the whole
+real axis into a finite interval. The logistic sigmoid has been encountered already
+in earlier chapters and plays an important role in many classification algorithms. It
+satisfies the following symmetry property:
+σ(−a) = 1 − σ(a)
+as is easily verified. The inverse of the logistic sigmoid is given by
+
+
+σ
+a = ln
+1−σ
+
+(5.43)
+
+(5.44)
+
+and is known as the logit function. It represents the log of the ratio of probabilities
+ln [p(C1 |x)/p(C2 |x)] for the two classes, also known as the log odds.
+Note that in (5.40), we have simply rewritten the posterior probabilities in an
+equivalent form, and so the appearance of the logistic sigmoid may seem artificial.
+
+
