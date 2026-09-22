@@ -504,3 +504,253 @@ def compute_covariance_matrix(
     diff = X - mean_vec
     cov_matrix = (diff.T @ diff) / N
     return cov_matrix
+
+
+# =============================================================================
+# Section 2.3: The Gaussian Distribution, Maximum Likelihood, and Linear Regression
+# =============================================================================
+
+class Gaussian1D:
+    """
+    Univariate Gaussian (Normal) Distribution (Eq 2.49):
+      N(x | mu, sigma^2) = (1 / (2 * pi * sigma^2)^{1/2}) * exp(- 1 / (2 * sigma^2) * (x - mu)^2)
+
+    Governed by parameters:
+      mu: mean (and mode)
+      sigma^2: variance (sigma > 0 is standard deviation)
+      beta: precision = 1 / sigma^2
+    """
+    def __init__(self, mu: float = 0.0, sigma2: float = 1.0):
+        if sigma2 <= 0:
+            raise ValueError(f"Variance sigma2 ({sigma2}) must be strictly positive")
+        self.mu = float(mu)
+        self.sigma2 = float(sigma2)
+        self.sigma = float(np.sqrt(sigma2))
+        self.beta = 1.0 / self.sigma2
+
+    @property
+    def mean(self) -> float:
+        return self.mu
+
+    @property
+    def variance(self) -> float:
+        return self.sigma2
+
+    @property
+    def precision(self) -> float:
+        return self.beta
+
+    @property
+    def mode(self) -> float:
+        return self.mu
+
+    def pdf(self, x: Union[float, np.ndarray]) -> np.ndarray:
+        """Evaluate Gaussian probability density function (Eq 2.49)."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        norm_const = 1.0 / (np.sqrt(2.0 * np.pi * self.sigma2))
+        exponent = -0.5 * ((x_arr - self.mu) ** 2) / self.sigma2
+        val = norm_const * np.exp(exponent)
+        return val if x_arr.ndim > 0 else float(val)
+
+    def log_pdf(self, x: Union[float, np.ndarray]) -> np.ndarray:
+        """Evaluate log Gaussian probability density function."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        val = -0.5 * np.log(2.0 * np.pi * self.sigma2) - 0.5 * ((x_arr - self.mu) ** 2) / self.sigma2
+        return val if x_arr.ndim > 0 else float(val)
+
+    def cdf(self, x: Union[float, np.ndarray]) -> np.ndarray:
+        """Evaluate cumulative distribution function."""
+        x_arr = np.asarray(x, dtype=np.float64)
+        val = 0.5 * (1.0 + special.erf((x_arr - self.mu) / (self.sigma * np.sqrt(2.0))))
+        return val if x_arr.ndim > 0 else float(val)
+
+    def sample(self, size: int = 1, seed: Optional[int] = None) -> np.ndarray:
+        """Draw independent samples from the Gaussian distribution."""
+        rng = np.random.default_rng(seed)
+        return rng.normal(loc=self.mu, scale=self.sigma, size=size)
+
+
+def gaussian_maximum_likelihood(data: np.ndarray) -> Dict[str, float]:
+    """
+    Maximum likelihood parameter estimation for 1D Gaussian (Eq 2.56 - 2.58, 2.63):
+      mu_ML = (1 / N) * sum_{n=1}^N x_n                 (Eq 2.57)
+      sigma2_ML = (1 / N) * sum_{n=1}^N (x_n - mu_ML)^2 (Eq 2.58)
+      sigma2_unbiased = (1 / (N - 1)) * sum_{n=1}^N (x_n - mu_ML)^2 = (N / (N - 1)) * sigma2_ML (Eq 2.63)
+
+    Returns:
+      Dict containing mu_ML, sigma2_ML, sigma_ML, sigma2_unbiased, sigma_unbiased, log_likelihood, N
+    """
+    data = np.asarray(data, dtype=np.float64).flatten()
+    N = len(data)
+    if N == 0:
+        raise ValueError("Data array cannot be empty")
+
+    mu_ml = float(np.mean(data))
+    # Note: np.var with ddof=0 gives the ML sample variance (Eq 2.58)
+    sigma2_ml = float(np.mean((data - mu_ml) ** 2))
+    sigma_ml = float(np.sqrt(sigma2_ml))
+
+    if N > 1:
+        sigma2_unbiased = float(np.var(data, ddof=1))
+        sigma_unbiased = float(np.sqrt(sigma2_unbiased))
+    else:
+        sigma2_unbiased = float("nan")
+        sigma_unbiased = float("nan")
+
+    # Evaluate log likelihood under ML estimates (Eq 2.56)
+    if sigma2_ml > 0:
+        log_lik = -0.5 * N - 0.5 * N * np.log(sigma2_ml) - 0.5 * N * np.log(2.0 * np.pi)
+    else:
+        log_lik = float("inf")
+
+    return {
+        "N": N,
+        "mu_ML": mu_ml,
+        "sigma2_ML": sigma2_ml,
+        "sigma_ML": sigma_ml,
+        "sigma2_unbiased": sigma2_unbiased,
+        "sigma_unbiased": sigma_unbiased,
+        "log_likelihood": log_lik,
+    }
+
+
+def simulate_gaussian_mle_bias(
+    mu: float = 0.0,
+    sigma2: float = 1.0,
+    N: int = 2,
+    n_trials: int = 10000,
+    seed: int = 42
+) -> Dict[str, float]:
+    """
+    Simulate the bias of maximum likelihood estimators for a Gaussian (Section 2.3.3):
+      E[mu_ML] = mu                   (Eq 2.59, unbiased)
+      E[sigma2_ML] = ((N - 1) / N) * sigma2 (Eq 2.60, biased by factor (N-1)/N)
+      E[sigma2_hat] = sigma2          (Eq 2.62, variance measured relative to true mean, unbiased)
+      E[sigma2_tilde] = sigma2        (Eq 2.63, Bessel-corrected sample variance, unbiased)
+
+    Returns dictionary with empirical and theoretical expectations.
+    """
+    if N < 2:
+        raise ValueError("Sample size N must be at least 2 to evaluate variance estimators")
+
+    rng = np.random.default_rng(seed)
+    sigma = np.sqrt(sigma2)
+    # Shape: (n_trials, N)
+    samples = rng.normal(loc=mu, scale=sigma, size=(n_trials, N))
+
+    # Estimates for each trial
+    mu_ml_trials = np.mean(samples, axis=1)  # shape (n_trials,)
+    sigma2_ml_trials = np.mean((samples - mu_ml_trials[:, np.newaxis]) ** 2, axis=1)
+    sigma2_hat_trials = np.mean((samples - mu) ** 2, axis=1)  # relative to true mean mu
+    sigma2_tilde_trials = np.var(samples, axis=1, ddof=1)  # Bessel's correction
+
+    # Empirical expectations across trials
+    e_mu_ml = float(np.mean(mu_ml_trials))
+    e_sigma2_ml = float(np.mean(sigma2_ml_trials))
+    e_sigma2_hat = float(np.mean(sigma2_hat_trials))
+    e_sigma2_tilde = float(np.mean(sigma2_tilde_trials))
+
+    theoretical_e_sigma2_ml = ((N - 1.0) / N) * sigma2
+
+    return {
+        "true_mu": float(mu),
+        "true_sigma2": float(sigma2),
+        "N": N,
+        "n_trials": n_trials,
+        "E_mu_ML": e_mu_ml,
+        "E_sigma2_ML": e_sigma2_ml,
+        "theoretical_E_sigma2_ML": theoretical_e_sigma2_ml,
+        "E_sigma2_hat": e_sigma2_hat,
+        "E_sigma2_tilde": e_sigma2_tilde,
+        "bias_sigma2_ML": e_sigma2_ml - sigma2,
+        "theoretical_bias_sigma2_ML": -(1.0 / N) * sigma2,
+    }
+
+
+class GaussianLinearRegression:
+    """
+    Probabilistic Linear / Polynomial Regression with Gaussian noise (Section 2.3.4):
+      p(t | x, w, sigma^2) = N(t | y(x; w), sigma^2)     (Eq 2.64)
+      where y(x; w) = sum_{j=0}^M w_j * x^j = phi(x)^T w
+
+    Training via maximum likelihood determines:
+      w_ML = argmin E(w) = (Phi^T Phi)^{-1} Phi^T t       (Eq 2.67)
+      sigma2_ML = (1 / N) * sum_{n=1}^N (y(x_n; w_ML) - t_n)^2 (Eq 2.68)
+
+    Predictive distribution:
+      p(t | x, w_ML, sigma2_ML) = N(t | y(x; w_ML), sigma2_ML) (Eq 2.69)
+    """
+    def __init__(self, degree: int = 3):
+        if degree < 0:
+            raise ValueError("Polynomial degree must be non-negative")
+        self.degree = degree
+        self.w: Optional[np.ndarray] = None
+        self.sigma2_ml: Optional[float] = None
+        self.sigma_ml: Optional[float] = None
+
+    def _design_matrix(self, x: np.ndarray) -> np.ndarray:
+        """Construct Vandermonde design matrix Phi for polynomial basis."""
+        x_flat = np.asarray(x, dtype=np.float64).flatten()
+        powers = np.arange(self.degree + 1)
+        # Shape: (N, degree + 1)
+        return x_flat[:, np.newaxis] ** powers[np.newaxis, :]
+
+    def fit(self, x: np.ndarray, t: np.ndarray) -> "GaussianLinearRegression":
+        """
+        Fit polynomial regression model parameters w_ML and sigma2_ML by maximum likelihood.
+        """
+        x_flat = np.asarray(x, dtype=np.float64).flatten()
+        t_flat = np.asarray(t, dtype=np.float64).flatten()
+        if len(x_flat) != len(t_flat):
+            raise ValueError("x and t must have the same length")
+        N = len(x_flat)
+        if N <= self.degree:
+            raise ValueError(f"Number of samples N ({N}) must be greater than degree ({self.degree})")
+
+        Phi = self._design_matrix(x_flat)
+        # Solve normal equations: (Phi^T Phi) w = Phi^T t using lstsq
+        self.w, _, _, _ = np.linalg.lstsq(Phi, t_flat, rcond=None)
+
+        # Residuals and ML variance (Eq 2.68)
+        y_pred = Phi @ self.w
+        residuals = t_flat - y_pred
+        self.sigma2_ml = float(np.mean(residuals ** 2))
+        self.sigma_ml = float(np.sqrt(self.sigma2_ml))
+        return self
+
+    def predict(self, x: np.ndarray) -> Tuple[np.ndarray, float]:
+        """
+        Evaluate predictive distribution for input x (Eq 2.69):
+          Returns (y_mean, sigma_ml), where predictive distribution is N(t | y_mean, sigma2_ml).
+        """
+        if self.w is None or self.sigma_ml is None:
+            raise RuntimeError("Model must be fitted before making predictions")
+        Phi = self._design_matrix(x)
+        y_mean = Phi @ self.w
+        return y_mean, self.sigma_ml
+
+    def sum_of_squares_error(self, x: np.ndarray, t: np.ndarray) -> float:
+        """Evaluate sum-of-squares error function E(w) (Eq 2.67): E(w) = 0.5 * sum (y - t)^2."""
+        if self.w is None:
+            raise RuntimeError("Model must be fitted")
+        x_flat = np.asarray(x, dtype=np.float64).flatten()
+        t_flat = np.asarray(t, dtype=np.float64).flatten()
+        Phi = self._design_matrix(x_flat)
+        residuals = Phi @ self.w - t_flat
+        return float(0.5 * np.sum(residuals ** 2))
+
+    def log_likelihood(self, x: np.ndarray, t: np.ndarray) -> float:
+        """
+        Evaluate log likelihood of targets t given inputs x under fitted parameters (Eq 2.66):
+          ln p(t | x, w_ML, sigma2_ML) = - 1/(2*sigma2) * sum (y - t)^2 - N/2 ln(sigma2) - N/2 ln(2*pi)
+        """
+        if self.w is None or self.sigma2_ml is None:
+            raise RuntimeError("Model must be fitted")
+        x_flat = np.asarray(x, dtype=np.float64).flatten()
+        t_flat = np.asarray(t, dtype=np.float64).flatten()
+        N = len(x_flat)
+        Phi = self._design_matrix(x_flat)
+        residuals = Phi @ self.w - t_flat
+        sse = np.sum(residuals ** 2)
+        ll = -0.5 * sse / self.sigma2_ml - 0.5 * N * np.log(self.sigma2_ml) - 0.5 * N * np.log(2.0 * np.pi)
+        return float(ll)
