@@ -290,14 +290,17 @@ def _save_figure(fig: plt.Figure, filepath: Optional[str], save_both: bool = Tru
     """Helper to save figure to both 5/result/ and result/ reliably."""
     if not filepath:
         return
+    save_plot(fig, filepath)
     if save_both:
         filename = os.path.basename(filepath)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         repo_root = os.path.abspath(os.path.join(current_dir, ".."))
-        save_plot(fig, os.path.join(repo_root, "5", "result", filename))
-        save_plot(fig, os.path.join(repo_root, "result", filename))
-    else:
-        save_plot(fig, filepath)
+        p1 = os.path.join(repo_root, "5", "result", filename)
+        p2 = os.path.join(repo_root, "result", filename)
+        if os.path.abspath(filepath) != os.path.abspath(p1):
+            save_plot(fig, p1)
+        if os.path.abspath(filepath) != os.path.abspath(p2):
+            save_plot(fig, p2)
 
 
 def plot_figure_5_5_joint_probabilities(filepath: Optional[str] = None, save_both: bool = True) -> plt.Figure:
@@ -735,12 +738,20 @@ def generate_all_section_5_2_figures(result_dirs: Optional[List[str]] = None) ->
         os.makedirs(d, exist_ok=True)
 
     figs = {}
-    figs['fig_5_5'] = plot_figure_5_5_joint_probabilities(filepath=os.path.join(result_dirs[0], "fig_5_5_joint_probabilities.png"))
-    figs['fig_5_6'] = plot_figure_5_6_loss_matrix(filepath=os.path.join(result_dirs[0], "fig_5_6_loss_matrix.png"))
-    figs['fig_5_7'] = plot_figure_5_7_reject_option(filepath=os.path.join(result_dirs[0], "fig_5_7_reject_option.png"))
-    figs['fig_5_8'] = plot_figure_5_8_class_densities_posteriors(filepath=os.path.join(result_dirs[0], "fig_5_8_class_densities_posteriors.png"))
-    figs['fig_5_9'] = plot_figure_5_9_confusion_matrix(filepath=os.path.join(result_dirs[0], "fig_5_9_confusion_matrix.png"))
-    figs['fig_5_10'] = plot_figure_5_10_roc_regions(filepath=os.path.join(result_dirs[0], "fig_5_10_roc_regions.png"))
-    figs['fig_5_11'] = plot_figure_5_11_roc_curve(filepath=os.path.join(result_dirs[0], "fig_5_11_roc_curve.png"))
+    plot_funcs = [
+        ('fig_5_5', plot_figure_5_5_joint_probabilities, 'fig_5_5_joint_probabilities.png'),
+        ('fig_5_6', plot_figure_5_6_loss_matrix, 'fig_5_6_loss_matrix.png'),
+        ('fig_5_7', plot_figure_5_7_reject_option, 'fig_5_7_reject_option.png'),
+        ('fig_5_8', plot_figure_5_8_class_densities_posteriors, 'fig_5_8_class_densities_posteriors.png'),
+        ('fig_5_9', plot_figure_5_9_confusion_matrix, 'fig_5_9_confusion_matrix.png'),
+        ('fig_5_10', plot_figure_5_10_roc_regions, 'fig_5_10_roc_regions.png'),
+        ('fig_5_11', plot_figure_5_11_roc_curve, 'fig_5_11_roc_curve.png'),
+    ]
+
+    for key, func, fname in plot_funcs:
+        fig = func(filepath=os.path.join(result_dirs[0], fname), save_both=False)
+        for extra_dir in result_dirs[1:]:
+            save_plot(fig, os.path.join(extra_dir, fname))
+        figs[key] = fig
 
     return figs
