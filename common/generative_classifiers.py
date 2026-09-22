@@ -301,6 +301,23 @@ class ExponentialFamilyClassifier:
 # 5. Figure Reproduction (Figures 5.12 to 5.14)
 # =====================================================================
 
+def _save_both_paths(fig: plt.Figure, filepath: str):
+    """Save figure to both Chapter 5 result/ and root result/ directories safely without nested paths."""
+    cwd = os.getcwd()
+    filename = os.path.basename(filepath)
+    if os.path.basename(cwd) == "5":
+        root_dir = os.path.abspath(os.path.join(cwd, "..", "result"))
+        ch5_dir = os.path.abspath(os.path.join(cwd, "result"))
+    else:
+        root_dir = os.path.abspath(os.path.join(cwd, "result"))
+        ch5_dir = os.path.abspath(os.path.join(cwd, "5", "result"))
+
+    os.makedirs(root_dir, exist_ok=True)
+    os.makedirs(ch5_dir, exist_ok=True)
+    save_plot(fig, os.path.join(ch5_dir, filename))
+    save_plot(fig, os.path.join(root_dir, filename))
+
+
 def plot_figure_5_12_sigmoid_and_probit(filepath: Optional[str] = None, save_both: bool = True) -> plt.Figure:
     """
     Faithful reproduction of Figure 5.12 (Book page 151):
@@ -335,14 +352,10 @@ def plot_figure_5_12_sigmoid_and_probit(filepath: Optional[str] = None, save_bot
 
     fig.tight_layout()
     if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+        if save_both:
+            _save_both_paths(fig, filepath)
+        else:
+            save_plot(fig, filepath)
     return fig
 
 
@@ -412,14 +425,10 @@ def plot_figure_5_13_two_class_gaussian_posteriors(filepath: Optional[str] = Non
     fig.subplots_adjust(top=0.90, bottom=0.06, left=0.02, right=0.96, wspace=0.08)
 
     if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+        if save_both:
+            _save_both_paths(fig, filepath)
+        else:
+            save_plot(fig, filepath)
     return fig
 
 
@@ -530,14 +539,10 @@ def plot_figure_5_14_multiclass_gaussian_boundaries(filepath: Optional[str] = No
     fig.tight_layout()
 
     if filepath:
-        save_plot(fig, filepath)
-    if save_both and filepath:
-        if "5/result" in filepath:
-            alt_path = filepath.replace("5/result", "result")
-            save_plot(fig, alt_path)
-        elif "result" in filepath:
-            alt_path = os.path.join("5", filepath)
-            save_plot(fig, alt_path)
+        if save_both:
+            _save_both_paths(fig, filepath)
+        else:
+            save_plot(fig, filepath)
     return fig
 
 
