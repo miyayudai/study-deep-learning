@@ -32,3 +32,6 @@ def save_plot(fig_or_plt, filepath, dpi=300):
     else:
         plt.savefig(filepath, dpi=dpi, bbox_inches='tight')
     print(f"Figure saved successfully to: {filepath}")
+
+# Alias for compatibility
+set_plot_style = setup_style
