@@ -95,9 +95,9 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: なし (アイドル)
-- **担当セクション**: なし
-- **ステータス**: アイドル (`[ ]`)
+- **現在実行中のタスク**: 3.3 Periodic Variables
+- **担当セクション**: 第3章 3.3 周期変数 (Periodic Variables)
+- **ステータス**: 実行中 (`[-]`)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -242,7 +242,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 3.2 〜 3.8)
   - テスト: `tests/test_ch3_the_multivariat.py`
 
-- [ ] **3.3 Periodic Variables**
+- [-] **3.3 Periodic Variables**
   - ノートブック: `3/3.3_Periodic_Variables.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 3.3.1 Von Mises distribution
