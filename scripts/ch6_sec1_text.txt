@@ -1,0 +1,390 @@
+
+=== PDF PAGE 189 (Book Page 171) ===
+6
+Deep Neural
+Networks
+In recent years, neural networks have emerged as, by far, the most important ma-
+chine learning technology for practical applications, and we therefore devote a large
+fraction of this book to studying them. Previous chapters have already laid many
+of the foundations we will need. In particular, we have seen that linear regression
+models that comprise linear combinations of ﬁxed nonlinear basis functions can be
+expressed as neural networks having a single layer of weight and bias parameters. Chapter 4
+Likewise, classiﬁcation models based on linear combinations of basis functions can
+also be viewed as single-layer neural networks. These allowed us to introduce several Chapter 5
+important concepts before we embark on a discussion of more complex multilayered
+networks in this chapter.
+Given a sufﬁcient number of suitably chosen basis functions, such linear models
+can approximate any given nonlinear transformation from inputs to outputs to any
+desired accuracy and might therefore appear to be sufﬁcient to tackle any practical
+171 © The Author(s), under exclusive license to Springer Nature Switzerland AG 2024 
+C. M. Bishop, H. Bishop, Deep Learning , https://doi.org/10.1007/978-3-031-45468-4_6    
+=== PDF PAGE 190 (Book Page 172) ===
+172 6. DEEP NEURAL NETWORKS
+application. However, these models have some severe limitations, and so we will
+begin our discussion of neural networks by exploring these limitations and under-
+standing why it is necessary to use basis functions that are themselves learned from
+data. This leads naturally to a discussion of neural networks having more than one
+layer of learnable parameters. These are known as feed-forward networks ormulti- Section 6.3.6
+layer perceptrons. We will also discuss the beneﬁts of having many such layers of
+processing, leading to the key concept of deep neural networks that now dominate
+the ﬁeld of machine learning.
+6.1. Limitations of Fixed Basis Functions
+Linear basis function models for classiﬁcation are based on linear combinations of Chapter 5
+basis functions j(x)and take the form
+y(x;w) =f
+M/summationdisplay
+j=1wjj(x) +w0
+ (6.1)
+wheref(·)is a nonlinear output activation function. Linear models for regression
+take the same form but with f(·)replaced by the identity. These models allow for Chapter 4
+an arbitrary set of nonlinear basis functions {i(x)}, and because of the generality
+of these basis functions, such models can in principle provide a solution to any re-
+gression or classiﬁcation problem. This is true in a trivial sense in that if one of the
+basis functions corresponds to the desired input-to-output transformation, then the
+learnable linear layer simply has to copy the value of this basis function to the output
+of the model.
+More generally, we would expect that a sufﬁciently large and rich set of basis
+functions would allow any desired function to be approximated to arbitrary accu-
+racy. It would seem therefore that such linear models constitute a general purpose
+framework for solving problems in machine learning. Unfortunately, there are some
+signiﬁcant shortcomings with linear models, which arise from the assumption that
+the basis functions j(x)are ﬁxed and independent of the training data. To under-
+stand these limitations, we start by looking at the behaviour of linear models as the
+number of input variables is increased.
+6.1.1 The curse of dimensionality
+Consider a simple regression model for a single input variable given by a poly-
+nomial of order Min the form Section 1.2
+y(x;w) =w0+w1x+w2x2+:::+wMxM(6.2)
+and let us see what happens if we increase the number of inputs. If we have Dinput
+variables{x1;:::;xD}, then a general polynomial with coefﬁcients up to order 3
+=== PDF PAGE 191 (Book Page 173) ===
+6.1.
+Limitations of Fixed Basis Functions 173
+Figure 6.1 Plot of the Iris data in which red,
+green, and blue points denote
+three species of iris ﬂower and the
+axes represent measurements of
+the length and width of the sepal,
+respectively. Our goal is to clas-
+sify a new test point such as the
+one denoted by .
+sepal lengthsepal width
+w
+ould take the form
+y(x;w) =w0+D/summationdisplay
+i=1wixi+D/summationdisplay
+i=1D/summationdisplay
+j=1wijxixj+D/summationdisplay
+i=1D/summationdisplay
+j=1D/summationdisplay
+k=1wijkxixjxk:(6.3)
+AsDincreases, the growth in the number of independent coefﬁcients is O(D3),
+whereas for a polynomial of order M, the growth in the number of coefﬁcients is
+O(DM)(Bishop, 2006). We see that in spaces of higher dimensionality, polynomials
+can rapidly become unwieldy and of little practical utility.
+The severe difﬁculties that can arise in spaces of many dimensions is sometimes
+called the curse of dimensionality (Bellman, 1961). It is not limited to polynomial
+regression but is in fact quite general. Consider the use of linear models for solv-
+ing classiﬁcation problems. Figure 6.1 shows a plot of data from the Iris data set
+comprising 50 observations taken from each of three species of iris ﬂowers. Each
+observation has four variables representing measurements of the sepal length, sepal
+width, petal length, and petal width. For this illustration, we consider only the sepal
+length and sepal width variables. Given these 150 observations as training data, our
+goal is to classify a new test point, such as the one denoted by the cross in Figure 6.1,
+by assigning it to one of the three species. We observe that the cross is close to sev-
+eral red points, and so we might suppose that it belongs to the red class. However,
+there are also some green points nearby, so we might think that it could instead be-
+long to the green class. It seems less likely that it belongs to the blue class. The
+intuition here is that the identity of the cross should be determined more strongly by
+nearby points from the training set and less strongly by more distant points, and this
+intuition turns out to be reasonable.
+One very simple way of converting this intuition into a learning algorithm would
+be to divide the input space into regular cells, as indicated in Figure 6.2. When we
+are given a test point and we wish to predict its class, we ﬁrst decide which cell it
+=== PDF PAGE 192 (Book Page 174) ===
+174 6.
+DEEP NEURAL NETWORKS
+Figure 6.2 Illustration of a simple approach
+for solving classiﬁcation problems
+in which the input space is di-
+vided into cells and any new test
+point is assigned to the class that
+has the most representatives in
+the same cell as the test point.
+As we shall see shortly, this sim-
+plistic approach has some severe
+shortcomings.
+sepal lengthsepal width
+belongs
+to, and then we ﬁnd all the training data points that fall in the same cell. The
+identity of the test point is predicted to be the same as the class having the largest
+number of training points in the same cell as the test point (with ties being broken
+at random). We can view this as a basis function model in which there is a basis
+functioni(x)for each grid cell, which simply returns zero if xlies outside the
+grid cell, and otherwise returns the majority class of the training data points that fall
+inside the cell. The output of the model is then given by the sum of the outputs of all
+the basis functions.
+There are numerous problems with this naive approach, but one of the most
+severe becomes apparent when we consider its extension to problems having larger
+numbers of input variables, corresponding to input spaces of higher dimensionality.
+The origin of the problem is illustrated in Figure 6.3, which shows that, if we divide a
+region of a space into regular cells, then the number of such cells grows exponentially
+with the dimensionality of the space. The challenge with an exponentially large
+number of cells is that we would need an exponentially large quantity of training
+Figure 6.3 Illustration of the curse
+of dimensionality, showing how the
+number of regions of a regular grid
+grows exponentially with the dimen-
+sionalityDof the space. For clarity,
+only a subset of the cubical regions
+are shown for D= 3.
+x1
+D=1
+x1x2
+D=2
+x1x2
+x3
+D=3
+=== PDF PAGE 193 (Book Page 175) ===
+6.1.
+Limitations of Fixed Basis Functions 175
+Figure 6.4 Plot of the fraction of the volume
+of a hypersphere of radius r= 1
+lying in the range r= 1−to
+r= 1for various values of the di-
+mensionality D.
+/epsilon1volume fractionD= 1D=
+2D= 5D= 20
+0 0.2 0.4 0.6 0.8 100.20.40.60.81
+data
+to ensure that the cells are not empty. We have already seen in Figure 6.2 that
+some cells contain no training points. Hence, a test point in such cells cannot be
+classiﬁed. Clearly, we have no hope of applying such a technique in a space of more
+than a few variables. The difﬁculties with both the polynomial regression example
+and the Iris data classiﬁcation example arise because the basis functions were chosen
+independently of the problem being solved. We will need to be more sophisticated
+in our choice of basis functions if we are to circumvent the curse of dimensionality. Section 6.1.4
+6.1.2 High-dimensional spaces
+First, however, we will look more closely at the properties of spaces with higher
+dimensionality where our geometrical intuitions, formed through a life spent in a
+space of three dimensions, can fail badly. As a simple example, consider a hyper-
+sphere of radius r= 1 in a space of Ddimensions, and ask what is the fraction of
+the volume of the hypersphere that lies between radius r= 1−andr= 1. We can
+evaluate this fraction by noting that the volume VD(r)of a hypersphere of radius r
+inDdimensions must scale as rD, and so we write
+VD(r) =KDrD(6.4)
+where the constant KDdepends only on D. Thus, the required fraction is given by Exercise 6.1
+VD(1)−VD(1−)
+VD(1)=
+1−(1−)D; (6.5)
+which is plotted as a function of for various values of DinFigure 6.4. We see that,
+for largeD, this fraction tends to 1even for small values of . Thus, we arrive at
+the remarkable result that, in spaces of high dimensionality, most of the volume of a
+hypersphere is concentrated in a thin shell near the surface!
+=== PDF PAGE 194 (Book Page 176) ===
+176 6.
+DEEP NEURAL NETWORKS
+Figure 6.5 Plot of the probability density with
+respect to radius rof a Gaussian
+distribution for various values of
+the dimensionality D. In a high-
+dimensional space, most of the
+probability mass of a Gaussian
+is located within a thin shell at a
+speciﬁc radius.
+D= 1
+D= 2
+D= 20
+rp(r)
+0 2 4012
+As
+a further example of direct relevance to machine learning, consider the be-
+haviour of a Gaussian distribution in a high-dimensional space. If we transform from
+Cartesian to polar coordinates and then integrate out the directional variables, we ob-
+tain an expression for the density p(r)as a function of radius rfrom the origin. Thus, Exercise 6.3
+p(r)ris the probability mass inside a thin shell of thickness rlocated at radius r.
+This distribution is plotted, for various values of D, inFigure 6.5, and we see that
+for largeD, the probability mass of the Gaussian is concentrated in a thin shell at a
+speciﬁc radius.
+In this book, we make extensive use of illustrative examples involving one or two
+variables, because this makes it particularly easy to visualize these spaces graphi-
+cally. The reader should be warned, however, that not all intuitions developed in
+spaces of low dimensionality will generalize to situations involving many dimen-
+sions.
+Finally, although we have talked about the curse of dimensionality, there can
+also be advantages to working in high-dimensional spaces. Consider the situation
+shown in Figure 6.6. We see that this data set, in which each data point consists
+of a pair of values (x1;x2), is linearly separable, but when only the value of x1is
+observed, the classes have a strong overlap. The classiﬁcation problem is therefore
+much easier in the higher-dimensional space.
+6.1.3 Data manifolds
+With both the polynomial regression model and the grid-based classiﬁer in Fig-
+ure 6.2, we saw that the number of basis functions grows rapidly with dimensionality,
+making such methods impractical for applications involving even a few dozen vari-
+ables, never mind the millions of inputs that often arise with, say, image processing.
+The problem is that the basis functions are ﬁxed ahead of time and do not depend on
+the data, or indeed even on the speciﬁc problem being solved. We need to ﬁnd a way
+to create basis functions that are tuned to the particular application.
+Although the curse of dimensionality certainly raises important issues for ma-
+chine learning applications, it does not prevent us from ﬁnding effective techniques
+applicable to high-dimensional spaces. One reason for this is that real data will
+generally be conﬁned to a region of the data space having lower effective dimen-
+=== PDF PAGE 195 (Book Page 177) ===
+6.1. Limitations of Fixed Basis Functions 177
+x1x2
+(a)
+x1 (b)
+Figure 6.6 Illustration of a data set in two dimensions (x1;x2)in which data points from the two classes de-
+picted using green and red circles can be separated by a linear decision surface, as seen in (a). If, however, only
+the variable x1is measured then the classes are no longer separable, as seen in (b).
+sionality. Consider the images shown in Figure 6.7. Each image is a point in a
+high-dimensional space whose dimensionality is determined by the number of pix-
+els. Because the objects can occur at different vertical and horizontal positions within
+the image and in different orientations, there are three degrees of freedom of vari-
+ability between images, and a set of images will, to a ﬁrst approximation, live on
+a three-dimensional manifold embedded within the high-dimensional space. Due to
+the complex relationships between the object position or orientation and the pixel
+intensities, this manifold will be highly nonlinear.
+In fact, the number of pixels is really an artefact of the image generation pro-
+cess since they represent measurements of a continuous world. Capturing the same
+image at a higher resolution increases the dimensionality Dof the data space with-
+out changing the fact that the images still live on a three-dimensional manifold. If
+we can associate localized basis functions with the data manifold, rather than with
+the entire high-dimensional data space, we might expect that the number of required
+basis functions would grow exponentially with the dimensionality of the manifold
+rather than with the dimensionality of the data space. Since the manifold will typi-
+cally have a much lower dimensionality than the data space, this represents a huge
+Figure 6.7 Examples of images of a hand-
+written digit that differ in the
+location of the digit within
+the images as well as in
+their orientation. This data
+lives on a nonlinear three-
+dimensional manifold within the
+high-dimensional image space.
+
+=== PDF PAGE 196 (Book Page 178) ===
+178 6. DEEP NEURAL NETWORKS
+Figure 6.8 The top row shows examples of natural images of size 64×64pixels, whereas the bottom
+row shows randomly generated images of the same size obtained by drawing pixel values
+from a uniform probability distribution over the possible pixel colours.
+improvement. Effectively, neural networks learn a set of basis functions that are
+adapted to data manifolds. Moreover, for a particular application, not all directions
+within the manifold may be signiﬁcant. For example, if we wish to determine only
+the orientation, and not the position, of the object in Figure 6.7, then there is only one
+relevant degree of freedom on the manifold and not three. Neural networks are also
+able to learn which directions on the manifold are relevant to predicting the desired
+outputs.
+Another way to see that real data is conﬁned to low-dimensional manifolds is
+to consider the task of generating random images. In Figure 6.8 we see examples
+of natural images along with examples of synthetic images of the same resolution
+generated by sampling each of the red, green, and blue intensities at each pixel inde-
+pendently at random from a uniform distribution. We see that none of the synthetic
+images look at all like natural images. The reason is that these random images lack
+the very strong correlations between pixels that natural images exhibit. For example,
+two adjacent pixels in a natural image have a much higher probability of having the
+same, or very similar, colour, than would two adjacent images in the random exam-
+ples. Each of the images in Figure 6.8 corresponds to a point in a high-dimensional
+space, yet natural images cover only a tiny fraction of this space.
+6.1.4 Data-dependent basis functions
+We have seen that simple basis functions that are chosen independently of the
+problem being solved can run into signiﬁcant limitations, particularly in spaces of
+high dimensionality. If we want to use basis functions in such situations, then one
+approach would be to use expert knowledge to hand-craft the basis functions in a
+=== PDF PAGE 197 (Book Page 179) ===
+6.1. Limitations of Fixed Basis Functions 179
+way that is speciﬁc to each application. For many years, this was the mainstream
+approach in machine learning. Basis functions, often called features, would be de-
+termined by a combination of domain knowledge and trial-and-error. However, this
+approach met with limited success and was superseded by data-driven approaches
+in which basis functions are learned from the training data. Domain knowledge still
+plays a role in modern machine learning, but at a more qualitative level in designing
+network architectures where it can capture appropriate inductive bias, as we will see Section 9.1
+in later chapters.
+Since data in a high-dimensional space may be conﬁned to a low-dimensional
+manifold, we do not need basis functions that densely ﬁll the whole input space,
+but instead we can use basis functions that are themselves associated with the data
+manifold. One way to do this is to have one basis function associated with each data
+point in the training set, which ensures that the basis functions are automatically
+adapted to the underlying data manifold. An example of such a model is that of
+radial basis functions (Broomhead and Lowe, 1988), which have the property that
+each basis function depends only on the radial distance (typically Euclidean) from a
+central vector. If the basis centres are chosen to be the input data values {xn}then
+there is one basis function n(x)for each data point, which will therefore capture
+the whole of the data manifold. A typical choice for a radial basis function is
+n(x) = exp/parenleftBigg
+−/bardblx−xn/bardbl2
+s2/parenrightBigg
+(6.6)
+wheresis a parameter controlling the width of the basis function. Although it can be
+quick to set up such a model, a major problem with this technique is that it becomes
+computationally unwieldy for large data sets. Moreover, the model needs careful
+regularization to avoid severe over-ﬁtting.
+A related approach, called a support vector machine or SVM (Vapnik, 1995;
+Sch¨olkopf and Smola, 2002; Bishop, 2006), addresses this by again deﬁning basis
+functions that are centred on each of the training data points and then selecting a
+subset of these automatically during training. As a result, the effective number of
+basis functions in the resulting models is generally much smaller than the number of
+training points, although it is often still relatively large and typically increases with
+the size of the training set. Support vector machines also do not produce probabilistic
+outputs, and they do not naturally generalize to more than two classes. Methods such
+as radial basis functions and support vector machines have been superseded by deep
+neural networks, which are much better at exploiting very large data sets efﬁciently.
+Moreover, as we will see later, neural networks are able to learn deep hierarchical
+representations, which are crucial to achieving high prediction accuracy in more
+complex applications.
+=== PDF PAGE 198 (Book Page 180) ===
+180 6. DEEP NEURAL NETWORKS
+6.2. Multilayer Networks
+In the previous section, we saw that to apply linear models of the form (6.1) to prob-
+lems involving large-scale data sets and high-dimensional spaces, we need to ﬁnd a
+set of basis functions that is tuned to the problem being solved. The key idea behind
+neural networks is to choose basis functions j(x)that themselves have learnable
+parameters and then allow these parameters to be adjusted, along with the coefﬁ-
+cients{wj}, during training. We then optimize the whole model by minimizing an
+error function using gradient-based optimization methods, such as stochastic gradi-
+ent descent, where the error function is deﬁned jointly across all the parameters in Chapter 7
+the model.
+There are, of course, many ways to construct parametric nonlinear basis func-
+tions. One key requirement is that they must be differentiable functions of their
+learnable parameters so that we can apply gradient-based optimization. The most
+successful choice has been to use basis functions that follow the same form as (6.1),
+so that each basis function is itself a nonlinear function of a linear combination of
+the inputs, where the coefﬁcients in the linear combination are learnable parameters.
+Note that this construction can clearly be extended recursively to give a hierarchical
+model with many layers, which forms the basis for deep neural networks. Section 6.3
+Consider a basic neural network model having two layers of learnable parame-
+ters. First, we construct Mlinear combinations of the input variables x1;:::;xDin
+the form
+a(1)
+j=D/summationdisplay
+i=1w(1)
+jixi+w(1)
+j0 (6.7)
+wherej= 1;:::;M , and the superscript (1)indicates that the corresponding pa-
+rameters are in the ﬁrst ‘layer’ of the network. We will refer to the parameters w(1)
+ji
+asweights and the parameters w(1)
+j0asbiases, while the quantities a(1)
+jare called Chapter 4
+pre-activations. Each of the quantities ajis then transformed using a differentiable,
+nonlinear activation function h(·) to give
+z(1)
+j=h(a(1)
+j); (6.8)
+which represent the outputs of the basis functions in (6.1). In the context of neu-
+ral networks, these basis functions are called hidden units. We will explore various
+choices for the nonlinear function h(·) shortly, but here we note that provided the
+derivativeh/prime(·)can be evaluated, then the overall network function will be differen-
+tiable. Following (6.1), these values are again linearly combined to give
+a(2)
+k=M/summationdisplay
+j=1w(2)
+kjz(1)
+j+w(2)
+k0(6.9)
+wherek= 1;:::;K , andKis the total number of outputs. This transformation
+corresponds to the second layer of the network, and again the w(2)
+k0are bias parame-
+ters. Finally, the{a(2)
+k}are transformed using an appropriate output-unit activation

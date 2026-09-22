@@ -35,3 +35,4 @@ def save_plot(fig_or_plt, filepath, dpi=300):
 
 # Alias for compatibility
 set_plot_style = setup_style
+save_fig = save_plot

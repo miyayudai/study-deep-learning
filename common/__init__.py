@@ -10,3 +10,5 @@ from . import classification_decision_theory
 from . import generative_classifiers
 from . import discriminative_classifiers
 from . import exercises_ch5
+from . import limitations_of_fixed_basis_functions
+from . import basis_limitations
