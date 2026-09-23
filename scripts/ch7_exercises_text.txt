@@ -1,0 +1,625 @@
+7.4. Normalization
+
+229
+
+no longer have the training mini-batches available, and we cannot determine a mean
+and variance from just one data example. To solve this, we could in principle evaluate µi and σi2 for each layer across the whole training set after we have made the
+final update to the weights and biases. However, this would involve processing the
+whole data set just to evaluate these quantities and is therefore usually too expensive.
+Instead, we compute moving averages throughout the training phase:
+(τ )
+
+µi
+
+(τ −1)
+
+= αµi
+
++ (1 − α)µi
+
+(τ )
+(τ −1)
++ (1 − α)σi
+σ i = ασ i
+
+(7.56)
+(7.57)
+
+where 0 ⩽ α ⩽ 1. These moving averages play no role during training but are used
+to process new data points during the inference phase.
+Although batch normalization is very effective in practice, there is uncertainty
+as to why it works so well. Batch normalization was originally motivated by noting
+that updates to weights in earlier layers of the network change the distribution of
+values seen by later layers, a phenomenon called internal covariate shift. However,
+later studies (Santurkar et al., 2018) suggest that covariate shift is not a significant
+factor and that the improved training results from an improvement in the smoothness
+of the error function landscape.
+
+7.4.3
+
+Section 12.2.5
+Chapter 12
+
+Layer normalization
+
+With batch normalization, if the batch size is too small then the estimates of the
+mean and variance become too noisy. Also, for very large training sets, the minibatches may be split across different GPUs, making global normalization across the
+mini-batch inefficient. An alternative to normalizing across examples within a minibatch for each hidden unit separately is to normalize across the hidden-unit values
+for each data point separately. This is known as layer normalization (Ba, Kiros, and
+Hinton, 2016). It was introduced in the context of recurrent neural networks where
+the distributions change after each time step making batch normalization infeasible.
+However, it is useful in other architectures such as transformer networks.
+By analogy with batch normalization, we therefore make the following transformation:
+M
+
+µn =
+
+1 X
+ani
+M i=1
+
+σn2 =
+
+1 X
+2
+(ani − µi )
+M i=1
+
+(7.58)
+
+M
+
+ani − µn
+b
+ani = p
+σn2 + δ
+
+(7.59)
+(7.60)
+
+where the sums i = 1, . . . , M are taken over all hidden units in the layer. As with
+batch normalization, additional learnable mean and standard deviation parameters
+are introduced for each hidden unit separately in the form (7.55). Note that the same
+normalization function can be employed during training and during inference, and
+
+230
+
+7. GRADIENT DESCENT
+so there is no need to store moving averages. Layer normalization is compared with
+batch normalization in Figure 7.8.
+
+Exercises
+
+7.1 (?) By substituting (7.10) into (7.7) and using (7.8) and (7.9), show that the error
+function (7.7) can be written in the form (7.11).
+7.2 (?) Consider a Hessian matrix H with eigenvector equation (7.8). By setting the
+vector v in (7.14) equal to each of the eigenvectors ui in turn, show that H is positive
+definite if, and only if, all its eigenvalues are positive.
+7.3 (? ?) By considering the local Taylor expansion (7.7) of an error function about a
+stationary point w? , show that the necessary and sufficient condition for the stationary point to be a local minimum of the error function is that the Hessian matrix H,
+b = w? , is positive definite.
+defined by (7.5) with w
+7.4 (? ?) Consider a linear regression model with a single input variable x and a single
+output variable y of the form
+y(x, w, b) = wx + b
+
+(7.61)
+
+together with a sum-of-squares error function given by
+N
+
+1X
+2
+{y(xn , w, b) − tn } .
+E(w, b) =
+2 n=1
+
+Appendix A
+
+(7.62)
+
+Derive expressions for the elements of the 2 × 2 Hessian matrix given by the second
+derivatives of the error function with respect to the weight parameter w and bias parameter b. Show that the trace and the determinant of this Hessian are both positive.
+Since the trace represents the sum of the eigenvalue and the determinant corresponds
+to the product of the eigenvalues, then both eigenvalues are positive and hence the
+stationary point of the error function is a minimum.
+7.5 (? ?) Consider a single-layer classification model with a single input variable x and
+a single output variable y of the form
+y(x, w, b) = σ(wx + b)
+
+(7.63)
+
+where σ(·) is the logistic sigmoid function defined by (5.42) together with a crossentropy error function given by
+E(w, b) =
+
+N
+X
+n=1
+
+{tn ln y(xn , w, b) + (1 − tn ) ln(1 − y(xn , w, b))} .
+
+(7.64)
+
+Derive expressions for the elements of the 2 × 2 Hessian matrix given by the second
+derivatives of the error function with respect to the weight parameter w and bias parameter b. Show that the trace and the determinant of this Hessian are both positive.
+
+Exercises
+
+Appendix A
+
+231
+
+Since the trace represents the sum of the eigenvalue and the determinant corresponds
+to the product of the eigenvalues, then both eigenvalues are positive and hence the
+stationary point of the error function is a minimum.
+7.6 (? ?) Consider a quadratic error function defined by (7.7) in which the Hessian matrix
+H has an eigenvalue equation given by (7.8). Show that the contours of constant
+error are ellipses whose axes are aligned with the eigenvectors ui with lengths that
+are inversely proportional to the square roots of the corresponding eigenvalues λi .
+7.7 (?) Show that, as a consequence of the symmetry of the Hessian matrix H, the
+number of independent elements in the quadratic error function (7.3) is given by
+W (W + 3)/2.
+7.8 (?) Consider a set of values x1 , . . . , xN drawn from a distribution with mean µ and
+variance σ 2 , and define the sample mean to be
+N
+
+x=
+
+1 X
+xn .
+N n=1
+
+(7.65)
+
+Show that the expectation of the squared error (x − µ)2 with respect to the distri2
+bution from which the data is drawn is given
+√ by σ /N . This shows that the RMS
+error in the sample mean is given by σ/ N , which decreases relatively slowly as
+the sample size N increases.
+7.9 (? ?) Consider a layered network that computes the functions (7.19) and (7.20) in
+layer l. Suppose we initialize the weights using a Gaussian N (0, 2 ), and suppose
+(l−1)
+that the outputs zj
+of the units in layer l − 1 have variance λ2 . By using the form
+of the ReLU activation function, show that the mean and variance of the outputs in
+layer l are given by (7.21) and (7.22), respectively. Hence, show that if we want
+the units in layer l also to have pre-activations with variance λ2 then the value of 
+should be given by (7.23).
+7.10 (? ?) By making use of (7.7), (7.8), and (7.10), derive the results (7.24) and (7.25),
+which express the gradient vector and a general weight update, as expansions in the
+eigenvectors of the Hessian matrix. Use these results, together with the eigenvector
+orthonormality relation (7.9) and the batch gradient descent formula (7.16), to derive the result (7.26) for the batch gradient descent update expressed in terms of the
+coefficients {αi }.
+7.11 (?) Consider a smoothly varying error surface with low curvature such that the gradient varies only slowly with position. Show that, for small values of the learning
+rate and momentum parameters, the Nesterov momentum gradient update defined
+by (7.34) is equivalent to the standard gradient descent with momentum defined by
+(7.31).
+7.12 (? ?) Consider a sequence of values {x1 , . . . , xN } of some variable x, and suppose
+we compute an exponentially weighted moving average using the formula
+µn = βµn−1 + (1 − β)xn
+
+(7.66)
+
+232
+
+7. GRADIENT DESCENT
+where 0 ⩽ β ⩽ 1. By making use of the following result for the sum of a finite
+geometric series
+n
+X
+1 − βn
+β k−1 =
+(7.67)
+1−β
+k=1
+
+show that if the sequence of averages is initialized using µ0 = 0, then the estimators
+are biased and that the bias can be corrected using
+µ
+bn =
+
+µn
+.
+1 − βn
+
+(7.68)
+
+7.13 (?) In gradient descent, the weight vector w is updated by taking a step in weight
+space in the direction of the negative gradient governed by a learning rate parameter
+η. Suppose instead that we choose a direction d in weight space along which we
+minimize the error function, given the current weight vector w(τ ) . This involves
+minimizing the quantity
+E(w(τ ) + λd)
+(7.69)
+as a function of λ to give a value λ? corresponding to a new weight vector w(τ +1) .
+Show that the gradient of E(w) at w(τ +1) is orthogonal to the vector d. This is
+known as a ‘line search’ method and it forms the basis for a variety of numerical
+optimization algorithms (Bishop, 1995b).
+7.14 (?) Show that the renormalized input variables defined by (7.50), where µi is defined
+by (7.48) and σi2 is defined by (7.49), have zero mean and unit variance.
+
+8
+Backpropagation
+
+Section 8.2
+
+Our goal in this chapter is to find an efficient technique for evaluating the gradient
+of an error function E(w) for a feed-forward neural network. We will see that this
+can be achieved using a local message-passing scheme in which information is sent
+backwards through the network and is known as error backpropagation, or sometimes simply as backprop.
+Historically, the backpropagation equations would have been derived by hand
+and then implemented in software alongside the forward propagation equations, with
+both steps taking time and being prone to mistakes. Modern neural network software
+environments, however, allow virtually any derivatives of interest to be calculated
+efficiently with only minimal effort beyond that of coding up the original network
+function. This idea, called automatic differentiation, plays a key role in modern deep
+learning. However, it is valuable to understand how the calculations are performed
+so that we are not relying on ‘black box’ software solutions. In this chapter we
+
+© The Author(s), under exclusive license to Springer Nature Switzerland AG 2024
+C. M. Bishop, H. Bishop, Deep Learning, https://doi.org/10.1007/978-3-031-45468-4_8
+
+233
+
+234
+
+8. BACKPROPAGATION
+therefore explain the key concepts of backpropagation, and explore the framework
+of automatic differentiation in detail.
+Note that the term ‘backpropagation’ is used in the neural computing literature
+in a variety of different ways. For instance, a feed-forward architecture may be
+called a backpropagation network. Also the term ‘backpropagation’ is sometimes
+used to describe the end-to-end training procedure for a neural network including
+the gradient descent parameter updates. In this book we will use ‘backpropagation’
+specifically to describe the computational procedure used in the numerical evaluation
+of derivatives such as the gradient of the error function with respect to the weights
+and biases of a network. This procedure can also be applied to the evaluation of other
+important derivatives such as the Jacobian and Hessian matrices.
+
+8.1. Evaluation of Gradients
+We now derive the backpropagation algorithm for a general network having arbitrary
+feed-forward topology, arbitrary differentiable nonlinear activation functions, and a
+broad class of error function. The resulting formulae will then be illustrated using
+a simple layered network structure having a single layer of sigmoidal hidden units
+together with a sum-of-squares error.
+Many error functions of practical interest, for instance those defined by maximum likelihood for a set of i.i.d. data, comprise a sum of terms, one for each data
+point in the training set, so that
+E(w) =
+
+N
+X
+
+En (w).
+
+(8.1)
+
+n=1
+
+Here we will consider the problem of evaluating ∇En (w) for one such term in the
+error function. This may be used directly for stochastic gradient descent, or the
+results could be accumulated over a set of training data points for batch or minibatch methods.
+
+8.1.1 Single-layer networks
+Consider first a simple linear model in which the outputs yk are linear combinations of the input variables xi so that
+X
+yk =
+wki xi
+(8.2)
+i
+
+together with a sum-of-squares error function that, for a particular input data point
+n, takes the form
+1X
+(ynk − tnk )2
+(8.3)
+En =
+2
+k
+
+8.1. Evaluation of Gradients
+
+235
+
+where ynk = yk (xn , w), and tnk is the associated target value. The gradient of this
+error function with respect to a weight wji is given by
+∂En
+= (ynj − tnj )xni .
+∂wji
+
+(8.4)
+
+This can be interpreted as a ‘local’ computation involving the product of an ‘error
+signal’ ynj − tnj associated with the output end of the link wji and the variable xni
+associated with the input end of the link. In Section 5.4.3, we saw how a similar
+formula arises with the logistic-sigmoid activation function together with the crossentropy error function and similarly for the softmax activation function together with
+its matching multivariate cross-entropy error function. We will now see how this simple result extends to the more complex setting of multilayer feed-forward networks.
+
+8.1.2
+
+General feed-forward networks
+
+In general, a feed-forward network consists of a set of units each of which computes a weighted sum of its inputs:
+X
+aj =
+wji zi
+(8.5)
+i
+
+Section 6.2
+
+where zi is either the activation of another unit or an input unit that sends a connection to unit j, and wji is the weight associated with that connection. Biases can be
+included in this sum by introducing an extra unit, or input, with activation fixed at
++1, and so we do not need to deal with biases explicitly. The sum in (8.5), known
+as a pre-activation, is transformed by a nonlinear activation function h(·) to give the
+activation zj of unit j in the form
+zj = h(aj ).
+
+(8.6)
+
+Note that one or more of the variables zi in the sum in (8.5) could be an input, and
+similarly, the unit j in (8.6) could be an output.
+For each data point in the training set, we will suppose that we have supplied the
+corresponding input vector to the network and calculated the activations of all the
+hidden and output units in the network by successive application of (8.5) and (8.6).
+This process is called forward propagation because it can be regarded as a forward
+flow of information through the network.
+Now consider the evaluation of the derivative of En with respect to a weight
+wji . The outputs of the various units will depend on the particular input data point
+n. However, to keep the notation uncluttered, we will omit the subscript n from the
+network variables. First note that En depends on the weight wji only via the summed
+input aj to unit j. We can therefore apply the chain rule for partial derivatives to give
+∂En
+∂En ∂aj
+=
+.
+∂wji
+∂aj ∂wji
+
+(8.7)
+
+We now introduce a useful notation:
+δj ≡
+
+∂En
+∂aj
+
+(8.8)
+
+236
+
+8. BACKPROPAGATION
+Illustration of the calculation of δj for hidden
+unit j by backpropagation of the δ’s from those
+units k to which unit j sends connections. The
+black arrows denote the direction of information
+flow during forward propagation, and the red arrows indicate the backward propagation of error
+information.
+
+zi
+
+δk
+δj
+wji
+
+zj
+
+wkj
+
+...
+
+Figure 8.1
+
+δ1
+
+where the δ’s are often referred to as errors for reasons we will see shortly. Using
+(8.5), we can write
+∂aj
+= zi .
+(8.9)
+∂wji
+Substituting (8.8) and (8.9) into (8.7), we then obtain
+∂En
+= δ j zi .
+∂wji
+
+(8.10)
+
+Equation (8.10) tells us that the required derivative is obtained simply by multiplying
+the value of δ for the unit at the output end of the weight by the value of z for the
+unit at the input end of the weight (where z = 1 for a bias). Note that this takes the
+same form as that found for the simple linear model in (8.4). Thus, to evaluate the
+derivatives, we need calculate only the value of δj for each hidden and output unit in
+the network and then apply (8.10).
+As we have seen already, for the output units, we have
+δ k = y k − tk
+Section 5.4.6
+
+(8.11)
+
+provided we are using the canonical link as the output-unit activation function. To
+evaluate the δ’s for hidden units, we again make use of the chain rule for partial
+derivatives:
+∂En X ∂En ∂ak
+=
+(8.12)
+δj ≡
+∂aj
+∂ak ∂aj
+k
+
+Exercise 8.1
+
+where the sum runs over all units k to which unit j sends connections. The arrangement of units and weights is illustrated in Figure 8.1. Note that the units labelled k
+include other hidden units and/or output units. In writing down (8.12), we are making use of the fact that variations in aj give rise to variations in the error function
+only through variations in the variables ak .
+If we now substitute the definition of δj given by (8.8) into (8.12) and make use
+of (8.5) and (8.6), we obtain the following backpropagation formula:
+X
+δj = h0 (aj )
+wkj δk ,
+(8.13)
+k
+
+which tells us that the value of δ for a particular hidden unit can be obtained by
+propagating the δ’s backwards from units higher up in the network, as illustrated
+
+8.1. Evaluation of Gradients
+
+237
+
+Algorithm 8.1: Backpropagation
+
+Input: Input vector xn
+Network parameters w
+Error function En (w) for input xn
+Activation function h(a)
+Output: Error function derivatives {∂En /∂wji }
+// Forward propagation
+
+for j ∈ all hidden and output units do
+P
+aj ← i wji zi // {zi } includes inputs {xi }
+zj ← h(aj ) // activation function
+end for
+// Error evaluation
+
+for k ∈ all output units do
+∂En
+δk ←
+// compute errors
+∂ak
+end for
+// Backward propagation, in reverse order
+
+for j ∈ all hidden units do
+P
+δj ← h0 (aj ) k wkj δk // recursive backward evaluation
+∂En
+← δj zi // evaluate derivatives
+∂wji
+end for
+
+
+∂En
+return
+∂wji
+
+Exercise 8.2
+
+in Figure 8.1. Note that the summation in (8.13) is taken over the first index on
+wkj (corresponding to backward propagation of information through the network),
+whereas in the forward propagation equation (8.5), it is taken over the second index.
+Because we already know the values of the δ’s for the output units, it follows that
+by recursively applying (8.13), we can evaluate the δ’s for all the hidden units in a
+feed-forward network, regardless of its topology. The backpropagation procedure is
+summarized in Algorithm 8.1.
+For batch methods, the derivative of the total error E can then be obtained by
+repeating the above steps for each data point in the training set and then summing
+over all data points in the batch or mini-batch:
+X ∂En
+∂E
+=
+.
+∂wji
+∂wji
+n
+
+(8.14)
+
+238
+
+8. BACKPROPAGATION
+In the above derivation we have implicitly assumed that each hidden or output unit in
+the network has the same activation function h(·). However, the derivation is easily
+generalized to allow different units to have individual activation functions, simply
+by keeping track of which form of h(·) goes with which unit.
+
+8.1.3
+
+A simple example
+
+The above derivation of the backpropagation procedure allowed for general
+forms for the error function, the activation functions, and the network topology. To
+illustrate the application of this algorithm, we consider a two-layer network of the
+form illustrated in Figure 6.9, together with a sum-of-squares error. The output units
+have linear activation functions, so that yk = ak , and the hidden units have sigmoidal
+activation functions given by
+h(a) ≡ tanh(a)
+
+(8.15)
+
+where tanh(a) is defined by (6.14). A useful feature of this function is that its
+derivative can be expressed in a particularly simple form:
+h0 (a) = 1 − h(a)2 .
+
+(8.16)
+
+We also consider a sum-of-squares error function, so that for data point n the error
+is given by
+K
+1X
+(yk − tk )2
+En =
+(8.17)
+2
+k=1
+
+where yk is the activation of output unit k, and tk is the corresponding target value
+for a particular input vector xn .
+For each data point in the training set in turn, we first perform a forward propagation using
+aj
+
+D
+X
+
+wji xi
+
+(1)
+
+(8.18)
+
+= tanh(aj )
+
+(8.19)
+
+=
+
+i=0
+
+zj
+yk
+
+=
+
+M
+X
+
+(2)
+
+wkj zj
+
+(8.20)
+
+j =0
+
+where D is the dimensionality of the input vector x and M is the total number of
+hidden units. Also we have used x0 = z0 = 1 to allow bias parameters to be included
+in the weights. Next we compute the δ’s for each output unit using
+δ k = y k − tk .
+
+(8.21)
+
+Then, we backpropagate these errors to obtain δ’s for the hidden units using
+δj = (1 − zj2 )
+
+K
+X
+k=1
+
+(2)
+
+wkj δk ,
+
+(8.22)
+
+

@@ -1,0 +1,974 @@
+7.2. Gradient Descent Optimization
+
+217
+
+Algorithm 7.2: Mini-batch stochastic gradient descent
+
+Input: Training set of data points indexed by n ∈ {1, . . . , N }
+Batch size B
+Error function per mini-batch En:n+B−1 (w)
+Learning rate parameter η
+Initial weight vector w
+Output: Final weight vector w
+n←1
+repeat
+w ← w − η∇En:n+B−1 (w) // weight vector update
+n←n+B
+if n > N then
+shuffle data
+n←1
+end if
+until convergence
+return w
+
+network in which layer l evaluates the following transformations
+(l)
+ai =
+
+M
+X
+
+(l−1)
+
+wij zj
+
+(7.19)
+
+j =1
+(l)
+
+(l)
+
+zi = ReLU(ai )
+
+Exercise 7.9
+
+(7.20)
+
+where M is the number of units that send connections to unit i, and the ReLU activation function is given by (6.17). Suppose we initialize the weights using a Gaussian
+(l−1)
+N (0, 2 ), and suppose that the outputs zj
+of the units in layer l − 1 have variance
+λ2 . Then we can easily show that
+(l)
+
+E[ai ] = 0
+M 2 2
+(l)
+ λ
+var[zj ] =
+2
+
+(7.21)
+(7.22)
+
+where the factor of 1/2 arises from the ReLU activation function. Ideally we want
+to ensure that the variance of the pre-activations neither decays to zero nor grows
+significantly as we propagate from one layer to the next. If we therefore require that
+the units at layer l also have variance λ2 then we arrive at the following choice for
+the standard deviation of the Gaussian used to initialize the weights that feed into a
+
+218
+
+7. GRADIENT DESCENT
+
+Figure 7.3 Schematic illustration of fixed-step gradient
+descent for an error function that has substantially different curvatures along different directions. The error surface E has the form of a long valley, as depicted by the
+ellipses. Note that, for most points in weight space, the local negative gradient vector −∇E does not point towards
+the minimum of the error function. Successive steps of
+gradient descent can therefore oscillate across the valley,
+leading to very slow progress along the valley towards the
+minimum. The vectors u1 and u2 are the eigenvectors of
+the Hessian matrix.
+
+u2
+
+u1
+
+unit with M inputs:
+r
+
+2
+.
+(7.23)
+M
+It is also possible to treat the scale  of the initialization distribution as a hyperparameter and to explore different values across multiple training runs. The bias parameters are typically set to small positive values to ensure that most pre-activations
+are initially active during learning. This is particularly helpful with ReLU units,
+where we want the pre-activations to be positive so that there is a non-zero gradient
+to drive learning.
+Another important class of techniques for initializing the parameters of a neural
+network is by using the values that result from training the network on a different
+task or by exploiting various forms of unsupervised training. These techniques fall
+into the broad class of transfer learning techniques.
+=
+
+Section 6.3.4
+
+7.3. Convergence
+
+Section 7.1.1
+
+When applying gradient descent in practice, we need to choose a value for the learning rate parameter η. Consider the simple error surface depicted in Figure 7.3 for a
+hypothetical two-dimensional weight space in which the curvature of E varies significantly with direction, creating a ‘valley’. At most points on the error surface, the
+local gradient vector for batch gradient descent, which is perpendicular to the local
+contour, does not point directly towards the minimum. Intuitively we might expect
+that increasing the value of η should lead to bigger steps through weight space and
+hence faster convergence. However, the successive steps oscillate back and forth
+across the valley, and if we increase η too much, those oscillations will become divergent. Because η must be kept sufficiently small to avoid divergent oscillations
+across the valley, progress along the valley is very slow. Gradient descent then takes
+many small steps to reach the minimum and is a very inefficient procedure.
+We can gain deeper insight into the nature of this problem by considering the
+quadratic approximation to the error function in the neighbourhood of the minimum.
+From (7.7), (7.8), and (7.10), the gradient of the error function in this approximation
+
+7.3. Convergence
+can be written as
+∇E =
+
+X
+
+α i λi u i .
+
+219
+
+(7.24)
+
+i
+
+Again using (7.10) we can express the change in the weight vector in terms of corresponding changes in the coefficients {αi }:
+X
+∆w =
+∆αi ui .
+(7.25)
+i
+
+Combining (7.24) with (7.25) and the gradient descent formula (7.16) and using the
+orthonormality relation (7.9) for the eigenvectors of the Hessian, we obtain the following expression for the change in αi at each step of the gradient descent algorithm:
+
+Exercise 7.10
+
+∆αi = −ηλi αi
+
+(7.26)
+
+αinew = (1 − ηλi )αiold
+
+(7.27)
+
+from which it follows that
+
+where ‘old’ and ‘new’ denote values before and after a weight update. Using the
+orthonormality relation (7.9) for the eigenvectors together with (7.10), we have
+?
+uT
+i (w − w ) = αi
+
+(7.28)
+
+and so αi can be interpreted as the distance to the minimum along the direction ui .
+From (7.27) we see that these distances evolve independently such that, at each step,
+the distance along the direction of ui is multiplied by a factor (1 − ηλi ). After a total
+of T steps we have
+(T )
+(0)
+αi = (1 − ηλi )T αi .
+(7.29)
+
+It follows that, provided |1 − ηλi | < 1, the limit T → ∞ leads to αi = 0, which
+from (7.28) shows that w = w? and so the weight vector has reached the minimum
+of the error.
+Note that (7.29) demonstrates that gradient descent leads to linear convergence
+in the neighbourhood of a minimum. Also, convergence to the stationary point requires that all the λi be positive, which in turn implies that the stationary point is
+indeed a minimum. By making η larger we can make the factor (1 − ηλi ) smaller
+and hence improve the speed of convergence. There is a limit to how large η can
+be made, however. We can permit (1 − ηλi ) to go negative (which gives oscillating
+values of αi ), but we must ensure that |1 − ηλi | < 1 otherwise the αi values will
+diverge. This limits the value of η to η < 2/λmax where λmax is the largest of the
+eigenvalues. The rate of convergence, however, is dominated by the smallest eigenvalue, so with η set to its largest permitted value, the convergence along the direction
+corresponding to the smallest eigenvalue (the long axis of the ellipse in Figure 7.3)
+will be governed by
+
+
+2λmin
+(7.30)
+1−
+λmax
+
+220
+
+7. GRADIENT DESCENT
+
+∆w(1)
+∆w(2)
+
+E
+
+∆w(3)
+
+w
+Figure 7.4
+
+With a fixed learning rate parameter, gradient descent down a surface with low curvature
+leads to successively smaller steps corresponding to linear convergence. In such a situation, the effect of a momentum term is like an increase in the effective learning rate
+parameter.
+
+where λmin is the smallest eigenvalue. If the ratio λmin /λmax (whose reciprocal
+is known as the condition number of the Hessian) is very small, corresponding to
+highly elongated elliptical error contours as in Figure 7.3, then progress towards the
+minimum will be extremely slow.
+
+7.3.1
+
+Momentum
+
+One simple technique for dealing with the problem of widely differing eigenvalues is to add a momentum term to the gradient descent formula. This effectively adds
+inertia to the motion through weight space and smooths out the oscillations depicted
+in Figure 7.3. The modified gradient descent formula is given by
+
+∆w(τ −1) = −η∇E w(τ −1) + µ∆w(τ −2)
+(7.31)
+where µ is called the momentum parameter. The weight vector is then updated using
+(7.15).
+To understand the effect of the momentum term, consider first the motion through
+a region of weight space for which the error surface has relatively low curvature, as
+indicated in Figure 7.4. If we make the approximation that the gradient is unchanging, then we can apply (7.31) iteratively to a long series of weight updates, and then
+sum the resulting arithmetic series to give
+∆w = −η∇E{1 + µ + µ2 + . . .}
+η
+∇E
+=−
+1−µ
+
+(7.32)
+(7.33)
+
+and we see that the result of the momentum term is to increase the effective learning
+rate from η to η/(1 − µ).
+By contrast, in a region of high curvature in which gradient descent is oscillatory,
+as indicated in Figure 7.5, successive contributions from the momentum term will
+
+7.3. Convergence
+Figure 7.5
+
+For a situation in which successive
+steps of gradient descent are oscillatory, a momentum term has little influence on the effective value of the
+learning rate parameter.
+
+221
+
+∆w(1)
+
+∆w(2)
+∆w(3)
+
+tend to cancel and the effective learning rate will be close to η. Thus, the momentum
+term can lead to faster convergence towards the minimum without causing divergent
+oscillations. A schematic illustration of the effect of a momentum term is shown in
+Figure 7.6.
+Although the inclusion of momentum can lead to an improvement in the performance of gradient descent, it also introduces a second parameter µ whose value
+needs to be chosen, in addition to that of the learning rate parameter η. From (7.33)
+we see that µ should be in the range 0 ⩽ µ ⩽ 1. A typical value used in practice
+is µ = 0.9. Stochastic gradient descent with momentum is summarized in Algorithm 7.3.
+The convergence can be further accelerated using a modified version of momentum called Nesterov momentum (Nesterov, 2004; Sutskever et al., 2013). In conventional stochastic gradient descent with momentum, we first compute the gradient
+at the current location then take a step that is amplified by adding momentum from
+the previous step. With the Nesterov method, we change the order of these and first
+compute a step based on the previous momentum, then calculate the gradient at this
+Figure 7.6
+
+Illustration of the effect of adding
+a momentum term to the gradient
+descent algorithm, showing the
+more rapid progress along the valley of the error function, compared
+with the unmodified gradient descent shown in Figure 7.3.
+
+u2
+
+u1
+
+222
+
+7. GRADIENT DESCENT
+Algorithm 7.3: Stochastic gradient descent with momentum
+
+Input: Training set of data points indexed by n ∈ {1, . . . , N }
+Batch size B
+Error function per mini-batch En:n+B−1 (w)
+Learning rate parameter η
+Momentum parameter µ
+Initial weight vector w
+Output: Final weight vector w
+n←1
+∆w ← 0
+repeat
+∆w ← −η∇En:n+B−1 (w) + µ∆w // calculate update term
+w ← w + ∆w // weight vector update
+n←n+B
+if n > N then
+shuffle data
+n←1
+end if
+until convergence
+return w
+
+new location to find the update, so that
+
+∆w(τ −1) = −η∇E w(τ −1) + µ∆w(τ −2) + µ∆w(τ −2) .
+
+(7.34)
+
+For batch gradient descent, Nesterov momentum can improve the rate of convergence, although for stochastic gradient descent it can be less effective.
+
+7.3.2
+
+Section 7.3.1
+
+Learning rate schedule
+
+In the stochastic gradient descent learning algorithm (7.18), we need to specify
+a value for the learning rate parameter η. If η is very small then learning will proceed
+slowly. However, if η is increased too much it can lead to instability. Although some
+oscillation can be tolerated, it should not be divergent. In practice, the best results
+are obtained by using a larger value for η at the start of training and then reducing the
+learning rate over time, so that the value of η becomes a function of the step index τ :
+w(τ ) = w(τ −1) − η (τ −1) ∇En (w(τ −1) ).
+
+(7.35)
+
+7.3. Convergence
+
+223
+
+Examples of learning rate schedules include linear, power law, and exponential decay:
+η (τ ) = (1 − τ /K) η (0) + (τ /K)η (K )
+η
+
+(τ )
+
+=η
+
+(0)
+
+(1 + τ /s)
+
+η (τ ) = η (0) cτ /s
+
+c
+
+(7.36)
+(7.37)
+(7.38)
+
+where in (7.36) the value of η reduces linearly over K steps, after which its value is
+held constant at η (K ) . Good values for the hyperparameters η (0) , η (K ) , K, S, and c
+must be found empirically. It can be very helpful in practice to monitor the learning
+curve showing how the error function evolves during the gradient descent iteration
+to ensure that it is decreasing at a suitable rate.
+
+7.3.3
+Section 7.3
+
+RMSProp and Adam
+
+We saw that the optimal learning rate depends on the local curvature of the error surface, and moreover that this curvature can vary according to the direction in
+parameter space. This motivates several algorithms that use different learning rates
+for each parameter in the network. The values of these learning rates are adjusted
+automatically during training. Here we review some of the most widely used examples. Note, however, that this intuition really applies only if the principal curvature
+directions are aligned with the axes in weight space, corresponding to a locally diagonal Hessian matrix, which is unlikely to be the case in practice. Nevertheless, these
+types of algorithms can be effective and are widely used.
+The key idea behind AdaGrad, short for ‘adaptive gradient’, is to reduce each
+learning rate parameter over time by using the accumulated sum of squares of all the
+derivatives calculated for that parameter (Duchi, Hazan, and Singer, 2011). Thus,
+parameters associated with high curvature are reduced most rapidly. Specifically,
+
+2
+∂E(w)
+(τ −1)
+(τ )
++
+r i = ri
+(7.39)
+∂wi
+
+
+η
+∂E(w)
+(τ −1)
+(τ )
+−p τ
+wi = wi
+(7.40)
+∂wi
+ri + δ
+where η is the learning rate parameter, and δ is a small constant, say 10−8 , that
+ensures numerical stability in the event that ri is close to zero. The algorithm is
+(0)
+initialized with ri = 0. Here E(w) is the error function for a particular mini-batch,
+and the update (7.40) is standard stochastic gradient descent but with a modified
+learning rate that is specific to each parameter.
+One problem with AdaGrad is that it accumulates the squared gradients from the
+very start of training, and so the associated weight updates can become very small,
+which can slow down training too much in the later phases. The idea behind the
+RMSProp algorithm, which is short for ‘root mean square propagation’, is to replace
+the sum of squared gradients of AdaGrad with an exponentially weighted average
+
+224
+
+7. GRADIENT DESCENT
+(Hinton, 2012), giving
+2
+∂E(w)
+∂wi
+
+
+∂E(w)
+η
+(τ )
+(τ −1)
+wi = wi
+−p τ
+∂wi
+ri + δ
+(τ )
+(τ −1)
+ri = βri
++ (1 − β)
+
+
+
+(7.41)
+(7.42)
+
+where 0 < β < 1 and a typical value is β = 0.9.
+If we combine RMSProp with momentum, we obtain the Adam optimization
+method (Kingma and Ba, 2014) where the name is derived from ‘adaptive moments’.
+Adam stores the momentum for each parameter separately using update equations
+that consist of exponentially weighted moving averages for both the gradients and
+the squared gradients in the form
+
+
+∂E(w)
+(τ −1)
+(τ )
+(7.43)
++ (1 − β1 )
+si = β1 si
+∂wi
+
+2
+∂E(w)
+(τ )
+(τ −1)
+ri = β 2 ri
++ (1 − β2 )
+(7.44)
+∂wi
+(τ )
+
+s
+sbi = i τ
+1 − β1
+riτ
+rbi τ =
+1 − β2τ
+(τ )
+
+(τ )
+
+wi
+
+Exercise 7.12
+
+(τ −1)
+
+= wi
+
+(7.45)
+(7.46)
+sbi τ
+− ηp τ
+.
+b
+ri + δ
+
+(7.47)
+
+Here the factors 1/(1−β1τ ) and 1/(1−β2τ ) correct for a bias introduced by initializing
+(0)
+(0)
+si and ri to zero. Note that the bias goes to zero as τ becomes large, since βi < 1,
+and so in practice this bias correction is sometimes omitted. Typical values for the
+weighting parameters are β1 = 0.9 and β2 = 0.99. Adam is the most widely adopted
+learning algorithm in deep learning and is summarized in Algorithm 7.4.
+
+7.4. Normalization
+Normalization of the variables computed during the forward pass through a neural
+network removes the need for the network to deal with extremely large or extremely
+small values. Although in principle the weights and biases in a neural network can
+adapt to whatever values the input and hidden variables take, in practice normalization can be crucial for ensuring effective training. Here we consider three kinds of
+normalization according to whether we are normalizing across the input data, across
+mini-batches, or across layers.
+
+7.4. Normalization
+
+Algorithm 7.4: Adam optimization
+
+Input: Training set of data points indexed by n ∈ {1, . . . , N }
+Batch size B
+Error function per mini-batch En:n+B−1 (w)
+Learning rate parameter η
+Decay parameters β1 and β2
+Stabilization parameter δ
+Output: Final weight vector w
+n←1
+s←0
+r←0
+repeat
+Choose a mini-batch at random from D
+g = −∇En:n+B−1 (w) // evaluate gradient vector
+s ← β1 s + (1 − β1 )g
+r ← β2 r + (1 − β2 )g g // element-wise multiply
+b
+s ← s/(1 − β1τ ) // bias correction
+b
+r ← r/(1 − β2τ ) // bias correction
+b
+s
+// element-wise operations
+∆w ← −η √
+b
+r+δ
+w ← w + ∆w // weight vector update
+n←n+B
+if n + B > N then
+shuffle data
+n←1
+end if
+until convergence
+return w
+
+225
+
+226
+
+7. GRADIENT DESCENT
+
+7.4.1
+
+Data normalization
+
+Sometimes we encounter data sets in which different input variables span very
+different ranges. For example, in health data, a patient’s height might be measured
+in meters, such as 1.8m, whereas their blood platelet count might be measured in
+platelets per microliter, such as 300,000 platelets per µL. Such variations can make
+gradient descent training much more challenging. Consider a single-layer regression
+network with two weights in which the two corresponding input variables have very
+different ranges. Changes in the value of one of the weights produce much larger
+changes in the output, and hence in the error function, than would similar changes in
+the other weight. This corresponds to an error surface with very different curvatures
+along different axes as illustrated in Figure 7.3.
+For continuous input variables, it can therefore be very beneficial to re-scale the
+input values so that they span similar ranges. This is easily done by first evaluating
+the mean and variance of each input:
+N
+
+µi =
+
+1 X
+xni
+N n=1
+
+σi2 =
+
+1 X
+(xni − µi )2 ,
+N n=1
+
+(7.48)
+
+N
+
+(7.49)
+
+which is a calculation that is performed once, before any training is started. The
+input values are then re-scaled using
+x
+eni =
+Exercise 7.14
+
+Figure 7.7
+
+xni − µi
+σi
+
+(7.50)
+
+so that the re-scaled values {e
+xni } have zero mean and unit variance. Note that the
+same values of µi and σi must be used to pre-process any development, validation, or
+test data to ensure that all inputs are scaled in the same way. Input data normalization
+is illustrated in Figure 7.7.
+Illustration of the effect of input data normalization. The red circles show the original data
+points for a data set with two variables. The
+blue crosses show the data set after normalization such that each variable now has zero
+mean and unit variance across the data set.
+
+10
+x2
+
+0
+
+−10
+−10
+
+0
+
+x1
+
+10
+
+7.4. Normalization
+
+7.4.2
+
+Section 8.1.5
+
+227
+
+Batch normalization
+
+We have seen the importance of normalizing the input data, and we can apply
+similar reasoning to the variables in each hidden layer of a deep network. If there is
+wide variation in the range of activation values in a particular hidden layer, then normalizing those values to have zero mean and unit variance should make the learning
+problem easier for the next layer. However, unlike normalization of the input values,
+which can be done once prior to the start of training, normalization of the hiddenunit values will need to be repeated during training every time the weight values are
+updated. This is called batch normalization (Ioffe and Szegedy, 2015).
+A further motivation for batch normalization arises from the phenomena of vanishing gradients and exploding gradients, which occur when we try to train very deep
+neural networks. From the chain rule of calculus, the gradient of an error function E
+with respect to a parameter in the first layer of the network is given by
+(K )
+(1)
+X
+X X ∂zm
+∂zj
+∂E
+∂E
+=
+· · · (K−1) (K )
+···
+∂wi
+∂wi
+∂z
+∂zj
+m
+j
+
+(7.51)
+
+l
+
+l
+
+(k)
+
+Section 8.1.5
+
+where zj denotes the activation of node j in layer k, and each of the partial derivatives on the right-hand side of (7.51) represents the elements of the Jacobian matrix
+for that layer. The product of a large number of such terms will tend towards 0 if
+most of them have a magnitude < 1 and will tend towards ∞ if most of them have
+a magnitude > 1. Consequently, as the depth of a network increases, error function
+gradients can tend to become either very large or very small. Batch normalization
+largely resolves this issue.
+To see how batch normalization is defined, consider a specific layer within a
+multi-layer network. Each hidden unit in that layer computes a nonlinear function of
+its input pre-activation zi = h(ai ), and so we have a choice of whether to normalize
+the pre-activation values ai or the activation values zi . In practice, either approach
+may be used, and here we illustrate the procedure by normalizing the pre-activations.
+Because weight values are updated after each mini-batch of examples, we apply the
+normalization to each mini-batch. Specifically, for a mini-batch of size K, we define
+K
+
+µi =
+
+1 X
+ani
+K n=1
+
+σi2 =
+
+1 X
+2
+(ani − µi )
+K n=1
+
+(7.52)
+
+K
+
+ani − µi
+b
+ani = p 2
+σi + δ
+
+(7.53)
+(7.54)
+
+where the summations over n = 1, . . . , K are taken over the elements of the minibatch. Here δ is a small constant, introduced to avoid numerical issues in situations
+where σi2 is small.
+By normalizing the pre-activations in a given layer of the network, we reduce
+the number of degrees of freedom in the parameters of that layer and hence we
+
+228
+
+7. GRADIENT DESCENT
+Mini-batch
+
+Mini-batch
+µ
+
+Hidden units
+
+σ
+
+Hidden units
+
+µ
+σ
+
+(a)
+
+(b)
+
+Figure 7.8 Illustration of batch normalization and layer normalization in a neural network. In batch normalization, shown in (a), the mean and variance are computed across the mini-batch separately for each hidden unit.
+In layer normalization, shown in (b), the mean and variance are computed across the hidden units separately for
+each data point.
+
+reduce its representational capability. We can compensate for this by re-scaling the
+pre-activations of the batch to have mean βi and standard deviation γi using
+e
+ani = γi b
+ani + βi
+
+Section 7.4.1
+
+(7.55)
+
+where βi and γi are adaptive parameters that are learned by gradient descent jointly
+with the weights and biases of the network. These learnable parameters represent a
+key difference compared to input data normalization.
+It might appear that the transformation (7.55) has simply undone the effect of the
+batch normalization since the mean and variance can now adapt to arbitrary values
+again. However, the crucial difference is in the way the parameters evolve during
+training. For the original network, the mean and variance across a mini-batch are
+determined by a complex function of all the weights and biases in the layer, whereas
+in the representation given by (7.55), they are determined directly by independent
+parameters βi and γi , which turn out to be much easier to learn during gradient
+descent.
+Equations (7.52) – (7.55) describe a transformation of the variables that is differentiable with respect to the learnable parameters βi and γi . This can be viewed
+as an additional layer in the neural network, and so each standard hidden layer can
+be followed by a batch normalization layer. The structure of the batch-normalization
+process is illustrated in Figure 7.8.
+Once the network is trained and we want to make predictions on new data, we
+
+7.4. Normalization
+
+229
+
+no longer have the training mini-batches available, and we cannot determine a mean
+and variance from just one data example. To solve this, we could in principle evaluate µi and σi2 for each layer across the whole training set after we have made the
+final update to the weights and biases. However, this would involve processing the
+whole data set just to evaluate these quantities and is therefore usually too expensive.
+Instead, we compute moving averages throughout the training phase:
+(τ )
+
+µi
+
+(τ −1)
+
+= αµi
+
++ (1 − α)µi
+
+(τ )
+(τ −1)
++ (1 − α)σi
+σ i = ασ i
+
+(7.56)
+(7.57)
+
+where 0 ⩽ α ⩽ 1. These moving averages play no role during training but are used
+to process new data points during the inference phase.
+Although batch normalization is very effective in practice, there is uncertainty
+as to why it works so well. Batch normalization was originally motivated by noting
+that updates to weights in earlier layers of the network change the distribution of
+values seen by later layers, a phenomenon called internal covariate shift. However,
+later studies (Santurkar et al., 2018) suggest that covariate shift is not a significant
+factor and that the improved training results from an improvement in the smoothness
+of the error function landscape.
+
+7.4.3
+
+Section 12.2.5
+Chapter 12
+
+Layer normalization
+
+With batch normalization, if the batch size is too small then the estimates of the
+mean and variance become too noisy. Also, for very large training sets, the minibatches may be split across different GPUs, making global normalization across the
+mini-batch inefficient. An alternative to normalizing across examples within a minibatch for each hidden unit separately is to normalize across the hidden-unit values
+for each data point separately. This is known as layer normalization (Ba, Kiros, and
+Hinton, 2016). It was introduced in the context of recurrent neural networks where
+the distributions change after each time step making batch normalization infeasible.
+However, it is useful in other architectures such as transformer networks.
+By analogy with batch normalization, we therefore make the following transformation:
+M
+
+µn =
+
+1 X
+ani
+M i=1
+
+σn2 =
+
+1 X
+2
+(ani − µi )
+M i=1
+
+(7.58)
+
+M
+
+ani − µn
+b
+ani = p
+σn2 + δ
+
+(7.59)
+(7.60)
+
+where the sums i = 1, . . . , M are taken over all hidden units in the layer. As with
+batch normalization, additional learnable mean and standard deviation parameters
+are introduced for each hidden unit separately in the form (7.55). Note that the same
+normalization function can be employed during training and during inference, and
+
+230
+
+7. GRADIENT DESCENT
+so there is no need to store moving averages. Layer normalization is compared with
+batch normalization in Figure 7.8.
+
+Exercises
+
+7.1 (?) By substituting (7.10) into (7.7) and using (7.8) and (7.9), show that the error
+function (7.7) can be written in the form (7.11).
+7.2 (?) Consider a Hessian matrix H with eigenvector equation (7.8). By setting the
+vector v in (7.14) equal to each of the eigenvectors ui in turn, show that H is positive
+definite if, and only if, all its eigenvalues are positive.
+7.3 (? ?) By considering the local Taylor expansion (7.7) of an error function about a
+stationary point w? , show that the necessary and sufficient condition for the stationary point to be a local minimum of the error function is that the Hessian matrix H,
+b = w? , is positive definite.
+defined by (7.5) with w
+7.4 (? ?) Consider a linear regression model with a single input variable x and a single
+output variable y of the form
+y(x, w, b) = wx + b
+
+(7.61)
+
+together with a sum-of-squares error function given by
+N
+
+1X
+2
+{y(xn , w, b) − tn } .
+E(w, b) =
+2 n=1
+
+Appendix A
+
+(7.62)
+
+Derive expressions for the elements of the 2 × 2 Hessian matrix given by the second
+derivatives of the error function with respect to the weight parameter w and bias parameter b. Show that the trace and the determinant of this Hessian are both positive.
+Since the trace represents the sum of the eigenvalue and the determinant corresponds
+to the product of the eigenvalues, then both eigenvalues are positive and hence the
+stationary point of the error function is a minimum.
+7.5 (? ?) Consider a single-layer classification model with a single input variable x and
+a single output variable y of the form
+y(x, w, b) = σ(wx + b)
+
+(7.63)
+
+where σ(·) is the logistic sigmoid function defined by (5.42) together with a crossentropy error function given by
+E(w, b) =
+
+N
+X
+n=1
+
+{tn ln y(xn , w, b) + (1 − tn ) ln(1 − y(xn , w, b))} .
+
+(7.64)
+
+Derive expressions for the elements of the 2 × 2 Hessian matrix given by the second
+derivatives of the error function with respect to the weight parameter w and bias parameter b. Show that the trace and the determinant of this Hessian are both positive.
+
+Exercises
+
+Appendix A
+
+231
+
+Since the trace represents the sum of the eigenvalue and the determinant corresponds
+to the product of the eigenvalues, then both eigenvalues are positive and hence the
+stationary point of the error function is a minimum.
+7.6 (? ?) Consider a quadratic error function defined by (7.7) in which the Hessian matrix
+H has an eigenvalue equation given by (7.8). Show that the contours of constant
+error are ellipses whose axes are aligned with the eigenvectors ui with lengths that
+are inversely proportional to the square roots of the corresponding eigenvalues λi .
+7.7 (?) Show that, as a consequence of the symmetry of the Hessian matrix H, the
+number of independent elements in the quadratic error function (7.3) is given by
+W (W + 3)/2.
+7.8 (?) Consider a set of values x1 , . . . , xN drawn from a distribution with mean µ and
+variance σ 2 , and define the sample mean to be
+N
+
+x=
+
+1 X
+xn .
+N n=1
+
+(7.65)
+
+Show that the expectation of the squared error (x − µ)2 with respect to the distri2
+bution from which the data is drawn is given
+√ by σ /N . This shows that the RMS
+error in the sample mean is given by σ/ N , which decreases relatively slowly as
+the sample size N increases.
+7.9 (? ?) Consider a layered network that computes the functions (7.19) and (7.20) in
+layer l. Suppose we initialize the weights using a Gaussian N (0, 2 ), and suppose
+(l−1)
+that the outputs zj
+of the units in layer l − 1 have variance λ2 . By using the form
+of the ReLU activation function, show that the mean and variance of the outputs in
+layer l are given by (7.21) and (7.22), respectively. Hence, show that if we want
+the units in layer l also to have pre-activations with variance λ2 then the value of 
+should be given by (7.23).
+7.10 (? ?) By making use of (7.7), (7.8), and (7.10), derive the results (7.24) and (7.25),
+which express the gradient vector and a general weight update, as expansions in the
+eigenvectors of the Hessian matrix. Use these results, together with the eigenvector
+orthonormality relation (7.9) and the batch gradient descent formula (7.16), to derive the result (7.26) for the batch gradient descent update expressed in terms of the
+coefficients {αi }.
+7.11 (?) Consider a smoothly varying error surface with low curvature such that the gradient varies only slowly with position. Show that, for small values of the learning
+rate and momentum parameters, the Nesterov momentum gradient update defined
+by (7.34) is equivalent to the standard gradient descent with momentum defined by
+(7.31).
+7.12 (? ?) Consider a sequence of values {x1 , . . . , xN } of some variable x, and suppose
+we compute an exponentially weighted moving average using the formula
+µn = βµn−1 + (1 − β)xn
+
+(7.66)
+
+

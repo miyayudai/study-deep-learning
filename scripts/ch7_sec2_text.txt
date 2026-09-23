@@ -1,0 +1,360 @@
+=== PAGE 229 (Book page ~212) ===
+7.2.
+Gradient Descent Optimization 213
+Figure 7.2 In the neighbourhood of a mini-
+mum w?, the error function can
+be approximated by a quadratic.
+Contours of constant error are
+then ellipses whose axes are
+aligned with the eigenvectors
+uiof the Hessian matrix, with
+lengths that are inversely pro-
+portional to the square roots of
+the corresponding eigenvectors
+i.
+w1w2
+−1=2
+1−1=2
+2u1
+w?u2
+Because
+the eigenvectors{ui}form a complete set, an arbitrary vector vcan be
+written in the form
+v=/summationdisplay
+iciui: (7.13)
+From (7.8) and (7.9), we then have
+vTHv=/summationdisplay
+ic2
+ii (7.14)
+and so Hwill be positive deﬁnite if, and only if, all its eigenvalues are positive. Exercise 7.2
+Thus, a necessary and sufﬁcient condition for w?to be a local minimum is that the
+gradient of the error function should vanish at w?and the Hessian matrix evaluated
+atw?should be positive deﬁnite. In the new coordinate system, whose basis vectors Exercise 7.3
+are given by the eigenvectors {ui}, the contours of constant E(w)are axis-aligned
+ellipses centred on the origin, as illustrated in Figure 7.2. Exercise 7.6
+7.2. Gradient
+Descent Optimization
+There
+is little hope of ﬁnding an analytical solution to the equation ∇E(w) = 0 for
+an error function as complex as one deﬁned by a neural network, and so we resort to
+iterative numerical procedures. The optimization of continuous nonlinear functions
+is a widely studied problem, and there exists an extensive literature on how to solve it
+efﬁciently. Most techniques involve choosing some initial value w(0)for the weight
+vector and then moving through weight space in a succession of steps of the form
+w()=w(−1)+ ∆w(−1)(7.15)
+wherelabels the iteration step. Different algorithms involve different choices for
+the weight vector update ∆w().
+Because of the complex shape of the error surface for all but the simplest neu-
+ral networks, the solution found will depend, among other things, on the particular
+choice of initial parameter values w(0). To ﬁnd a sufﬁciently good solution, it may
+
+=== PAGE 230 (Book page ~213) ===
+214 7. GRADIENT DESCENT
+be necessary to run a gradient-based algorithm multiple times, each time using a dif-
+ferent randomly chosen starting point, and comparing the resulting performance on
+an independent validation set.
+7.2.1 Use of gradient information
+The gradient of an error function for a deep neural network can be evaluated
+efﬁciently using the technique of error backpropagation, and applying this gradient Chapter 8
+information can lead to signiﬁcant improvements in the speed of network training.
+We can see why this is so, as follows.
+In the quadratic approximation to the error function given by (7.3), the error
+surface is speciﬁed by the quantities bandH, which contain a total of W(W+
+3)=2 independent elements (because the matrix His symmetric), where Wis the Exercise 7.7
+dimensionality of w(i.e., the total number of learnable parameters in the network).
+The location of the minimum of this quadratic approximation therefore depends on
+O(W2)parameters, and we should not expect to be able to locate the minimum until
+we have gathered O(W2)independent pieces of information. If we do not make
+use of gradient information, we would expect to have to perform O(W2)function
+evaluations, each of which would require O(W)steps. Thus, the computational
+effort needed to ﬁnd the minimum using such an approach would be O(W3).
+Now compare this with an algorithm that makes use of the gradient information.
+Because∇E is a vector of length W, each evaluation of ∇E bringsWpieces of
+information, and so we might hope to ﬁnd the minimum of the function in O(W)
+gradient evaluations. As we shall see, by using error backpropagation, each such Chapter 8
+evaluation takes only O(W)steps and so the minimum can now be found in O(W2)
+steps. Although the quadratic approximation only holds in the neighbourhood of
+a minimum, the efﬁciency gains are generic. For this reason, the use of gradient
+information forms the basis of all practical algorithms for training neural networks.
+7.2.2 Batch gradient descent
+The simplest approach to using gradient information is to choose the weight up-
+date in (7.15) such that there is a small step in the direction of the negative gradient,
+so that
+w()=w(−1)−∇E(w(−1)) (7.16)
+where the parameter >0is known as the learning rate. After each such update, the
+gradient is re-evaluated for the new weight vector w(+1)and the process repeated.
+At each step, the weight vector is moved in the direction of the greatest rate of
+decrease of the error function, and so this approach is known as gradient descent or
+steepest descent. Note that the error function is deﬁned with respect to a training set,
+and so to evaluate ∇E, each step requires that the entire training set be processed.
+Techniques that use the whole data set at once are called batch methods.
+7.2.3 Stochastic gradient descent
+Deep learning methods beneﬁt greatly from very large data sets. However, batch
+methods can become extremely inefﬁcient if there are many data points in the train-
+ing set because each error function or gradient evaluation requires the entire data set
+
+=== PAGE 231 (Book page ~214) ===
+7.2. Gradient Descent Optimization 215
+Algorithm 7.1: Stochastic gradient descent
+Input: Training set of data points indexed by n∈{1;:::;N}
+Error function per data point En(w)
+Learning rate parameter 
+Initial weight vector w
+Output: Final weight vector w
+n←1
+repeat
+w←w−∇En(w)// update weight vector
+n←n+ 1(modN)// iterate over data
+until convergence
+return w
+to be processed. To ﬁnd a more efﬁcient approach, note that error functions based on
+maximum likelihood for a set of independent observations comprise a sum of terms,
+one for each data point:
+E(w) =N/summationdisplay
+n=1En(w): (7.17)
+The most widely used training algorithms for large data sets are based on a sequential
+version of gradient descent known as stochastic gradient descent (Bottou, 2010), or
+SGD, which updates the weight vector based on one data point at a time, so that
+w()=w(−1)−∇En(w(−1)): (7.18)
+This update is repeated by cycling through the data. A complete pass through the
+whole training set is known as a training epoch. This technique is also known as
+online gradient descent, especially if the data arises from a continuous stream of
+new data points. Stochastic gradient descent is summarized in Algorithm 7.1.
+A further advantage of stochastic gradient descent, compared to batch gradient
+descent, is that it handles redundancy in the data much more efﬁciently. To see this,
+consider an extreme example in which we take a data set and double its size by
+duplicating every data point. Note that this simply multiplies the error function by
+a factor of 2 and so is equivalent to using the original error function, if the value of
+the learning rate is adjusted to compensate. Batch methods will require double the
+computational effort to evaluate the batch error function gradient, whereas stochastic
+gradient descent will be unaffected. Another property of stochastic gradient descent
+is the possibility of escaping from local minima, since a stationary point with respect
+to the error function for the whole data set will generally not be a stationary point
+for each data point individually.
+
+=== PAGE 232 (Book page ~215) ===
+216 7. GRADIENT DESCENT
+7.2.4 Mini-batches
+A downside of stochastic gradient descent is that the gradient of the error func-
+tion computed from a single data point provides a very noisy estimate of the gradient
+of the error function computed on the full data set. We can consider an interme-
+diate approach in which a small subset of data points, called a mini-batch, is used
+to evaluate the gradient at each iteration. In determining the optimum size for the
+mini-batch, note that the error in computing the mean from Nsamples is given by
+=√
+Nwhereis the standard deviation of the distribution generating the data. This Exercise 7.8
+indicates that there are diminishing returns in estimating the true gradient from in-
+creasing the batch size. If we increase the size of the mini-batch by a factor of 100
+then the error only reduces by a factor of 10. Another consideration in choosing the
+mini-batch size is the desire to make efﬁcient use of the hardware architecture on
+which the code is running. For example, on some hardware platforms, mini-batch
+sizes that are powers of 2 (for example, 64, 128, 256, . . . ) work well.
+One important consideration when using mini-batches is that the constituent data
+points should be chosen randomly from the data set, since in raw data sets there
+may be correlations between successive data points arising from the way the data
+was collected (for example, if the data points have been ordered alphabetically or
+by date). This is often handled by randomly shufﬂing the entire data set and then
+subsequently drawing mini-batches as successive blocks of data. The data set can
+also be reshufﬂed between iterations through the data set, so that each mini-batch is
+unlikely to have been used before, which can help escape local minima. The variant
+of stochastic gradient descent with mini-batches is summarized in Algorithm 7.2.
+Note that the learning algorithm is often still called ‘stochastic gradient descent’
+even when mini-batches are used.
+7.2.5 Parameter initialization
+Iterative algorithms such as gradient descent require that we choose some ini-
+tial setting for the parameters being learned. The speciﬁc initialization can have a
+signiﬁcant effect on how long it takes to reach a solution and on the generalization
+performance of the resulting trained network. Unfortunately, there is relatively little
+theory to guide the initialization strategy.
+One key consideration, however, is symmetry breaking. Consider a set of hidden
+units or output units that take the same inputs. If the parameters were all initialized
+with the same value, for example if they were all set to zero, the parameters of these
+units would all be updated in unison and the units would each compute the same
+function and hence be redundant. This problem can be addressed by initializing
+parameters randomly from some distribution to break symmetry. If computational
+resources permit, the network might be trained multiple times starting from different
+random initializations and the results compared on held-out data.
+The distribution used to initialize the weights is typically either a uniform distri-
+bution in the range [−; ]or a zero-mean Gaussian of the form N(0;2). The choice
+of the value of is important, and various heuristics to select it have been proposed.
+One widely used approach is called He initialization (Heet al., 2015b). Consider a
+
+=== PAGE 233 (Book page ~216) ===
+7.2. Gradient Descent Optimization 217
+Algorithm 7.2: Mini-batch stochastic gradient descent
+Input: Training set of data points indexed by n∈{1;:::;N}
+Batch sizeB
+Error function per mini-batch En:n+B−1(w)
+Learning rate parameter 
+Initial weight vector w
+Output: Final weight vector w
+n←1
+repeat
+w←w−∇En:n+B−1(w)// weight vector update
+n←n+B
+ifn>N then
+shufﬂe data
+n←1
+end if
+until convergence
+return w
+network in which layer levaluates the following transformations
+a(l)
+i=M/summationdisplay
+j=1wijz(l−1)
+j (7.19)
+z(l)
+i= ReLU(a(l)
+i) (7.20)
+whereMis the number of units that send connections to unit i, and the ReLU activa-
+tion function is given by (6.17). Suppose we initialize the weights using a Gaussian
+N(0;2), and suppose that the outputs z(l−1)
+j of the units in layer l−1have variance
+2. Then we can easily show that Exercise 7.9
+E[a(l)
+i] = 0 (7.21)
+var[z(l)
+j] =M
+222(7.22)
+where the factor of 1=2arises from the ReLU activation function. Ideally we want
+to ensure that the variance of the pre-activations neither decays to zero nor grows
+signiﬁcantly as we propagate from one layer to the next. If we therefore require that
+the units at layer lalso have variance 2then we arrive at the following choice for
+the standard deviation of the Gaussian used to initialize the weights that feed into a
+
+=== PAGE 234 (Book page ~217) ===
+218 7.
+GRADIENT DESCENT
+Figure 7.3 Schematic illustration of ﬁxed-step gradient
+descent for an error function that has substantially differ-
+ent curvatures along different directions. The error sur-
+faceEhas the form of a long valley, as depicted by the
+ellipses. Note that, for most points in weight space, the lo-
+cal negative gradient vector −∇E does not point towards
+the minimum of the error function. Successive steps of
+gradient descent can therefore oscillate across the valley,
+leading to very slow progress along the valley towards the
+minimum. The vectors u1andu2are the eigenvectors of
+the Hessian matrix.
+u1u2
+unit
+withMinputs:
+=/radicalbigg
+2
+M: (7.23)
+It
+is also possible to treat the scale of the initialization distribution as a hyper-
+parameter and to explore different values across multiple training runs. The bias pa-
+rameters are typically set to small positive values to ensure that most pre-activations
+are initially active during learning. This is particularly helpful with ReLU units,
+where we want the pre-activations to be positive so that there is a non-zero gradient
+to drive learning.
+Another important class of techniques for initializing the parameters of a neural
+network is by using the values that result from training the network on a different
+task or by exploiting various forms of unsupervised training. These techniques fall
+into the broad class of transfer learning techniques. Section 6.3.4
+7.3. Con
+vergence
+When
+applying gradient descent in practice, we need to choose a value for the learn-
+ing rate parameter . Consider the simple error surface depicted in Figure 7.3 for a
+hypothetical two-dimensional weight space in which the curvature of Evaries sig-
+niﬁcantly with direction, creating a ‘valley’. At most points on the error surface, the
+local gradient vector for batch gradient descent, which is perpendicular to the local
+contour, does not point directly towards the minimum. Intuitively we might expect
+that increasing the value of should lead to bigger steps through weight space and
+hence faster convergence. However, the successive steps oscillate back and forth
+across the valley, and if we increase too much, those oscillations will become di-
+vergent. Because must be kept sufﬁciently small to avoid divergent oscillations
+across the valley, progress along the valley is very slow. Gradient descent then takes
+many small steps to reach the minimum and is a very inefﬁcient procedure.
+We can gain deeper insight into the nature of this problem by considering the
+quadratic approximation to the error function in the neighbourhood of the minimum. Section 7.1.1
+From (7.7), (7.8), and (7.10), the gradient of the error function in this approximation
+
+=== PAGE 235 (Book page ~218) ===
+7.3.
+Convergence 219
+can be written as
+∇E=/summationdisplay
+iiiui: (7.24)
+Again using (7.10) we can express the change in the weight vector in terms of corre-
+sponding changes in the coefﬁcients {i}:
+∆w=/summationdisplay
+i∆iui: (7.25)
+Combining (7.24) with (7.25) and the gradient descent formula (7.16) and using the
+orthonormality relation (7.9) for the eigenvectors of the Hessian, we obtain the fol-
+lowing expression for the change in iat each step of the gradient descent algorithm:
+∆i=−ii (7.26)
+from which it follows that Exercise 7.10
+new
+i= (1−i)old
+i (7.27)
+where ‘old’ and ‘new’ denote values before and after a weight update. Using the
+orthonormality relation (7.9) for the eigenvectors together with (7.10), we have
+uT
+i(w−w?) =i (7.28)
+and soican be interpreted as the distance to the minimum along the direction ui.
+From (7.27) we see that these distances evolve independently such that, at each step,
+the distance along the direction of uiis multiplied by a factor (1−i). After a total
+ofTsteps we have
+(T)
+i= (1−i)T(0)
+i: (7.29)
+It follows that, provided |1−i|<1, the limitT→∞ leads toi= 0, which
+from (7.28) shows that w=w?and so the weight vector has reached the minimum
+of the error.
+Note that (7.29) demonstrates that gradient descent leads to linear convergence
+in the neighbourhood of a minimum. Also, convergence to the stationary point re-
+quires that all the ibe positive, which in turn implies that the stationary point is
+indeed a minimum. By making larger we can make the factor (1−i)smaller
+and hence improve the speed of convergence. There is a limit to how large can
+be made, however. We can permit (1−i)to go negative (which gives oscillating
+values ofi), but we must ensure that |1−i|<1otherwise the ivalues will
+diverge. This limits the value of to <2=maxwheremaxis the largest of the
+eigenvalues. The rate of convergence, however, is dominated by the smallest eigen-
+value, so with set to its largest permitted value, the convergence along the direction
+corresponding to the smallest eigenvalue (the long axis of the ellipse in Figure 7.3)
+will be governed by/parenleftbigg
+1−2min
+max/parenrightbigg
+(7.30)
+
+=== PAGE 236 (Book page ~219) ===
+220 7.
+GRADIENT DESCENT
+wE∆w(1)
+∆w(2)
+∆w(3)
+Figure
+7.4 With a ﬁxed learning rate parameter, gradient descent down a surface with low curvature
+leads to successively smaller steps corresponding to linear convergence. In such a sit-
+uation, the effect of a momentum term is like an increase in the effective learning rate
+parameter.
+whereminis the smallest eigenvalue. If the ratio min=max(whose reciprocal
+is known as the condition number of the Hessian) is very small, corresponding to
+highly elongated elliptical error contours as in Figure 7.3, then progress towards the
+minimum will be extremely slow.
+7.3.1 Momentum
+One simple technique for dealing with the problem of widely differing eigenval-
+ues is to add a momentum term to the gradient descent formula. This effectively adds
+inertia to the motion through weight space and smooths out the oscillations depicted
+inFigure 7.3. The modiﬁed gradient descent formula is given by
+∆w(−1)=−∇E/parenleftbig
+w(−1)/parenrightbig
++∆w(−2)(7.31)
+whereis called the momentum parameter. The weight vector is then updated using
+(7.15).
+To understand the effect of the momentum term, consider ﬁrst the motion through
+a region of weight space for which the error surface has relatively low curvature, as
+indicated in Figure 7.4. If we make the approximation that the gradient is unchang-
+ing, then we can apply (7.31) iteratively to a long series of weight updates, and then
+sum the resulting arithmetic series to give
+∆w=−∇E{1 ++2+:::} (7.32)
+=−
+1−∇
+E (7.33)
+and we see that the result of the momentum term is to increase the effective learning
+rate fromto=(1−).
+By contrast, in a region of high curvature in which gradient descent is oscillatory,
+as indicated in Figure 7.5, successive contributions from the momentum term will

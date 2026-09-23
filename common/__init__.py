@@ -21,3 +21,4 @@ from . import error_surfaces
 from . import gradient_descent
 from . import convergence
 from . import normalization
+from . import exercises_ch7
