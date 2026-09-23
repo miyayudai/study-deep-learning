@@ -75,31 +75,31 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第3章** | 基本分布 (Standard Distributions) | 5 | 17 | Figure 3.1 〜 3.16 (全16枚) | 全38問 | 完了 (`[x]`) |
 | **第4章** | 単層ネットワーク: 回帰 (Single-layer Networks: Regression) | 3 | 7 | Figure 4.1 〜 4.8 (全8枚) | 全12問 | 完了 (`[x]`) |
 | **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 完了 (`[x]`) |
-| **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 進行中 (5/6 ユニット完了) |
-| **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 未着手 |
+| **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 完了 (`[x]`) |
+| **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 進行中 (0/5 ユニット完了) |
 | **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 未着手 |
 | **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 未着手 |
 | **第10章** | 畳み込みネットワーク (Convolutional Networks) | 6 | 24 | Figure 10.1 〜 10.32 (全32枚) | 全13問 | 未着手 |
 | **第11章** | 構造化分布 (Structured Distributions) | 3 | 15 | Figure 11.1 〜 11.32 (全32枚) | 全20問 | 未着手 |
 | **第12章** | トランスフォーマー (Transformers) | 4 | 25 | Figure 12.1 〜 12.27 (全27枚) | 全16問 | 未着手 |
 | **第13章** | グラフニューラルネットワーク (Graph Neural Networks) | 3 | 16 | Figure 13.1 〜 13.5 (全5枚) | 全10問 | 未着手 |
-| **第14章** | サンプリング (Sampling) | 3 | 14 | Figure 14.1 〜 14.14 (全14枚) | 全18問 | 未着手 |
-| **第15章** | 離散潜在変数 (Discrete Latent Variables) | 4 | 11 | Figure 15.1 〜 15.16 (全16枚) | 全24問 | 未着手 |
-| **第16章** | 連続潜在変数 (Continuous Latent Variables) | 4 | 18 | Figure 16.1 〜 16.15 (全15枚) | 全26問 | 未着手 |
-| **第17章** | 敵対的生成ネットワーク (Generative Adversarial Networks: GAN) | 2 | 3 | Figure 17.1 〜 17.10 (全10枚) | 全3問 | 未着手 |
+| **第14章** | サンプリング (Sampling) | 4 | 12 | Figure 14.1 〜 14.13 (全13枚) | 全17問 | 未着手 |
+| **第15章** | 離散潜在変数 (Discrete Latent Variables) | 3 | 17 | Figure 15.1 〜 15.19 (全19枚) | 全18問 | 未着手 |
+| **第16章** | 連続潜在変数 (Continuous Latent Variables) | 4 | 16 | Figure 16.1 〜 16.29 (全29枚) | 全23問 | 未着手 |
+| **第17章** | 生成対抗ネットワーク (Generative Adversarial Networks) | 4 | 12 | Figure 17.1 〜 17.13 (全13枚) | 全12問 | 未着手 |
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **29 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **31 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 第6章 演習問題 (Exercises 6.1 〜 6.21, 全21問)
-- **担当セクション**: 第6章 演習問題 (Exercises 6.1 〜 6.21)
+- **現在実行中のタスク**: 7.1 Error Surfaces
+- **担当セクション**: 7.1 Error Surfaces
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T13:15:00+09:00
-- **直前完了タスク**: 6.5 Mixture Density Networks (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T14:35:00+09:00
+- **直前完了タスク**: 第6章 演習問題 (Exercises 6.1 〜 6.21, 全21問) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -414,17 +414,17 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 6 Overview)
   - テスト: `tests/test_ch6_error_functions.py`
 
-- [-] **6.5 Mixture Density Networks**
+- [x] **6.5 Mixture Density Networks**
   - ノートブック: `6/6.5_Mixture_Density_Networks.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 6.5.1 Robot kinematics example
-    - [ ] 6.5.2 Conditional mixture distributions
-    - [ ] 6.5.3 Gradient optimization
-    - [ ] 6.5.4 Predictive distribution
+    - [x] 6.5.1 Robot kinematics example
+    - [x] 6.5.2 Conditional mixture distributions
+    - [x] 6.5.3 Gradient optimization
+    - [x] 6.5.4 Predictive distribution
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 6.16 〜 6.19)
   - テスト: `tests/test_ch6_mixture_density.py`
 
-- [ ] **第6章 演習問題 (Exercises 6.1 〜 6.21, 全21問)**
+- [x] **第6章 演習問題 (Exercises 6.1 〜 6.21, 全21問)**
   - ノートブック: `6/6_Exercises.ipynb`
   - 形式: 理論問題は証明ロジック＋穴埋め・選択式、実装問題はコード穴埋め＋自己採点アサーション
   - テスト: `tests/test_ch6_exercises.py`
@@ -436,7 +436,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `7/`
 - 再現図版目標: Figure 7.1 〜 7.8 (全8枚)
 
-- [ ] **7.1 Error Surfaces**
+- [-] **7.1 Error Surfaces**
   - ノートブック: `7/7.1_Error_Surfaces.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 7.1.1 Local quadratic approximation
