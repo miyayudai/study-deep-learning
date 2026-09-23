@@ -27,3 +27,4 @@ from . import automatic_differentiation
 from . import exercises_ch8
 from . import inductive_bias
 from . import weight_decay
+from . import learning_curves

@@ -78,7 +78,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 完了 (`[x]`) |
 | **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 完了 (`[x]`) |
 | **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 完了 (`[x]`) |
-| **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 進行中 (1/7 ユニット完了) |
+| **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 進行中 (3/7 ユニット完了) |
 | **第10章** | 畳み込みネットワーク (Convolutional Networks) | 6 | 24 | Figure 10.1 〜 10.32 (全32枚) | 全13問 | 未着手 |
 | **第11章** | 構造化分布 (Structured Distributions) | 3 | 15 | Figure 11.1 〜 11.32 (全32枚) | 全20問 | 未着手 |
 | **第12章** | トランスフォーマー (Transformers) | 4 | 25 | Figure 12.1 〜 12.27 (全27枚) | 全16問 | 未着手 |
@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **37 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **42 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 8.2 Automatic Differentiation
-- **担当セクション**: 第8章 8.2 自動微分 (Automatic Differentiation)
+- **現在実行中のタスク**: 9.4 Parameter Sharing
+- **担当セクション**: 第9章 9.4 パラメータ共有 (Parameter Sharing)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T15:16:00+09:00
-- **直前完了タスク**: 第8章 8.1 勾配の評価 (Evaluation of Gradients) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T18:23:00+09:00
+- **直前完了タスク**: 第9章 9.3 学習曲線 (Learning Curves) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -534,15 +534,15 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 9.3, 9.4, 9.5, 9.6)
   - テスト: `tests/test_ch9_weight_decay.py`
 
-- [-] **9.3 Learning Curves**
+- [x] **9.3 Learning Curves**
   - ノートブック: `9/9.3_Learning_Curves.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 9.3.1 Early stopping
-    - [ ] 9.3.2 Double descent
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 9.3.1 Early stopping
+    - [x] 9.3.2 Double descent
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 9.7, 9.8, 9.9, 9.10, 9.11)
   - テスト: `tests/test_ch9_learning_curves.py`
 
-- [ ] **9.4 Parameter Sharing**
+- [-] **9.4 Parameter Sharing**
   - ノートブック: `9/9.4_Parameter_Sharing.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 9.4.1 Soft weight sharing
