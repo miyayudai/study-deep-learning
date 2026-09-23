@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **43 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **44 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 9.5 Residual Connections
-- **担当セクション**: 第9章 9.5 残差結合 (Residual Connections)
+- **現在実行中のタスク**: 9.6 Model Averaging
+- **担当セクション**: 第9章 9.6 モデル平均 (Model Averaging)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T18:31:00+09:00
-- **直前完了タスク**: 第9章 9.4 パラメータ共有 (Parameter Sharing) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T19:02:00+09:00
+- **直前完了タスク**: 第9章 9.5 残差結合 (Residual Connections) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -549,17 +549,17 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (fig_9_soft_weight_sharing_prior, fig_9_soft_weight_sharing_clustering, fig_9_hard_vs_soft_comparison)
   - テスト: `tests/test_ch9_parameter_shari.py`
 
-- [-] **9.5 Residual Connections**
+- [x] **9.5 Residual Connections**
   - ノートブック: `9/9.5_Residual_Connections.ipynb`
   - 小節: （単独構成）
-  - 図版再現: `result/` への該当Figureプロット保存
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 9.12, 9.13, 9.14, 9.15, 9.16)
   - テスト: `tests/test_ch9_residual_connec.py`
 
-- [ ] **9.6 Model Averaging**
+- [-] **9.6 Model Averaging**
   - ノートブック: `9/9.6_Model_Averaging.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 9.6.1 Dropout
-  - 図版再現: `result/` への該当Figureプロット保存
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 9.17)
   - テスト: `tests/test_ch9_model_averaging.py`
 
 - [ ] **第9章 演習問題 (Exercises 9.1 〜 9.18, 全18問)**

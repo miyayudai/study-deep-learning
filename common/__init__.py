@@ -29,3 +29,4 @@ from . import inductive_bias
 from . import weight_decay
 from . import learning_curves
 from . import parameter_sharing
+from . import residual_connections
