@@ -526,15 +526,15 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 9.1, 9.2)
   - テスト: `tests/test_ch9_inductive_bias.py`
 
-- [-] **9.2 Weight Decay**
+- [x] **9.2 Weight Decay**
   - ノートブック: `9/9.2_Weight_Decay.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 9.2.1 Consistent regularizers
-    - [ ] 9.2.2 Generalized weight decay
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 9.2.1 Consistent regularizers
+    - [x] 9.2.2 Generalized weight decay
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 9.3, 9.4, 9.5, 9.6)
   - テスト: `tests/test_ch9_weight_decay.py`
 
-- [ ] **9.3 Learning Curves**
+- [-] **9.3 Learning Curves**
   - ノートブック: `9/9.3_Learning_Curves.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 9.3.1 Early stopping
