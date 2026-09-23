@@ -443,18 +443,18 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 7.1, 7.2)
   - テスト: `tests/test_ch7_error_surfaces.py`
 
-- [-] **7.2 Gradient Descent Optimization**
+- [x] **7.2 Gradient Descent Optimization**
   - ノートブック: `7/7.2_Gradient_Descent_Optimization.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 7.2.1 Use of gradient information
-    - [ ] 7.2.2 Batch gradient descent
-    - [ ] 7.2.3 Stochastic gradient descent
-    - [ ] 7.2.4 Mini-batches
-    - [ ] 7.2.5 Parameter initialization
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 7.2.1 Use of gradient information
+    - [x] 7.2.2 Batch gradient descent
+    - [x] 7.2.3 Stochastic gradient descent
+    - [x] 7.2.4 Mini-batches
+    - [x] 7.2.5 Parameter initialization
+  - 図版再現: `result/` への該当Figureプロット保存 (fig_7_2_minibatch_noise, fig_7_2_variance_propagation, fig_7_2_gd_trajectories)
   - テスト: `tests/test_ch7_gradient_descen.py`
 
-- [ ] **7.3 Convergence**
+- [-] **7.3 Convergence**
   - ノートブック: `7/7.3_Convergence.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 7.3.1 Momentum
