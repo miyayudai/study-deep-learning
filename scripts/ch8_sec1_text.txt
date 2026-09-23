@@ -1,0 +1,558 @@
+
+=== PDF PAGE 251 (Book Page 234) ===
+234 8. BACKPROPAGATION
+therefore explain the key concepts of backpropagation, and explore the framework
+of automatic differentiation in detail.
+Note that the term ‘backpropagation’ is used in the neural computing literature
+in a variety of different ways. For instance, a feed-forward architecture may be
+called a backpropagation network. Also the term ‘backpropagation’ is sometimes
+used to describe the end-to-end training procedure for a neural network including
+the gradient descent parameter updates. In this book we will use ‘backpropagation’
+speciﬁcally to describe the computational procedure used in the numerical evaluation
+of derivatives such as the gradient of the error function with respect to the weights
+and biases of a network. This procedure can also be applied to the evaluation of other
+important derivatives such as the Jacobian and Hessian matrices.
+8.1. Evaluation of Gradients
+We now derive the backpropagation algorithm for a general network having arbitrary
+feed-forward topology, arbitrary differentiable nonlinear activation functions, and a
+broad class of error function. The resulting formulae will then be illustrated using
+a simple layered network structure having a single layer of sigmoidal hidden units
+together with a sum-of-squares error.
+Many error functions of practical interest, for instance those deﬁned by maxi-
+mum likelihood for a set of i.i.d. data, comprise a sum of terms, one for each data
+point in the training set, so that
+E(w) =N/summationdisplay
+n=1En(w): (8.1)
+Here we will consider the problem of evaluating ∇En(w)for one such term in the
+error function. This may be used directly for stochastic gradient descent, or the
+results could be accumulated over a set of training data points for batch or mini-
+batch methods.
+8.1.1 Single-layer networks
+Consider ﬁrst a simple linear model in which the outputs ykare linear combina-
+tions of the input variables xiso that
+yk=/summationdisplay
+iwkixi (8.2)
+together with a sum-of-squares error function that, for a particular input data point
+n, takes the form
+En=1
+2/summationdisplay
+k(ynk−tnk)2(8.3)
+=== PDF PAGE 252 (Book Page 235) ===
+8.1. Evaluation of Gradients 235
+whereynk=yk(xn;w), andtnkis the associated target value. The gradient of this
+error function with respect to a weight wjiis given by
+@En
+@wji= (ynj−tnj)xni: (8.4)
+This can be interpreted as a ‘local’ computation involving the product of an ‘error
+signal’ynj−tnjassociated with the output end of the link wjiand the variable xni
+associated with the input end of the link. In Section 5.4.3, we saw how a similar
+formula arises with the logistic-sigmoid activation function together with the cross-
+entropy error function and similarly for the softmax activation function together with
+its matching multivariate cross-entropy error function. We will now see how this sim-
+ple result extends to the more complex setting of multilayer feed-forward networks.
+8.1.2 General feed-forward networks
+In general, a feed-forward network consists of a set of units each of which com-
+putes a weighted sum of its inputs:
+aj=/summationdisplay
+iwjizi (8.5)
+whereziis either the activation of another unit or an input unit that sends a connec-
+tion to unitj, andwjiis the weight associated with that connection. Biases can be
+included in this sum by introducing an extra unit, or input, with activation ﬁxed at
++1, and so we do not need to deal with biases explicitly. The sum in (8.5), known Section 6.2
+as a pre-activation, is transformed by a nonlinear activation function h(·) to give the
+activationzjof unitjin the form
+zj=h(aj): (8.6)
+Note that one or more of the variables ziin the sum in (8.5) could be an input, and
+similarly, the unit jin (8.6) could be an output.
+For each data point in the training set, we will suppose that we have supplied the
+corresponding input vector to the network and calculated the activations of all the
+hidden and output units in the network by successive application of (8.5) and (8.6).
+This process is called forward propagation because it can be regarded as a forward
+ﬂow of information through the network.
+Now consider the evaluation of the derivative of Enwith respect to a weight
+wji. The outputs of the various units will depend on the particular input data point
+n. However, to keep the notation uncluttered, we will omit the subscript nfrom the
+network variables. First note that Endepends on the weight wjionly via the summed
+inputajto unitj. We can therefore apply the chain rule for partial derivatives to give
+@En
+@wji=@En
+@aj@aj
+@wji: (8.7)
+We now introduce a useful notation:
+j≡@En
+@aj(8.8)
+=== PDF PAGE 253 (Book Page 236) ===
+236 8.
+BACKPROPAGATION
+Figure 8.1 Illustration of the calculation of jfor hidden
+unitjby backpropagation of the ’s from those
+unitskto which unit jsends connections. The
+black arrows denote the direction of information
+ﬂow during forward propagation, and the red ar-
+rows indicate the backward propagation of error
+information.zi
+zjjk
+1...wj
+i wk
+j
+where
+the’s are often referred to as errors for reasons we will see shortly. Using
+(8.5), we can write
+@aj
+@
+wji=zi: (8.9)
+Substituting (8.8) and (8.9) into (8.7), we then obtain
+@En
+@
+wji=jzi: (8.10)
+Equation (8.10) tells us that the required derivative is obtained simply by multiplying
+the value of for the unit at the output end of the weight by the value of zfor the
+unit at the input end of the weight (where z= 1for a bias). Note that this takes the
+same form as that found for the simple linear model in (8.4). Thus, to evaluate the
+derivatives, we need calculate only the value of jfor each hidden and output unit in
+the network and then apply (8.10).
+As we have seen already, for the output units, we have
+k=yk−tk (8.11)
+provided we are using the canonical link as the output-unit activation function. To Section 5.4.6
+evaluate the ’s for hidden units, we again make use of the chain rule for partial
+derivatives:
+j≡@En
+@
+aj=/summationdisplay
+k@En
+@
+ak@ak
+@
+aj(8.12)
+where the sum runs over all units kto which unit jsends connections. The arrange-
+ment of units and weights is illustrated in Figure 8.1. Note that the units labelled k
+include other hidden units and/or output units. In writing down (8.12), we are mak-
+ing use of the fact that variations in ajgive rise to variations in the error function
+only through variations in the variables ak.
+If we now substitute the deﬁnition of jgiven by (8.8) into (8.12) and make use
+of (8.5) and (8.6), we obtain the following backpropagation formula: Exercise 8.1
+j=h/prime(aj)/summationdisplay
+kwkjk; (8.13)
+which tells us that the value of for a particular hidden unit can be obtained by
+propagating the ’s backwards from units higher up in the network, as illustrated
+=== PDF PAGE 254 (Book Page 237) ===
+8.1.
+Evaluation of Gradients 237
+Algorithm
+8.1:Backpropagation
+Input: Input vector xn
+Network parameters w
+Error function En(w)for inputxn
+Activation function h(a)
+Output: Error function derivatives {@En=@wji}
+//
+Forward propagation
+forj∈all hidden and output units do
+aj←/summationtext
+iwj
+izi//{zi}includes inputs {xi}
+zj←h(aj)// activation function
+end for
+// Error evaluation
+fork∈all output units do
+k←@
+En
+@
+ak// compute errors
+end for
+// Backward propagation, in reverse order
+forj∈all hidden units do
+j←h/prime(
+aj)/summationtext
+kwkjk// recursive backward evaluation
+@En
+@
+wji←jzi// evaluate derivatives
+end for
+return/braceleftbigg@En
+@
+wji/bracerightbigg
+inFigure 8.1. Note that the summation in (8.13) is taken over the ﬁrst index on
+wkj(corresponding to backward propagation of information through the network),
+whereas in the forward propagation equation (8.5), it is taken over the second index. Exercise 8.2
+Because we already know the values of the ’s for the output units, it follows that
+by recursively applying (8.13), we can evaluate the ’s for all the hidden units in a
+feed-forward network, regardless of its topology. The backpropagation procedure is
+summarized in Algorithm 8.1.
+For batch methods, the derivative of the total error Ecan then be obtained by
+repeating the above steps for each data point in the training set and then summing
+over all data points in the batch or mini-batch:
+@E
+@
+wji=/summationdisplay
+n@En
+@
+wji: (8.14)
+=== PDF PAGE 255 (Book Page 238) ===
+238 8.
+BACKPROPAGATION
+In the above derivation we have implicitly assumed that each hidden or output unit in
+the network has the same activation function h(·). However, the derivation is easily
+generalized to allow different units to have individual activation functions, simply
+by keeping track of which form of h(·) goes with which unit.
+8.1.3 A simple example
+The above derivation of the backpropagation procedure allowed for general
+forms for the error function, the activation functions, and the network topology. To
+illustrate the application of this algorithm, we consider a two-layer network of the
+form illustrated in Figure 6.9, together with a sum-of-squares error. The output units
+have linear activation functions, so that yk=ak, and the hidden units have sigmoidal
+activation functions given by
+h(a)≡tanh(a) (8.15)
+where tanh(a) is deﬁned by (6.14). A useful feature of this function is that its
+derivative can be expressed in a particularly simple form:
+h/prime(a) = 1−h(a)2: (8.16)
+We also consider a sum-of-squares error function, so that for data point nthe error
+is given by
+En=1
+2K/summationdisplay
+k=1(
+yk−tk)2(8.17)
+whereykis the activation of output unit k, andtkis the corresponding target value
+for a particular input vector xn.
+For each data point in the training set in turn, we ﬁrst perform a forward propa-
+gation using
+aj=D/summationdisplay
+i=0w(1)
+jixi (8.18)
+zj= tanh(a j) (8.19)
+yk=M/summationdisplay
+j=0w(2)
+kjzj (8.20)
+whereDis the dimensionality of the input vector xandMis the total number of
+hidden units. Also we have used x0=z0= 1to allow bias parameters to be included
+in the weights. Next we compute the ’s for each output unit using
+k=yk−tk: (8.21)
+Then, we backpropagate these errors to obtain ’s for the hidden units using
+j= (1−z2
+j)K/summationdisplay
+k=1w(2)
+kjk; (8.22)
+=== PDF PAGE 256 (Book Page 239) ===
+8.1. Evaluation of Gradients 239
+which follows from (8.13) and (8.16). Finally, the derivatives with respect to the
+ﬁrst-layer and second-layer weights are given by
+@En
+@w(1)
+ji=jxi;@En
+@w(2)
+kj=kzj: (8.23)
+8.1.4 Numerical differentiation
+One of the most important aspects of backpropagation is its computational efﬁ-
+ciency. To understand this, let us examine how the number of compute operations
+required to evaluate the derivatives of the error function scales with the total number
+Wof weights and biases in the network.
+A single evaluation of the error function (for a given input data point) would
+requireO(W)operations, for sufﬁciently large W. This follows because, except for
+a network with very sparse connections, the number of weights is typically much
+greater than the number of units, and so the bulk of the computational effort in for-
+ward propagation arises from evaluation of the sums in (8.5), with the evaluation of
+the activation functions representing a small overhead. Each term in the sum in (8.5)
+requires one multiplication and one addition, leading to an overall computational
+cost that isO(W).
+An alternative approach to backpropagation for computing the derivatives of the
+error function is to use ﬁnite differences. This can be done by perturbing each weight
+in turn and approximating the derivatives by using the expression
+@En
+@wji=En(wji+)−En(wji)
++O() (8.24)
+where/lessmuch1. In a software simulation, the accuracy of the approximation to the
+derivatives can be improved by making smaller, until numerical round-off problems
+arise. The accuracy of the ﬁnite differences method can be improved signiﬁcantly
+by using symmetrical central differences of the form
+@En
+@wji=En(wji+)−En(wji−)
+2+O(2): (8.25)
+In this case, theO()corrections cancel, as can be veriﬁed by a Taylor expansion Exercise 8.3
+of the right-hand side of (8.25), and so the residual corrections are O(2). Note,
+however, that the number of computational steps is roughly doubled compared with
+(8.24).Figure8.2showsaplotoftheerrorbetweenanumericalevaluationofa
+gradient using both ﬁnite differences (8.24) and central differences (8.25) versus the
+analytical result, as a function of the value of the step size .
+The main problem with numerical differentiation is that the highly desirable
+O(W)scaling has been lost. Each forward propagation requires O(W)steps, and
+there areWweights in the network each of which must be perturbed individually, so
+that the overall computational cost is O(W2).
+However, numerical differentiation can play a useful role in practice, because
+a comparison of the derivatives calculated from a direct implementation of back-
+propagation, or from automatic differentiation, with those obtained using central
+differences provides a powerful check on the correctness of the software.
+=== PDF PAGE 257 (Book Page 240) ===
+240 8. BACKPROPAGATION
+Figure 8.2 The red curve shows a
+plot of the error between the numer-
+ical evaluation of a gradient using ﬁ-
+nite differences (8.24) and the analyti-
+cal result, as a function of . Asde-
+creases, the plot initially shows a lin-
+ear decrease in error, and this repre-
+sents a power law behaviour since the
+axes are logarithmic. The slope of this
+line is 1which shows that this error be-
+haves likeO(). At some point the eval-
+uated gradient reaches the limit of nu-
+merical round-off and further reduction
+inleads to a noisy line, which again
+follows a power law but where the error
+now increases with decreasing . The
+blue curve shows the corresponding re-
+sult for central differences (8.25). We
+see a much smaller error compared to
+ﬁnite differences, and the slope of the
+line is 2which shows that the error is
+O(2).
+10−1310−1110−910−7
+/epsilon110−2010−1810−1610−1410−12Errorﬁnite differences
+central differences
+8.1.5 The Jacobian matrix
+We have seen how the derivatives of an error function with respect to the weights
+can be obtained by propagating errors backwards through the network. Backprop-
+agation can also be used to calculate other derivatives. Here we consider the eval-
+uation of the Jacobian matrix, whose elements are given by the derivatives of the
+network outputs with respect to the inputs:
+Jki≡@yk
+@xi(8.26)
+where each such derivative is evaluated with all other inputs held ﬁxed. Jacobian
+matrices play a useful role in systems built from a number of distinct modules, as
+illustratedinFigure8.3.Eachmodulecancompriseaﬁxedorlearnablefunction,
+which can be linear or nonlinear, so long as it is differentiable.
+Suppose we wish to minimize an error function Ewith respect to the parameter
+winFigure8.3.Thederivativeoftheerrorfunctionisgivenby
+@E
+@w=/summationdisplay
+k;j@E
+@yk@yk
+@zj@zj
+@w(8.27)
+inwhichtheJacobianmatrixfortheredmoduleinFigure8.3appearsasthemiddle
+term on the right-hand side.
+Because the Jacobian matrix provides a measure of the local sensitivity of the
+outputs to changes in each of the input variables, it also allows any known errors ∆xi
+=== PDF PAGE 258 (Book Page 241) ===
+8.1. Evaluation of Gradients 241
+Figure 8.3 Illustration of a modular
+deep learning architecture in which the
+Jacobian matrix can be used to back-
+propagate error signals from the out-
+puts through to earlier modules in the
+system.u
+w x@yk
+@zjyv
+z@E
+@yk
+@E
+@zj
+associated with the inputs to be propagated through the trained network to estimate
+their contribution ∆ykto the errors at the outputs, through the relation
+∆yk/similarequal/summationdisplay
+i@yk
+@xi∆xi; (8.28)
+which assumes that the |∆xi|are small. In general, the network mapping represented
+by a trained neural network will be nonlinear, and so the elements of the Jacobian
+matrix will not be constants but will depend on the particular input vector used. Thus,
+(8.28) is valid only for small perturbations of the inputs, and the Jacobian itself must
+be re-evaluated for each new input vector.
+The Jacobian matrix can be evaluated using a backpropagation procedure that is
+like the one derived earlier for evaluating the derivatives of an error function with
+respect to the weights. We start by writing the element Jkiin the form
+Jki=@yk
+@xi=/summationdisplay
+j@yk
+@aj@aj
+@xi
+=/summationdisplay
+jwji@yk
+@aj(8.29)
+where we have made use of (8.5). The sum in (8.29) runs over all units jto which
+the input unit isends connections (for example, over all units in the ﬁrst hidden
+layer in the layered topology considered earlier). We now write down a recursive
+backpropagation formula for the derivatives @yk=@aj:
+@yk
+@aj=/summationdisplay
+l@yk
+@al@al
+@aj
+=h/prime(aj)/summationdisplay
+lwlj@yk
+@al(8.30)
+where the sum runs over all units lto which unit jsends connections (corresponding
+to the ﬁrst index of wlj). Again, we have made use of (8.5) and (8.6). This back-
+propagation starts at the output units, for which the required derivatives can be found
+directly from the functional form of the output-unit activation function. For linear
+output units, we have
+@yk
+@al=kl (8.31)
+=== PDF PAGE 259 (Book Page 242) ===
+242 8. BACKPROPAGATION
+whereklare the elements of the identity matrix and are deﬁned by
+kl=/braceleftBigg
+1;ifk=l;
+0;otherwise:(8.32)
+If we have individual logistic sigmoid activation functions at each output unit, then Section 3.4
+@yk
+@al=kl/prime(al) (8.33)
+whereas for softmax outputs, we have Section 3.4
+@yk
+@al=klyk−ykyl: (8.34)
+We can summarize the procedure for calculating the Jacobian matrix as follows.
+Apply the input vector corresponding to the point in input space at which the Jaco-
+bian matrix is to be evaluated, and forward propagate in the usual way to obtain the
+states of all the hidden and output units in the network. Next, for each row kof the
+Jacobian matrix, corresponding to the output unit k, backpropagate using the recur-
+sive relation (8.30), starting with (8.31), (8.33) or (8.34), for all the hidden units in
+the network. Finally, use (8.29) for the backpropagation to the inputs. The Jacobian
+can also be evaluated using an alternative forward propagation formalism, which can
+be derived in an analogous way to the backpropagation approach given here. Exercise 8.5
+Again, the implementation of such algorithms can be checked using numerical
+differentiation in the form
+@yk
+@xi=yk(xi+)−yk(xi−)
+2+O(2); (8.35)
+which involves 2Dforward propagation passes for a network having Dinputs and
+therefore requiresO(DW )steps in total.
+8.1.6 The Hessian matrix
+We have shown how backpropagation can be used to obtain the ﬁrst derivatives
+of an error function with respect to the weights in the network. Backpropagation can
+also be used to evaluate the second derivatives of the error, which are given by
+@2E
+@wji@wlk: (8.36)
+It is often convenient to consider all the weight and bias parameters as elements wi
+of a single vector, denoted w, in which case the second derivatives form the elements
+Hijof the Hessian matrix H:
+Hij=@2E
+@wi@wj(8.37)
+=== PDF PAGE 260 (Book Page 243) ===
+8.1. Evaluation of Gradients 243
+wherei;j∈{1;:::;W}andWis the total number of weights and biases. The
+Hessian matrix arises in several nonlinear optimization algorithms used for training
+neural networks based on considerations of the second-order properties of the error
+surface (Bishop, 2006). It also plays a role in some Bayesian treatments of neural
+networks (MacKay, 1992; Bishop, 2006) and has been used to reduce the precision
+of the weights in large language models to lessen their memory footprint (Shen et al.,
+2019).
+An important consideration for many applications of the Hessian is the efﬁciency
+with which it can be evaluated. If there are Wparameters (weights and biases) in
+the network, then the Hessian matrix has dimensions W×Wand so the compu-
+tational effort needed to evaluate the Hessian will scale like O(W2)for each point
+in the data set. Extension of the backpropagation procedure (Bishop, 1992) allows
+the Hessian matrix to be evaluated efﬁciently with a scaling that is indeed O(W2). Exercise 8.6
+Sometimes, we do not need the Hessian matrix explicitly but only the product vTH
+of the Hessian with some vector v, and this product can be calculated efﬁciently
+inO(W)steps using an extension of backpropagation (Møller, 1993; Pearlmutter,
+1994).
+Since neural networks may contain millions or even billions of parameters, eval-
+uating, or even just storing, the full Hessian matrix for many models is infeasible.
+Evaluating the inverse of the Hessian is even more demanding as this has O(W3)
+computational scaling. Consequently there is interest in ﬁnding effective approxi-
+mations to the full Hessian.
+One approximation involves simply evaluating only the diagonal elements of
+the Hessian and implicitly setting the off-diagonal elements to zero. This requires
+O(W)storage and allows the inverse to be evaluated in O(W)steps but still requires
+O(W2)computation (Ricotti, Ragazzini, and Martinelli, 1988), although with fur-
+ther approximation this can be reduced to O(W)steps (Becker and LeCun, 1989;
+LeCun, Denker, and Solla, 1990). In practice, however, the Hessian generally has
+signiﬁcant off-diagonal terms, and so this approximation must be treated with care.
+A more convincing approach, known as the outer product approximation, is
+obtained as follows. Consider a regression application using a sum-of-squares error
+function of the form
+E=1
+2N/summationdisplay
+n=1(yn−tn)2(8.38)
+where we have considered a single output to keep the notation simple (the extension
+to several outputs is straightforward). We can then write the Hessian matrix in the Exercise 8.8
+form
+H=∇∇E =N/summationdisplay
+n=1∇yn(∇yn)T+N/summationdisplay
+n=1(yn−tn)∇∇yn (8.39)
+where∇denotes the gradient with respect to w. If the network has been trained
+on the data set and its outputs ynare very close to the target values tn, then the
+ﬁnal term in (8.39) will be small and can be neglected. More generally, however,
+it may be appropriate to neglect this term based on the following argument. Recall
+from Section 4.2 that the optimal function that minimizes a sum-of-squares loss is
+=== PDF PAGE 261 (Book Page 244) ===
+244 8. BACKPROPAGATION
+the conditional average of the target data. The quantity (yn−tn)is then a random
+variable with zero mean. If we assume that its value is uncorrelated with the value
+of the second derivative term on the right-hand side of (8.39), then the whole term
+will average to zero in the summation over n. Exercise 8.9
+By neglecting the second term in (8.39), we arrive at the Levenberg–Marquardt
+approximation, also known as the outer product approximation because the Hessian
+matrix is built up from a sum of outer products of vectors, given by
+H/similarequalN/summationdisplay
+n=1∇an∇aT
+n: (8.40)
+Evaluating the outer product approximation for the Hessian is straightforward as it
+involves only ﬁrst derivatives of the error function, which can be evaluated efﬁciently
+inO(W)steps using standard backpropagation. The elements of the matrix can then
+be found inO(W2)steps by simple multiplication. It is important to emphasize
+that this approximation is likely to be valid only for a network that has been trained
+appropriately, and that for a general network mapping, the second derivative terms
+on the right-hand side of (8.39) will typically not be negligible.
+For a cross-entropy error function for a network with logistic-sigmoid output-
+unit activation functions, the corresponding approximation is given by Exercise 8.10
+H/similarequalN/summationdisplay
+n=1yn(1−yn)∇an∇aT
+n: (8.41)
+An analogous result can be obtained for multi-class networks having softmax output-
+unit activation functions. The outer product approximation can also be used to de- Exercise 8.11
+velop an efﬁcient sequential procedure for approximating the inverse of a Hessian Exercise 8.12
+(Hassibi and Stork, 1993).
+8.2. Automatic Differentiation
+We have seen the importance of using gradient information to train neural networks
+efﬁciently. There are essentially four ways in which the gradient of a neural network Section 7.2.1
+error function can be evaluated.
+The ﬁrst approach, which formed the mainstay of neural networks for many
+years, is to derive the backpropagation equations by hand and then to implement
+them explicitly in software. If this is done carefully it results in efﬁcient code that
+gives precise results that are accurate to numerical precision. However, the process
+of deriving the equations as well as the process of coding them both take time and are
+prone to errors. It also results in some redundancy in the code because the forward
+propagation equations are coded separately from the backpropagation equations. As
+these often involve duplicated calculations, then if the model is altered, both the
+forward and backward implementations need to be changed in unison. This effort
+=== PDF PAGE 262 (Book Page 245) ===
+8.2. Automatic Differentiation 245
+can easily become a limitation on how quickly and effectively different architectures
+can be explored empirically.
+A second approach is to evaluate the gradients numerically using ﬁnite differ-
+ences. This requires only a software implementation of the forward propagation Section 8.1.4
+equations. One problem with numerical differentiation is that it has limited com-
+putational accuracy, although this is unlikely to be an issue for network training as
+we may be using stochastic gradient descent in which each evaluation is only a very
+noisy estimate of the local gradient. The main drawback of this approach is that it
+scales poorly with the size of the network. However, the technique is useful for de-
+bugging other approaches, because the gradients are evaluated using only the forward
+propagation code and so can be used to conﬁrm the correctness of backpropagation
+or other code used to evaluate gradients.
+A third approach is called symbolic differentiation and makes use of specialist
+software to automate the analytical manipulations that are done by hand in the ﬁrst
+approach. This process is an example of computer algebra orsymbolic computation
+and involves the automatic application of the rules of calculus, such as the chain
+rule, in a completely mechanistic process. The resulting expressions are then imple-
+mented in standard software. An obvious advantage of this approach is that it avoids
+human error in the manual derivation of the backpropagation equations. Moreover,
+the gradients are again calculated to machine precision, and the poor scaling seen
+with numerical differentiation is avoided. The major downside of symbolic differ-
+entiation, however, is that the resulting expressions for derivatives can become ex-
+ponentially longer than the original function, with correspondingly long evaluation
+times. Consider a function f(x)given by the product of u(x)andv(x). The function
+and its derivative are given by
+f(x) =u(x)v(x) (8.42)
+f/prime(x) =u/prime(x)v(x) +u(x)v/prime(x): (8.43)
+We see that there is redundant computation in that u(x)andv(x)must be evalu-
+ated both for the calculation of f(x)and forf/prime(x). If the factors u(x)andv(x)
+themselves involve factors, then we end up with a nested duplication of expressions,
+which rapidly grow in complexity. This problem is called expression swell.
+As a further illustration, consider a function that is structured like two layers of
+a neural network (Grosse, 2018) with a single input x, a hidden unit with activation
+z, and an output yin which
+z=h(w 1x+b1) (8.44)
+y=h(w 2z+b2) (8.45)
+whereh(a) is the soft ReLU:
+(a) = ln (1 + exp( a)): (8.46)
+The overall function is therefore given by
+y(x) =h(w2h(w 1x+b1) +b2) (8.47)

@@ -1,0 +1,687 @@
+244
+
+8. BACKPROPAGATION
+
+Exercise 8.9
+
+the conditional average of the target data. The quantity (yn − tn ) is then a random
+variable with zero mean. If we assume that its value is uncorrelated with the value
+of the second derivative term on the right-hand side of (8.39), then the whole term
+will average to zero in the summation over n.
+By neglecting the second term in (8.39), we arrive at the Levenberg–Marquardt
+approximation, also known as the outer product approximation because the Hessian
+matrix is built up from a sum of outer products of vectors, given by
+H≃
+
+Exercise 8.10
+
+n=1
+
+∇an ∇aT
+n.
+
+(8.40)
+
+Evaluating the outer product approximation for the Hessian is straightforward as it
+involves only first derivatives of the error function, which can be evaluated efficiently
+in O(W ) steps using standard backpropagation. The elements of the matrix can then
+be found in O(W 2 ) steps by simple multiplication. It is important to emphasize
+that this approximation is likely to be valid only for a network that has been trained
+appropriately, and that for a general network mapping, the second derivative terms
+on the right-hand side of (8.39) will typically not be negligible.
+For a cross-entropy error function for a network with logistic-sigmoid outputunit activation functions, the corresponding approximation is given by
+H≃
+
+Exercise 8.11
+Exercise 8.12
+
+N
+X
+
+N
+X
+n=1
+
+yn (1 − yn )∇an ∇aT
+n.
+
+(8.41)
+
+An analogous result can be obtained for multi-class networks having softmax outputunit activation functions. The outer product approximation can also be used to develop an efficient sequential procedure for approximating the inverse of a Hessian
+(Hassibi and Stork, 1993).
+
+8.2. Automatic Differentiation
+Section 7.2.1
+
+We have seen the importance of using gradient information to train neural networks
+efficiently. There are essentially four ways in which the gradient of a neural network
+error function can be evaluated.
+The first approach, which formed the mainstay of neural networks for many
+years, is to derive the backpropagation equations by hand and then to implement
+them explicitly in software. If this is done carefully it results in efficient code that
+gives precise results that are accurate to numerical precision. However, the process
+of deriving the equations as well as the process of coding them both take time and are
+prone to errors. It also results in some redundancy in the code because the forward
+propagation equations are coded separately from the backpropagation equations. As
+these often involve duplicated calculations, then if the model is altered, both the
+forward and backward implementations need to be changed in unison. This effort
+
+8.2. Automatic Differentiation
+
+Section 8.1.4
+
+245
+
+can easily become a limitation on how quickly and effectively different architectures
+can be explored empirically.
+A second approach is to evaluate the gradients numerically using finite differences. This requires only a software implementation of the forward propagation
+equations. One problem with numerical differentiation is that it has limited computational accuracy, although this is unlikely to be an issue for network training as
+we may be using stochastic gradient descent in which each evaluation is only a very
+noisy estimate of the local gradient. The main drawback of this approach is that it
+scales poorly with the size of the network. However, the technique is useful for debugging other approaches, because the gradients are evaluated using only the forward
+propagation code and so can be used to confirm the correctness of backpropagation
+or other code used to evaluate gradients.
+A third approach is called symbolic differentiation and makes use of specialist
+software to automate the analytical manipulations that are done by hand in the first
+approach. This process is an example of computer algebra or symbolic computation
+and involves the automatic application of the rules of calculus, such as the chain
+rule, in a completely mechanistic process. The resulting expressions are then implemented in standard software. An obvious advantage of this approach is that it avoids
+human error in the manual derivation of the backpropagation equations. Moreover,
+the gradients are again calculated to machine precision, and the poor scaling seen
+with numerical differentiation is avoided. The major downside of symbolic differentiation, however, is that the resulting expressions for derivatives can become exponentially longer than the original function, with correspondingly long evaluation
+times. Consider a function f (x) given by the product of u(x) and v(x). The function
+and its derivative are given by
+f (x) = u(x)v(x)
+0
+
+0
+
+(8.42)
+0
+
+f (x) = u (x)v(x) + u(x)v (x).
+
+(8.43)
+
+We see that there is redundant computation in that u(x) and v(x) must be evaluated both for the calculation of f (x) and for f 0 (x). If the factors u(x) and v(x)
+themselves involve factors, then we end up with a nested duplication of expressions,
+which rapidly grow in complexity. This problem is called expression swell.
+As a further illustration, consider a function that is structured like two layers of
+a neural network (Grosse, 2018) with a single input x, a hidden unit with activation
+z, and an output y in which
+z = h(w1 x + b1 )
+y = h(w2 z + b2 )
+
+(8.44)
+(8.45)
+
+ζ(a) = ln (1 + exp(a)) .
+
+(8.46)
+
+where h(a) is the soft ReLU:
+
+The overall function is therefore given by
+y(x) = h (w2 h(w1 x + b1 ) + b2 )
+
+(8.47)
+
+246
+
+8. BACKPROPAGATION
+
+Exercise 8.13
+
+and the derivative of the network output with respect to w1 , evaluated symbolically,
+is given by
+
+w2 x exp w1 x + b1 + b2 + w2 ln[1 + ew1 x+b1 ]
+∂y
+=
+.
+(8.48)
+∂w1
+(1 + ew1 x+b1 ) (1 + exp(b2 + w2 ln[1 + ew1 x+b1 ]))
+As well as being significantly more complex than the original function, we also see
+redundant computation where expressions such as w1 x + b1 occur in several places.
+A further major drawback with symbolic differentiation is that it requires that
+the expression to be differentiated is expressed in closed form. It therefore excludes
+important control flow operations such as loops, recursions, conditional execution,
+and procedure calls, which are valuable constructs that we might wish to use when
+defining the network function.
+We therefore turn to the fourth technique for evaluating derivatives in neural
+networks called automatic differentiation, also known as ‘autodiff’ or ‘algorithmic
+differentiation’ (Baydin et al., 2018). Unlike symbolic differentiation, the goal of
+automatic differentiation is not to find a mathematical expression for the derivatives
+but to have the computer automatically generate the code that implements the gradient calculations given only the code for the forward propagation equations. It
+is accurate to machine precision, just as with symbolic differentiation, but is more
+efficient because it is able to exploit intermediate variables used in the definition
+of the forward propagation equations and thereby avoid redundant evaluations. It
+is important to note that not only can automatic differentiation handle conventional
+closed-form mathematical expressions but it can also deal with flow control elements
+such as branches, loops, recursion, and procedure calls, and is therefore significantly
+more powerful than symbolic differentiation. Automatic differentiation is a wellestablished field with broad applicability that was developed largely outside of the
+machine learning community. Modern deep learning is a largely empirical process,
+involving evaluating and comparing different architectures, and automatic differentiation therefore plays a key role in enabling this experimentation to be done accurately
+and efficiently.
+The key idea of automatic differentiation is to take the code that evaluates a function, for example the forward propagation equations that evaluate the error function
+for a neural network, and augment the code with additional variables whose values
+are accumulated during code execution to obtain the required derivatives. There are
+two principal forms of automatic differentiation, known as forward mode and reverse mode. We start by looking at forward mode, which is conceptually somewhat
+simpler.
+
+8.2.1
+
+Forward-mode automatic differentiation
+
+In forward-mode automatic differentiation, we augment each intermediate variable zi , known as a ‘primal’ variable, involved in the evaluation of a function, such
+as the error function of a neural network, with an additional variable representing
+the value of some derivative of that variable, which we can denote żi , known as a
+‘tangent’ variable. The tangent variables and their associated code are generated
+
+247
+
+8.2. Automatic Differentiation
+Figure 8.4 Evaluation trace diagram showing
+the steps involved in the numerical evaluation
+of the function (8.49) using the primal equations
+(8.50) to (8.56).
+
+x1
+
+v1 v2
+
+exp(v3 )
+
+v5 + v6
+
+x1
+
+v1
+
+v3
+
+v5
+
+v7
+
+x2
+
+v2
+
+v4
+
+v6
+
+x2
+
+sin(v2 )
+
+v3 − v4
+
+f
+
+automatically by the software environment. Instead of simply doing forward propagation to compute {zi }, the code now propagates tuples (zi , żi ) so that variables
+and derivatives are evaluated in parallel. The original function is generally defined
+in terms of elementary operators consisting of arithmetic operations and negation
+as well as transcendental functions such as exponential, logarithm, and trigonometric functions, all of which have simple formulae for their derivatives. Using these
+derivatives in combination with the chain rule of calculus allows the code used to
+evaluate gradients to be constructed automatically.
+As an example, consider the following function, which has two input variables:
+f (x1 , x2 ) = x1 x2 + exp(x1 x2 ) − sin(x2 ).
+
+(8.49)
+
+When implemented in software, the code consists of a sequence of operations that
+can be expressed as an evaluation trace of the underlying elementary operations.
+This trace can be visualized in the form of a graph, as shown in Figure 8.4. Here we
+have defined the following primal variables
+v1 = x1
+v2 = x2
+v3 = v1 v2
+v4 = sin(v2 )
+v5 = exp(v3 )
+v6 = v3 − v4
+v7 = v5 + v6 .
+
+(8.50)
+(8.51)
+(8.52)
+(8.53)
+(8.54)
+(8.55)
+(8.56)
+
+Now suppose we wish to evaluate the derivative ∂f /∂x1 . We define the tangent
+variables by v˙i = ∂vi /∂x1 . Expressions for evaluating these can be constructed
+automatically using the chain rule of calculus:
+v̇i =
+
+X ∂vj ∂vi
+X
+∂vi
+∂vi
+=
+=
+v̇j
+.
+∂x1
+∂x1 ∂vj
+∂vj
+j∈pa(i)
+
+(8.57)
+
+j∈pa(i)
+
+where pa(i) denotes the set of parents of the node i in the evaluation trace diagram,
+that is the set of variables with arrows pointing to node i. For example, in Figure 8.4
+the parents of node v3 are nodes v1 and v2 . Applying (8.57) to the evaluation trace
+
+248
+
+8. BACKPROPAGATION
+
+Figure 8.5 Extension of the example shown in
+Figure 8.4 to a function with two outputs f1 and
+f2 .
+
+x1
+
+v1 v 2
+
+exp(v3 )
+
+v5 + v 6
+
+x1
+
+v1
+
+v3
+
+v5
+
+v7
+
+f1
+
+x2
+
+v2
+
+v4
+
+v6
+
+v8
+
+f2
+
+x2
+
+sin(v2 )
+
+v3 − v 4
+
+v5 v6
+
+equations (8.50) to (8.56), we obtain the following evaluation trace equations for the
+tangent variables
+v̇1 = 1
+v̇2 = 0
+v̇3 = v1 v̇2 + v̇1 v2
+v̇4 = v̇2 cos(v2 )
+v̇5 = v˙3 exp(v3 )
+v̇6 = v̇3 − v̇4
+v̇7 = v̇5 + v̇6 .
+
+Exercise 8.17
+
+(8.58)
+(8.59)
+(8.60)
+(8.61)
+(8.62)
+(8.63)
+(8.64)
+
+We can summarize automatic differentiation for this example as follows. We
+first write code to implement the evaluation of the primal variables, given by (8.50) to
+(8.56). The associated equations and corresponding code for evaluating the tangent
+variables (8.58) to (8.64) are generated automatically. To evaluate the derivative
+∂f /∂x1 , we input specific values of x1 and x2 and the code then executes the primal
+and tangent equations, numerically evaluating the tuples (vi , v̇i ) in sequence until
+we obtain v̇5 , which is the required derivative.
+Now consider an example with two outputs f1 (x1 , x2 ) and f2 (x1 , x2 ) where
+f1 (x1 , x2 ) is defined by (8.49) and
+f2 (x1 , x2 ) = (x1 x2 − sin(x2 )) exp(x1 x2 )
+
+(8.65)
+
+as illustrated by the evaluation trace diagram in Figure 8.5. We see that this involves only a small extension to the evaluation equations for the primal and tangent
+variables, and so both ∂f1 /∂x1 and ∂f2 /∂x1 can be evaluated together in a single
+forward pass. The downside, however, is that if we wish to evaluate derivatives with
+respect to a different input variable x2 then we have to run a separate forward pass.
+In general, if we have a function with D inputs and K outputs then a single pass
+of forward-mode automatic differentiation produces a single column of the K × D
+Jacobian matrix:
+
+
+∂f1
+∂f1
+...
+ ∂x1
+∂xD 
+ .
+.. 
+.
+
+
+..
+(8.66)
+J =  ..
+. .
+
+ ∂fK
+∂fK
+...
+∂x1
+∂xD
+
+8.2. Automatic Differentiation
+
+249
+
+To compute column j of the Jacobian, we need to initialize the forward pass of the
+tangent equations by setting ẋj = 1 and ẋi = 0 for i 6= j. We can write this in vector
+form as ẋ = ei where ei is the ith unit vector. To compute the full Jacobian matrix
+we need D forward-mode passes. However, if we wish to evaluate the product of the
+Jacobian with a vector r = (r1 , . . . , rD )T :
+∂f1
+ ∂x1
+ .
+J=
+ ..
+ ∂fK
+∂x1
+
+
+Exercise 8.18
+
+...
+..
+
+.
+
+...
+
+
+
+∂f1
+r1
+
+
+∂xD 
+
+
+.. 
+  .. 
+.  . 
+
+∂fK  
+rD
+∂xD
+
+(8.67)
+
+then this can be done in single forward pass by setting ẋ = r.
+We see that forward-mode automatic differentiation can evaluate the full K × D
+Jacobian matrix of derivatives using D forward passes. This is very efficient for networks with a few inputs and many outputs, such that K  D. However, we often
+operate in a regime where we often have just one function, namely the error function
+used for training, and large numbers of variables that we want to differentiate with
+respect to, comprising the weights and biases in the network, of which there may
+be millions or billions. In such situations, forward-mode automatic differentiation is
+extremely inefficient. We therefore turn to an alternative version of automatic differentiation based on the a backwards flow of derivative data through the evaluation
+trace graph.
+
+8.2.2
+
+Reverse-mode automatic differentiation
+
+We can think of reverse-mode automatic differentiation as a generalization of
+the error backpropagation procedure. As with forward mode, we augment each intermediate variable vi with additional variables, in this case called adjoint variables,
+denoted v i . Consider again a situation with a single output function f for which the
+adjoint variables are defined by
+∂f
+.
+(8.68)
+vi =
+∂vi
+These can be evaluated sequentially starting with the output and working backwards
+by using the chain rule of calculus:
+vi =
+
+X ∂f ∂vj
+X
+∂f
+∂vj
+vj
+=
+=
+.
+∂vi
+∂vj ∂vi
+∂vi
+j∈ch(i)
+
+Figure 8.1
+Exercise 8.16
+
+(8.69)
+
+j∈ch(i)
+
+Here ch(i) denotes the children of node i in the evaluation trace graph, in other
+words the set of nodes that have arrows pointing into them from node i. The successive evaluation of the adjoint variables represents a flow of information backwards
+through the graph, as we saw previously.
+If we again consider the specific example function given by (8.50) to (8.56), we
+obtain the following evaluation equations for the evaluation of the adjoint variables
+
+250
+
+8. BACKPROPAGATION
+v7 = 1
+v6 = v7
+v5 = v7
+v 4 = −v 6
+v 3 = v 5 v5 + v 6
+v 2 = v 2 v1 + v 4 cos(v2 )
+v 1 = v 3 v2 .
+
+Figure 8.5
+
+Exercises
+
+(8.70)
+(8.71)
+(8.72)
+(8.73)
+(8.74)
+(8.75)
+(8.76)
+
+Note that these start at the output and then flow backwards through the graph to the
+inputs. Even with multiple inputs, only a single backward pass is required to evaluate
+the derivatives. For a neural network error function, the derivatives of E with respect
+to the weight and biases are obtained as the corresponding adjoint variables. However, if we now have more than one output then we need to run a separate backward
+pass for each output variable.
+Reverse mode is often more memory intensive than forward mode because all
+of the intermediate primal variables must be stored so that they will be available as
+needed when evaluating the adjoint variables during the backward pass. By contrast,
+with forward mode, the primal and tangent variables are computed together during
+the forward pass, and therefore variables can be discarded once they have been used.
+It is therefore also generally easier to implement forward mode compared to reverse
+mode.
+For both forward-mode and reverse-mode automatic differentiation, a single
+pass through the network is guaranteed to take no more than 6 times the computational cost of a single function evaluation. In practice, the overhead is typically
+closer to a factor of 2 or 3 (Griewank and Walther, 2008). Hybrids of forward and
+reverse modes are also of interest. One situation in which this arises is in the evaluation of the product of a Hessian matrix with a vector, which can be calculated
+without explicit evaluation of the full Hessian (Pearlmutter, 1994). Here we can use
+reverse mode to calculate the gradient of code, which itself has been generated by the
+forward model. We start from a vector b and a point x at which the Hessian–vector
+product is to be evaluated. By setting ẋ = v and using forward mode, we obtain
+the directional derivative vT ∇f . This is then differentiated using reverse mode to
+obtain ∇2 f v = Hv. If W is the number of parameters in the neural network then
+this evaluation has O(W ) complexity even though the Hessian is of size W × W .
+The Hessian itself can also be evaluated explicitly using automatic differentiation
+but this has O(W 2 ) complexity.
+
+8.1 (?) By making use of (8.5), (8.6), (8.8), and (8.12), verify the backpropagation formula (8.13) for evaluating the derivatives of an error function.
+8.2 (? ?) Consider a network that consists of layers and rewrite the backpropagation
+formula (8.13) in matrix notation by starting with the forward propagation equation
+(6.19). Note that the result involves multiplication by the transposes of the matrices.
+
+Exercises
+
+251
+
+8.3 (?) By using a Taylor expansion, verify that the terms that are O() cancel on the
+right-hand side of (8.25).
+8.4 (? ?) Consider a two-layer network of the form shown in Figure 6.9 with the addition
+of extra parameters corresponding to skip-layer connections that go directly from the
+inputs to the outputs. By extending the discussion of Section 8.1.3, write down the
+equations for the derivatives of the error function with respect to these additional
+parameters.
+8.5 (? ? ?) In Section 8.1.5, we derived a procedure for evaluating the Jacobian matrix of
+a neural network using a backpropagation procedure. Derive an alternative formalism for finding the Jacobian based on forward propagation equations.
+8.6 (? ? ?) Consider a two-layer neural network, and define the quantities
+δk =
+
+∂En
+,
+∂ak
+
+Mkk0 ≡
+
+∂ 2 En
+.
+∂ak ∂ak0
+
+(8.77)
+
+Derive expressions for the elements of the Hessian matrix expressed in terms of δk
+and Mkk0 for elements in which (i) both weights are in the second layer, (ii) both
+weights are in the first layer, and (iii) one weight is in each layer.
+8.7 (? ? ?) Extend the results of Exercise 8.6 for the exact Hessian of a two-layer network
+to include skip-layer connections that go directly from inputs to outputs.
+8.8 (? ?) The outer product approximation to the Hessian matrix for a neural network using a sum-of-squares error function is given by (8.40). Extend this result for multiple
+outputs.
+8.9 (? ?) Consider a squared-loss function of the form
+ZZ
+1
+2
+E(w) =
+{y(x, w) − t} p(x, t) dx dt
+2
+
+(8.78)
+
+where y(x, w) is a parametric function such as a neural network. The result (4.37)
+shows that the function y(x, w) that minimizes this error is given by the conditional
+expectation of t given x. Use this result to show that the second derivative of E with
+respect to two elements wr and ws of the vector w, is given by
+Z
+∂y ∂y
+∂2E
+=
+p(x) dx.
+(8.79)
+∂wr ∂ws
+∂wr ∂ws
+Note that, for a finite sample from p(x), we obtain (8.40).
+8.10 (? ?) Derive the expression (8.41) for the outer product approximation of a Hessian
+matrix for a network having a single output with a logistic-sigmoid output-unit activation function and a cross-entropy error function, corresponding to the result (8.40)
+for the sum-of-squares error function.
+
+252
+
+8. BACKPROPAGATION
+8.11 (? ?) Derive an expression for the outer product approximation of a Hessian matrix
+for a network having K outputs with a softmax output-unit activation function and
+a cross-entropy error function, corresponding to the result (8.40) for the sum-ofsquares error function.
+8.12 (? ? ?) Consider the matrix identity
+M + vv
+
+
+T −1
+
+=M
+
+−1
+
+
+(M−1 v) vT M−1
+−
+,
+1 + vT M−1 v
+
+(8.80)
+
+which is simply a special case of the Woodbury identity (A.7). By applying (8.80)
+to the outer product approximation (8.40) for a Hessian matrix, derive a formula that
+allows the inverse of the Hessian matrix to be computed by making one pass through
+the training data and updating the inverse Hessian with each data point. Note that
+the algorithm can initialized using H = αI where α is a small constant, and that the
+results are not particularly sensitive to the precise value of α.
+8.13 (? ?) Verify that the derivative of (8.47) is given by (8.48).
+8.14 (? ?) The logistic map is a function defined by the iterative relation Ln+1 (x) =
+4Ln (x) (1 − Ln (x)) with L1 (x) = x. Write down the evaluation trace equations for
+L2 (x), L3 (x), and L4 (x), and then write down expressions for the corresponding
+derivatives L01 (x), L02 (x), L03 (x), and L04 (x). Do not simplify the expressions but
+instead simply note how the complexity of the formulae for the derivatives grows
+much more rapidly than the expressions for the functions themselves.
+8.15 (? ?) Starting from the evaluation trace equations (8.50) to (8.56) for the example
+function (8.49), use (8.57) to derive the forward-mode tangent variable evaluation
+equations (8.58) to (8.64).
+8.16 (? ?) Starting from the evaluation trace equations (8.50) to (8.56) for the example
+function (8.49), and referring to Figure 8.4, use (8.69) to derive the reverse-mode
+adjoint variable evaluation equations (8.70) to (8.76).
+8.17 (? ? ?) Consider the example function (8.49). Write down an expression for ∂f /∂x1
+and evaluate this function for x1 = 1 and x2 = 2. Now use the evaluation trace equations (8.50) to (8.56) to evaluate the variables v1 to v7 and then use the evaluation
+trace equations of forward-mode automatic differentiation to evaluate the tangent
+variables v̇1 to v̇7 and to confirm that the resulting value of ∂f /∂x1 agrees with that
+found directly. Similarly, use the evaluation trace equations of reverse-mode automatic differentiation (8.70) to (8.76) to evaluate the adjoint variables v 7 to v 1 and
+again confirm that the resulting value of ∂f /∂x1 agrees with that found directly.
+8.18 (? ?) By expressing an arbitrary vector r = (r1 , . . . , rD )T as a linear combination of
+the unit vectors ei , where i = 1, . . . , D, show that the product of the Jacobian of a
+function with r in the form (8.67) can be evaluated using a single pass of forwardmode automatic differentiation by setting ẋ = r.
+
+9
+Regularization
+
+Section 1.2
+
+We introduced the concept of regularization when discussing polynomial curve fitting as a way to reduce over-fitting by discouraging the parameters of the model from
+taking values with a large magnitude. This involved adding a simple penalty term to
+the error function to give a regularized error function in the form
+λ
+e
+E(w)
+= E(w) + wT w
+2
+
+Section 4.3
+
+(9.1)
+
+where w is the vector of model parameters, E(w) is the unregularized error function,
+and the regularization hyperparameter λ controls the strength of the regularization
+effect. An improvement in predictive accuracy with such a regularizer can be understood in terms of the bias–variance trade-off through the reduction in the variance of
+the solution at the expense of some increase in bias. In this chapter we will explore
+regularization in depth and will discuss several different approaches to regulariza© The Author(s), under exclusive license to Springer Nature Switzerland AG 2024
+C. M. Bishop, H. Bishop, Deep Learning, https://doi.org/10.1007/978-3-031-45468-4_9
+
+253
+
+
