@@ -38,3 +38,4 @@ from . import visualizing_cnn
 from . import object_detection
 from . import image_segmentation
 from . import style_transfer
+from . import exercises_ch10
