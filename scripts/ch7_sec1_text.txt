@@ -1,0 +1,199 @@
+=== PAGE 225 (Book page ~208) ===
+7
+Gradient
+Descent
+In the previous chapter we saw that neural networks are a very broad and ﬂexible
+class of functions and are able in principle to approximate any desired function to
+arbitrarily high accuracy given a sufﬁciently large number of hidden units. More-
+over, we saw that deep neural networks can encode inductive biases corresponding
+to hierarchical representations, which prove valuable in a wide range of practical
+applications. We now turn to the task of ﬁnding a suitable setting for the network
+parameters (weights and biases), based on a set of training data.
+As with the regression and classiﬁcation models discussed in earlier chapters,
+we choose the model parameters by optimizing an error function. We have seen how
+to deﬁne a suitable error function for a particular application by using maximum
+likelihood. Although in principle the error function could be minimized numerically Section 6.4
+through a series of direct error function evaluations, this turns out to be very inefﬁ-
+cient. Instead, we turn to another core concept that is used in deep learning, which
+209 © The Author(s), under exclusive license to Springer Nature Switzerland AG 2024 
+C. M. Bishop, H. Bishop, Deep Learning , https://doi.org/10.1007/978-3-031-45468-4_7    
+
+=== PAGE 226 (Book page ~209) ===
+210 7.
+GRADIENT DESCENT
+is that optimizing the error function can be done much more efﬁciently by making
+use of gradient information, in other words by evaluating the derivatives of the error
+function with respect to the network parameters. This is why we took care to en-
+sure that the function represented by the neural network is differentiable by design.
+Likewise, the error function itself also needs to be differentiable.
+The required derivatives of the error function with respect to each of the pa-
+rameters in the network can be evaluated efﬁciently using a technique called back-
+propagation, which involves successive computations that ﬂow backwards through Chapter 8
+the network in a way that is analogous to the forward ﬂow of function computations
+during the evaluation of the network outputs.
+Although the likelihood is used to deﬁne an error function, the goal when op-
+timizing the error function in a neural network is to achieve good generalization on
+test data. In classical statistics, maximum likelihood is used to ﬁt a parametric model
+to a ﬁnite data set, in which the number of data points typically far exceeds the num-
+ber of parameters in the model. The optimal solution has the maximum value of the
+likelihood function, and the values found for the ﬁtted parameters are of direct inter-
+est. By contrast, modern deep learning works with very rich models containing huge
+numbers of learnable parameters, and the goal is never simply exact optimization. Section 9.3.2
+Instead, the properties and behaviour of the learning algorithm itself, along with var-
+ious methods for regularization, are important in determining how well the solution Chapter 9
+generalizes to new data.
+7.1. Err
+or Surfaces
+Our
+goal during training is to ﬁnd values for the weights and biases in the neural
+network that will allow it to make effective predictions. For convenience we will
+group these parameters into a single vector w, and we will optimize wby using a
+chosen error function E(w). At this point, it is useful to have a geometrical picture
+of the error function, which we can view as a surface sitting over ‘weight space’, as
+shown in Figure 7.1.
+First note that if we make a small step in weight space from wtow+wthen
+the change in the error function is given by
+E/similarequalwT∇E(w) (7.1)
+where the vector∇E(w)points in the direction of the greatest rate of increase of
+the error function. Provided the error E(w)is a smooth, continuous function of w,
+its smallest value will occur at a point in weight space such that the gradient of the
+error function vanishes, so that
+∇E(w) = 0 (7.2)
+as otherwise we could make a small step in the direction of −∇E (w)and thereby
+further reduce the error. Points at which the gradient vanishes are called stationary
+points and may be further classiﬁed into minima, maxima, and saddle points. Section 7.1.1
+
+=== PAGE 227 (Book page ~210) ===
+7.1.
+Error Surfaces 211
+Figure 7.1 Geometrical view of the error function E(w)as a
+surface sitting over weight space. Point wAis a
+local minimum and wBis the global minimum, so
+thatE(wA)>E(wB). At any point wC, the local
+gradient of the error surface is given by the vector
+∇E.
+w1
+w2E(w)
+wAwBwC
+rE
+W
+e will aim to ﬁnd a vector wsuch thatE(w)takes its smallest value. How-
+ever, the error function typically has a highly nonlinear dependence on the weights
+and bias parameters, and so there will be many points in weight space at which the
+gradient vanishes (or is numerically very small). Indeed, for any point wthat is a
+local minimum, there will generally be other points in weight space that are equiva-
+lent minima. For instance, in a two-layer network of the kind shown in Figure 6.9,
+withMhidden units, each point in weight space is a member of a family of M! 2M
+equivalent points. Section 6.2.4
+Furthermore, there may be multiple non-equivalent stationary points and in par-
+ticular multiple non-equivalent minima. A minimum that corresponds to the smallest
+value of the error function across the whole of w-space is said to be a global min-
+imum. Any other minima corresponding to higher values of the error function are
+said to be local minima. The error surfaces for deep neural networks can be very
+complex, and it was thought that gradient-based methods might become trapped in
+poor local minima. In practice, this seems not to be the case, and large networks can
+reach solutions with similar performance under a variety of initial conditions. Section 9.3.2
+7.1.1 Local quadratic approximation
+Insight into the optimization problem and into the various techniques for solving
+it can be obtained by considering a local quadratic approximation to the error func-
+tion. The Taylor expansion of E(w)around some point /hatwidewin weight space is given
+by
+E(w)/similarequalE(/hatwidew) + (w−/hatwidew)Tb+1
+2(
+w−/hatwidew)TH(w−/hatwidew) (7.3)
+where cubic and higher terms have been omitted. Here bis deﬁned to be the gradient
+ofEevaluated at/hatwidew
+b≡∇E|w=bw: (7.4)
+TheHessian is deﬁned to be the corresponding matrix of second derivatives
+H(/hatwidew) =∇∇E (w)|w=bw: (7.5)
+
+=== PAGE 228 (Book page ~211) ===
+212 7. GRADIENT DESCENT
+If there is a total of Wweights and biases in the network, then wandbhave length
+WandHhas dimensionality W×W. From (7.3), the corresponding local approx-
+imation to the gradient is given by
+∇E(w) =b+H(w−/hatwidew): (7.6)
+For points wthat are sufﬁciently close to /hatwidew, these expressions will give reasonable
+approximations for the error and its gradient.
+Consider the particular case of a local quadratic approximation around a point
+w?that is a minimum of the error function. In this case there is no linear term,
+because∇E= 0atw?, and (7.3) becomes
+E(w) =E(w?) +1
+2(w−w?)TH(w−w?) (7.7)
+where the Hessian His evaluated at w?. To interpret this geometrically, consider the
+eigenvalue equation for the Hessian matrix:
+Hui=iui (7.8)
+where the eigenvectors uiform a complete orthonormal set so that Appendix A
+uT
+iuj=ij: (7.9)
+We now expand (w−w?)as a linear combination of the eigenvectors in the form
+w−w?=/summationdisplay
+iiui: (7.10)
+This can be regarded as a transformation of the coordinate system in which the origin
+is translated to the point w?and the axes are rotated to align with the eigenvectors
+through the orthogonal matrix whose columns are {u1;:::;uW}. By substituting Appendix A
+(7.10) into (7.7) and using (7.8) and (7.9), the error function can be written in the
+form Exercise 7.1
+E(w) =E(w?) +1
+2/summationdisplay
+ii2
+i: (7.11)
+Suppose we set all i= 0 fori/negationslash=jand then vary j, corresponding to moving
+waway from w?in the direction of uj. We see from (7.11) that the error function
+will increase if the corresponding eigenvalue jis positive and will decrease if it is
+negative. If all eigenvalues are positive then w?corresponds to a local minimum of
+the error function, whereas if they are all negative then w?corresponds to a local
+maximum. If we have a mix of positive and negative eigenvalues then w?represents
+a saddle point.
+A matrix His said to be positive deﬁnite if, and only if,
+vTHv>0; for all v: (7.12)
+
+=== PAGE 229 (Book page ~212) ===
+7.2.
+Gradient Descent Optimization 213
+Figure 7.2 In the neighbourhood of a mini-
+mum w?, the error function can
+be approximated by a quadratic.
+Contours of constant error are
+then ellipses whose axes are
+aligned with the eigenvectors
+uiof the Hessian matrix, with
+lengths that are inversely pro-
+portional to the square roots of
+the corresponding eigenvectors
+i.
+w1w2
+−1=2
+1−1=2
+2u1
+w?u2
+Because
+the eigenvectors{ui}form a complete set, an arbitrary vector vcan be
+written in the form
+v=/summationdisplay
+iciui: (7.13)
+From (7.8) and (7.9), we then have
+vTHv=/summationdisplay
+ic2
+ii (7.14)
+and so Hwill be positive deﬁnite if, and only if, all its eigenvalues are positive. Exercise 7.2
+Thus, a necessary and sufﬁcient condition for w?to be a local minimum is that the
+gradient of the error function should vanish at w?and the Hessian matrix evaluated
+atw?should be positive deﬁnite. In the new coordinate system, whose basis vectors Exercise 7.3
+are given by the eigenvectors {ui}, the contours of constant E(w)are axis-aligned
+ellipses centred on the origin, as illustrated in Figure 7.2. Exercise 7.6
+7.2. Gradient
+Descent Optimization
+There
+is little hope of ﬁnding an analytical solution to the equation ∇E(w) = 0 for
+an error function as complex as one deﬁned by a neural network, and so we resort to
+iterative numerical procedures. The optimization of continuous nonlinear functions
+is a widely studied problem, and there exists an extensive literature on how to solve it
+efﬁciently. Most techniques involve choosing some initial value w(0)for the weight
+vector and then moving through weight space in a succession of steps of the form
+w()=w(−1)+ ∆w(−1)(7.15)
+wherelabels the iteration step. Different algorithms involve different choices for
+the weight vector update ∆w().
+Because of the complex shape of the error surface for all but the simplest neu-
+ral networks, the solution found will depend, among other things, on the particular
+choice of initial parameter values w(0). To ﬁnd a sufﬁciently good solution, it may

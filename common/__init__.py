@@ -17,3 +17,4 @@ from . import deep_networks
 from . import error_functions
 from . import mixture_density
 from . import exercises_ch6
+from . import error_surfaces
