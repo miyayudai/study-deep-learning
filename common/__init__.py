@@ -20,3 +20,4 @@ from . import exercises_ch6
 from . import error_surfaces
 from . import gradient_descent
 from . import convergence
+from . import normalization

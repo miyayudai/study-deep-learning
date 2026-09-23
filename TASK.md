@@ -463,16 +463,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 7.3, 7.4, 7.5, 7.6)
   - テスト: `tests/test_ch7_convergence.py`
 
-- [-] **7.4 Normalization**
+- [x] **7.4 Normalization**
   - ノートブック: `7/7.4_Normalization.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 7.4.1 Data normalization
-    - [ ] 7.4.2 Batch normalization
-    - [ ] 7.4.3 Layer normalization
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 7.4.1 Data normalization
+    - [x] 7.4.2 Batch normalization
+    - [x] 7.4.3 Layer normalization
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 7.7, 7.8)
   - テスト: `tests/test_ch7_normalization.py`
 
-- [ ] **第7章 演習問題 (Exercises 7.1 〜 7.14, 全14問)**
+- [-] **第7章 演習問題 (Exercises 7.1 〜 7.14, 全14問)**
   - ノートブック: `7/7_Exercises.ipynb`
   - 形式: 理論問題は証明ロジック＋穴埋め・選択式、実装問題はコード穴埋め＋自己採点アサーション
   - テスト: `tests/test_ch7_exercises.py`
