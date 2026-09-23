@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **57 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **58 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 12.1 Attention
-- **担当セクション**: 第12章 12.1 注意機構 (Attention)
+- **現在実行中のタスク**: 12.2 Natural Language
+- **担当セクション**: 第12章 12.2 自然言語 (Natural Language)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T20:20:00+09:00
-- **直前完了タスク**: 第11章 演習問題 (Exercises 11.1 〜 11.20) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T20:45:00+09:00
+- **直前完了タスク**: 第12章 12.1 注意機構 (Attention) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -692,22 +692,22 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `12/`
 - 再現図版目標: Figure 12.1 〜 12.27 (全27枚)
 
-- [-] **12.1 Attention**
+- [x] **12.1 Attention**
   - ノートブック: `12/12.1_Attention.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 12.1.1 Transformer processing
-    - [ ] 12.1.2 Attention coefficients
-    - [ ] 12.1.3 Self-attention
-    - [ ] 12.1.4 Network parameters
-    - [ ] 12.1.5 Scaled self-attention
-    - [ ] 12.1.6 Multi-head attention
-    - [ ] 12.1.7 Transformer layers
-    - [ ] 12.1.8 Computational complexity
-    - [ ] 12.1.9 Positional encoding
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 12.1.1 Transformer processing
+    - [x] 12.1.2 Attention coefficients
+    - [x] 12.1.3 Self-attention
+    - [x] 12.1.4 Network parameters
+    - [x] 12.1.5 Scaled self-attention
+    - [x] 12.1.6 Multi-head attention
+    - [x] 12.1.7 Transformer layers
+    - [x] 12.1.8 Computational complexity
+    - [x] 12.1.9 Positional encoding
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 12.1 〜 12.10 全10枚)
   - テスト: `tests/test_ch12_attention.py`
 
-- [ ] **12.2 Natural Language**
+- [-] **12.2 Natural Language**
   - ノートブック: `12/12.2_Natural_Language.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 12.2.1 Word embedding
