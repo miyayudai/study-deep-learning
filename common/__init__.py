@@ -44,3 +44,4 @@ from . import conditional_independence
 from . import sequence_models
 from . import exercises_ch11
 from . import attention
+from . import natural_language
