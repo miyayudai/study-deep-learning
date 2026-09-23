@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **54 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **55 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 11.2 Conditional Independence
-- **担当セクション**: 第11章 11.2 条件付き独立性 (Conditional Independence)
+- **現在実行中のタスク**: 11.3 Sequence Models
+- **担当セクション**: 第11章 11.3 系列モデル (Sequence Models)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T19:50:00+09:00
-- **直前完了タスク**: 第11章 11.1 確率的グラフィカルモデル (Graphical Models) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T19:55:00+09:00
+- **直前完了タスク**: 第11章 11.2 条件付き独立性 (Conditional Independence) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -659,20 +659,20 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 11.1 〜 11.13 全13枚)
   - テスト: `tests/test_ch11_graphical_model.py`
 
-- [-] **11.2 Conditional Independence**
+- [x] **11.2 Conditional Independence**
   - ノートブック: `11/11.2_Conditional_Independence.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 11.2.1 Three example graphs
-    - [ ] 11.2.2 Explaining away
-    - [ ] 11.2.3 D-separation
-    - [ ] 11.2.4 Naive Bayes
-    - [ ] 11.2.5 Generative models
-    - [ ] 11.2.6 Markov blanket
-    - [ ] 11.2.7 Graphs as filters
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 11.2.1 Three example graphs
+    - [x] 11.2.2 Explaining away
+    - [x] 11.2.3 D-separation
+    - [x] 11.2.4 Naive Bayes
+    - [x] 11.2.5 Generative models
+    - [x] 11.2.6 Markov blanket
+    - [x] 11.2.7 Graphs as filters
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 11.14 〜 11.26 全13枚)
   - テスト: `tests/test_ch11_conditional_ind.py`
 
-- [ ] **11.3 Sequence Models**
+- [-] **11.3 Sequence Models**
   - ノートブック: `11/11.3_Sequence_Models.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 11.3.1 Hidden variables

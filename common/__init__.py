@@ -40,3 +40,4 @@ from . import image_segmentation
 from . import style_transfer
 from . import exercises_ch10
 from . import graphical_models
+from . import conditional_independence
