@@ -95,11 +95,11 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 6.2 Multilayer Networks
-- **担当セクション**: 第6章 6.2 多層ネットワーク (Multilayer Networks)
+- **現在実行中のタスク**: 6.3 Deep Networks
+- **担当セクション**: 第6章 6.3 深層ネットワーク (Deep Networks)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T08:00:00+09:00
-- **直前完了タスク**: 6.1 Limitations of Fixed Basis Functions (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T12:16:00+09:00
+- **直前完了タスク**: 6.2 Multilayer Networks (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -382,17 +382,17 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 6.1 〜 6.8)
   - テスト: `tests/test_ch6_limitations_of_fixed_basis_functions.py`
 
-- [-] **6.2 Multilayer Networks**
+- [x] **6.2 Multilayer Networks**
   - ノートブック: `6/6.2_Multilayer_Networks.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 6.2.1 Parameter matrices
-    - [ ] 6.2.2 Universal approximation
-    - [ ] 6.2.3 Hidden unit activation functions
-    - [ ] 6.2.4 Weight-space symmetries
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 6.2.1 Parameter matrices
+    - [x] 6.2.2 Universal approximation
+    - [x] 6.2.3 Hidden unit activation functions
+    - [x] 6.2.4 Weight-space symmetries
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 6.9 〜 6.12)
   - テスト: `tests/test_ch6_multilayer_netw.py`
 
-- [ ] **6.3 Deep Networks**
+- [-] **6.3 Deep Networks**
   - ノートブック: `6/6.3_Deep_Networks.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 6.3.1 Hierarchical representations

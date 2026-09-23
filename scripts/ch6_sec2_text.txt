@@ -1,0 +1,392 @@
+
+=== PDF PAGE 198 (Book Page 180) ===
+180 6. DEEP NEURAL NETWORKS
+6.2. Multilayer Networks
+In the previous section, we saw that to apply linear models of the form (6.1) to prob-
+lems involving large-scale data sets and high-dimensional spaces, we need to ﬁnd a
+set of basis functions that is tuned to the problem being solved. The key idea behind
+neural networks is to choose basis functions j(x)that themselves have learnable
+parameters and then allow these parameters to be adjusted, along with the coefﬁ-
+cients{wj}, during training. We then optimize the whole model by minimizing an
+error function using gradient-based optimization methods, such as stochastic gradi-
+ent descent, where the error function is deﬁned jointly across all the parameters in Chapter 7
+the model.
+There are, of course, many ways to construct parametric nonlinear basis func-
+tions. One key requirement is that they must be differentiable functions of their
+learnable parameters so that we can apply gradient-based optimization. The most
+successful choice has been to use basis functions that follow the same form as (6.1),
+so that each basis function is itself a nonlinear function of a linear combination of
+the inputs, where the coefﬁcients in the linear combination are learnable parameters.
+Note that this construction can clearly be extended recursively to give a hierarchical
+model with many layers, which forms the basis for deep neural networks. Section 6.3
+Consider a basic neural network model having two layers of learnable parame-
+ters. First, we construct Mlinear combinations of the input variables x1;:::;xDin
+the form
+a(1)
+j=D/summationdisplay
+i=1w(1)
+jixi+w(1)
+j0 (6.7)
+wherej= 1;:::;M , and the superscript (1)indicates that the corresponding pa-
+rameters are in the ﬁrst ‘layer’ of the network. We will refer to the parameters w(1)
+ji
+asweights and the parameters w(1)
+j0asbiases, while the quantities a(1)
+jare called Chapter 4
+pre-activations. Each of the quantities ajis then transformed using a differentiable,
+nonlinear activation function h(·) to give
+z(1)
+j=h(a(1)
+j); (6.8)
+which represent the outputs of the basis functions in (6.1). In the context of neu-
+ral networks, these basis functions are called hidden units. We will explore various
+choices for the nonlinear function h(·) shortly, but here we note that provided the
+derivativeh/prime(·)can be evaluated, then the overall network function will be differen-
+tiable. Following (6.1), these values are again linearly combined to give
+a(2)
+k=M/summationdisplay
+j=1w(2)
+kjz(1)
+j+w(2)
+k0(6.9)
+wherek= 1;:::;K , andKis the total number of outputs. This transformation
+corresponds to the second layer of the network, and again the w(2)
+k0are bias parame-
+ters. Finally, the{a(2)
+k}are transformed using an appropriate output-unit activation
+=== PDF PAGE 199 (Book Page 181) ===
+6.2.
+Multilayer Networks 181
+Figure 6.9 Network diagram for a two-layer
+neural network. The input, hid-
+den, and output variables are
+represented by nodes, and the
+weight parameters are repre-
+sented by links between the
+nodes. The bias parame-
+ters are denoted by links com-
+ing from additional input and
+hidden variables x0andz0
+which are themselves denoted
+by solid nodes. Arrows denote
+the direction of information ﬂow
+through the network during for-
+ward propagation.xDInputs
+...
+x1
+x0zMHidden
+units...
+z1
+z0yKOutputs
+...
+y1w(1)
+M
+D
+w(1)
+10w(2)
+K
+M
+w(2)
+10
+functionf(
+·)to give a set of network outputs yk. A two-layer neural network can be
+represented in diagram form as shown in Figure 6.9.
+6.2.1 Parameter matrices
+As we discussed in the context of linear regression models, the bias parameters Section 4.1.1
+in (6.7) can be absorbed into the set of weight parameters by deﬁning an additional
+input variable x0whose value is clamped at x0= 1, so that (6.7) takes the form
+aj=D/summationdisplay
+i=0w(1)
+jixi: (6.10)
+We can similarly absorb the second-layer biases into the second-layer weights, so
+that the overall network function becomes
+yk(x;w) =f
+M/summationdisplay
+j=0w(2)
+kjh/parenleftBiggD/summationdisplay
+i=0w(1)
+jixi/parenrightBigg
+: (6.11)
+Another notation that will prove convenient at various points in the book is to repre-
+sent the inputs as a column vector x= (x1;:::;xN)Tand then to gather the weight
+and bias parameters in (6.11) into matrices to give
+y(x;w) =f/parenleftbig
+W(2)h/parenleftbig
+W(1)x/parenrightbig/parenrightbig
+(6.12)
+wheref(·)andh(·) are evaluated on each vector element separately.
+6.2.2 Universal approximation
+The capability of a two-layer network to model a broad range of functions is
+illustrated in Figure 6.10. This ﬁgure also shows how individual hidden units work
+collaboratively to approximate the ﬁnal function. The role of hidden units in a simple
+classiﬁcation problem is illustrated in Figure 6.11.
+=== PDF PAGE 200 (Book Page 182) ===
+182 6. DEEP NEURAL NETWORKS
+Figure 6.10 Illustration of the ca-
+pability of a two-layer neural network
+to approximate four different func-
+tions: (a)f(x) =x2, (b)f(x) =
+sin(x), (c), f(x) =|x|, and (d)
+f(x) =H(x)whereH(x)is the
+Heaviside step function. In each
+case,N= 50 data points, shown as
+blue dots, have been sampled uni-
+formly inxover the interval (−1; 1)
+and the corresponding values of
+f(x)evaluated. These data points
+are then used to train a two-layer
+network having three hidden units
+with tanh activation functions and
+linear output units. The resulting
+network functions are shown by the
+red curves, and the outputs of the
+three hidden units are shown by the
+three dashed curves.
+(a)
+ (b)
+(c)
+ (d)
+The approximation properties of two-layer feed-forward networks were widely
+studied in the 1980s, with various theorems showing that, for a wide range of activa-
+tion functions, such networks can approximate any function deﬁned over a continu-
+ous subset of RDto arbitrary accuracy (Funahashi, 1989; Cybenko, 1989; Hornik,
+Stinchcombe, and White, 1989; Leshno et al., 1993). A similar result holds for func-
+tions from any ﬁnite-dimensional discrete space to any another. Neural networks are
+therefore said to be universal approximators.
+Although such theorems are reassuring, they tell us only that there exists a net-
+work that can represent the required function. In some cases, they may require net-
+works that have an exponentially large number of hidden units. Moreover, they say
+nothing about whether such a network can be found by a learning algorithm. Fur-
+thermore, we will see later that the no free lunch theorem says that we can never ﬁnd Section 9.1.2
+a truly universal machine learning algorithm. Finally, although networks having two
+layers of weights are universal approximators, in a practical application, there can
+be huge beneﬁts in considering networks having many more than two layers that can
+learn hierarchical internal representations. All these points support the drive towards
+deep learning.
+6.2.3 Hidden unit activation functions
+We have seen that the activation functions for the output units are determined
+by the kind of distribution being modelled. For the hidden units, however, the only
+requirement is that they need to be differentiable, which leaves a wide range of pos-
+=== PDF PAGE 201 (Book Page 183) ===
+6.2.
+Multilayer Networks 183
+Figure 6.11 Example of the solution of a sim-
+ple two-class classiﬁcation prob-
+lem involving synthetic data us-
+ing a neural network having two
+inputs, two hidden units with tanh
+activation functions, and a single
+output having a logistic-sigmoid
+activation function. The dashed
+blue lines show the z= 0:5 con-
+tours for each of the hidden units,
+and the red line shows the y=
+0:5decision surface for the net-
+work. For comparison, the green
+lines denote the optimal decision
+boundary computed from the dis-
+tributions used to generate the
+data.
+−2 −1 0 1 2−2−10123
+sibilities.
+In most cases, all the hidden units in a network will be given the same
+activation function, although in principle there is no reason why different choices
+could not be applied in different parts of the network.
+The simplest option for a hidden unit activation function is the identity function,
+which means that all the hidden units become linear. However, for any such network,
+we can always ﬁnd an equivalent network without hidden units. This follows from
+the fact that the composition of successive linear transformations is itself a linear
+transformation, and so its representational capability is no greater than that of a sin-
+gle linear layer. However, if the number of hidden units is smaller than either the
+number of input or output units, then the transformations that such a network can
+generate are not the most general possible linear transformation from inputs to out-
+puts because information is lost in the dimensionality reduction at the hidden units.
+Consider a network with Ninputs,Mhidden units, and Koutputs, and where all ac-
+tivation functions are linear. Such a network has M(N+K)parameters, whereas a
+linear transformation of inputs directly to outputs would have NK parameters. If M
+is small relative to NorK, or both, this leads to a two-layer linear network having
+fewer parameters than the direct linear mapping, corresponding to a rank-deﬁcient
+transformation. Such ‘bottleneck’ networks of linear units corresponds to a standard
+data analysis technique called principal component analysis. In general, however, Chapter 16
+there is limited interest in using multilayer networks of linear units since the overall
+function computed by such a network is still linear.
+A simple, nonlinear differentiable function is the logistic sigmoid given by
+(a) =1
+1
++ exp(−a); (6.13)
+which is plotted in Figure 5.12. This was widely used in the early years of work on
+multilayer neural networks and was partly inspired by studies of the properties of
+=== PDF PAGE 202 (Book Page 184) ===
+184 6.
+DEEP NEURAL NETWORKS
+−2.5 0.0 2.5−2.50.02.5
+tanh
+(a)
+−2.5 0.0 2.5−2.50.02.5
+hard tanh (b)
+−2.5 0.0 2.5−2.50.02.5
+softplus (c)
+−2.5 0.0 2.5−2.50.02.5
+ReLU
+(d)
+−2.5 0.0 2.5−2.50.02.5
+leaky ReLU (e)
+−2.5 0.0 2.5−2.50.02.5
+absolute (f)
+Figure
+6.12 A variety of nonlinear activation functions.
+biological neurons. A closely related function is tanh, which is deﬁned by
+tanh(a) =ea−e−a
+ea+e−
+a; (6.14)
+which is plotted in Figure 6.12(a). This function differs from the logistic sigmoid
+by a linear transformation of its input and its output values, and so for any network
+with logistic-sigmoid hidden-unit activation functions, there is an equivalent network
+with tanh activation functions. However, when training a network, these are not Exercise 6.4
+necessarily equivalent because for gradient-based optimization, the network weights
+and biases need to be initialized, and so if the activation functions are changed, then
+the initialization scheme must be adjusted accordingly. A ‘hard’ version of the tanh
+function (Collobert, 2004) is given by
+h(a) = max (−1; min(1;a )) (6.15)
+and is plotted in Figure 6.12(b).
+A major drawback of both the logistic sigmoid and the tanh activation functions
+is that the gradients go to zero exponentially when the inputs have either large pos-
+itive or large negative values. We will discuss this ‘vanishing gradients’ issue later, Section 7.4.2
+=== PDF PAGE 203 (Book Page 185) ===
+6.2.
+Multilayer Networks 185
+but for the moment, we note that it will generally be better to use activation func-
+tions with non-zero gradients, at least when the input takes a large positive value.
+One such choice is the softplus activation function given by Exercise 6.7
+h(a) = ln (1 + exp(a)) ; (6.16)
+which is plotted in Figure 6.12(c). For a/greatermuch1, we haveh(a)/similarequala, and so the gradient
+remains non-zero even when the input to the activation function is large and positive,
+thereby helping to alleviate the vanishing gradients problem.
+An even simpler choice of activation function is the rectiﬁed linear unit orReLU,
+which is deﬁned by
+h(a) = max(0 ;a) (6.17)
+and which is plotted in Figure 6.12(d). Empirically, this is one of the best-performing
+activation functions, and it is in widespread use. Note that strictly speaking, the
+derivative of the ReLU function is not deﬁned when a= 0, but in practice this can
+be safely ignored. The softplus function (6.16) can be viewed as a smoothed version
+of the ReLU and is therefore also sometimes called soft ReLU. Exercise 6.5
+Although the ReLU has a non-zero gradient for positive input values, this is
+not the case for negative inputs, which can mean that some hidden units receive no
+‘error signal’ during training. A modiﬁcation of ReLU that seeks to avoid this issue
+is called a leaky ReLU and is deﬁned by
+h(a) = max(0 ;a) +min(0;a ); (6.18)
+where 0<< 1. This function is plotted in Figure 6.12(e). Unlike ReLU, this has a
+nonzero gradient for input values a<0, which ensures that there is a signal to drive
+training. A variant of this activation function uses =−1, in which case h(a) =|a|,
+which is plotted in Figure 6.12(f). Another variant allows each hidden unit to have its
+own valuej, which can be learned during network training by evaluating gradients
+with respect to the {j}along with the gradients with respect to the weights and
+biases.
+The introduction of ReLU gave a big improvement in training efﬁciency over
+previous sigmoidal activation functions (Krizhevsky, Sutskever, and Hinton, 2012).
+As well as allowing deeper networks to be trained efﬁciently, it is much less sensitive
+to the random initialization of the weights. It is also well suited to a low-precision
+implementation, such as 8-bit ﬁxed versus 64-bit ﬂoating point, and it is computa-
+tionally cheap to evaluate. Many practical applications simply use ReLU units as
+the default unless the goal is explicitly to explore the effects of different choices of
+activation function.
+6.2.4 Weight-space symmetries
+One property of feed-forward networks is that multiple distinct choices for the
+weight vector wcan all give rise to the same mapping function from inputs to outputs
+(Chen, Lu, and Hecht-Nielsen, 1993). Consider a two-layer network of the form
+shown in Figure 6.9 withMhidden units having tanh activation functions and full
+connectivity in both layers. If we change the sign of all the weights and the bias
+=== PDF PAGE 204 (Book Page 186) ===
+186 6.
+DEEP NEURAL NETWORKS
+feeding into a particular hidden unit, then, for a given input data point, the sign
+of the pre-activation of the hidden unit will be reversed, and therefore so too will
+the activation, because tanh is an odd function, so that tanh(−a) =−tanh(a).
+This transformation can be exactly compensated for by changing the sign of all the
+weights leading out of that hidden unit. Thus, by changing the signs of a particular
+group of weights (and a bias), the input–output mapping function represented by
+the network is unchanged, and so we have found two different weight vectors that
+give rise to the same mapping function. For Mhidden units, there will be Msuch
+‘sign-ﬂip’ symmetries, and thus, any given weight vector will be one of a set 2M
+equivalent weight vectors .
+Similarly, imagine that we interchange the values of all of the weights (and the
+bias) leading both into and out of a particular hidden unit with the corresponding
+values of the weights (and bias) associated with a different hidden unit. Again, this
+clearly leaves the network input–output mapping function unchanged, but it cor-
+responds to a different choice of weight vector. For Mhidden units, any given
+weight vector will belong to a set of M×(M−1)×···× 2×1 =M!equivalent
+weight vectors associated with this interchange symmetry, corresponding to the M!
+different orderings of the hidden units. The network will therefore have an overall
+weight-space symmetry factor of M! 2M. For networks with more than two layers
+of weights, the total level of symmetry will be given by the product of such factors,
+one for each layer of hidden units.
+It turns out that these factors account for all the symmetries in weight space
+(except for possible accidental symmetries due to speciﬁc choices for the weight
+values). Furthermore, the existence of these symmetries is not a particular property
+of the tanh function but applies to a wide range of activation functions (Kurkov ´a and
+Kainen, 1994). In general, these symmetries in weight space are of little practical
+consequence, since network training aims to ﬁnd a speciﬁc setting for the parameters,
+and the existence of other, equivalent, settings is of little consequence. However,
+weight-space symmetries do play a role when Bayesian methods are used to evaluate
+the probability distribution over networks of different sizes (Bishop, 2006).
+6.3. Deep
+Networks
+W
+e have motivated the development of neural networks by making the basis func-
+tions of a linear regression or classiﬁcation model themselves be governed by learn-
+able parameters, giving rise to the two-layer network model shown in Figure 6.9. For
+many years, this was the most widely used architecture, primarily because it proved
+difﬁcult to train networks with more than two layers effectively. However, extend-
+ing neural networks to have more than two layers, known as deep neural networks,
+brings many advantages as we will discuss shortly, and recent advances in techniques
+for training neural networks are effective for networks with many layers. Chapter 7
+We can easily extend the two-layer network architecture (6.12) to any ﬁnite num-
+berLof layers, in which layer l= 1;:::;L computes the following function:
+z(l)=h(l)/parenleftbig
+W(l)z(l−1)/parenrightbig
+(6.19)
+=== PDF PAGE 205 (Book Page 187) ===
+6.3.
+Deep Networks 187
+whereh(l)denotes the activation function associated with layer l, andW(l)denotes
+the corresponding matrix of weight and bias parameters. Also, z(0)=xrepresents
+the input vector and z(L)=yrepresents the output vector.
+Note that there has been some confusion in the literature regarding the termi-
+nology for counting the number of layers in such networks. Thus, the network in
+Figure 6.9 is sometimes described as a three-layer network (which counts the num-
+ber of layers of units and treats the inputs as units) or sometimes as a single-hidden-
+layer network (which counts the number of layers of hidden units). We recommend
+a terminology in which Figure 6.9 is called a two-layer network, because it is the
+number of layers of learnable weights that is important for determining the network
+properties.
+We have seen that a network of the form shown in Figure 6.9, having two layers
+of learnable parameters, has universal approximation capabilities. However, net-
+works with more than two layers can sometimes represent a given function with far
+fewer parameters than a two-layer network. Mont ´ufar et al. (2014) show that the
+network function divides the input space into a number of regions that is exponential
+in the depth of the network, but which is only polynomial in the width of the hidden
+layers. To represent the same function using a two-layer network would require an
+exponential number of hidden units.
+6.3.1 Hierarchical representations
+Although this is an interesting result, a more compelling reason to explore deep
+neural networks is that the network architecture encodes a particular form of induc-
+tive bias, namely that the outputs are related to the input space through a hierarchical
+representation. A good example is the task of recognizing objects in images. The Chapter 10
+relationship between the pixels of an image and a high-level concept such as ‘cat’ is
+highly complex and nonlinear, and would be an extremely challenging problem for
+a two-layer network. However, a deep neural network can learn to detect low-level
+features, such as edges, in the early layers, and can then combine these in subse-
+quent layers to make higher-level features such as eyes or whiskers, which in turn
+can be combined in later layers to detect the presence of a cat. This can be viewed
+as a compositional inductive bias, in which higher-level objects, such as a cat, are
+composed of lower-level objects, such as eyes, which in turn have yet lower-level el-
+ements such as edges. We can also think of this in reverse by considering the process
+of generating an image starting with low-level features such as edges, then combin-
+ing these to form simple shapes such as circles, and then combining those in turn to
+form higher-level objects such as cats. At each stage there are many ways to com-
+bine different components, giving an exponential gain in the number of possibilities
+with increasing depth.
+6.3.2 Distributed representations
+Neural networks can take advantage of another form of compositionality called
+adistributed representation. Conceptually, each unit in a hidden layer can be thought
+of as representing a ‘feature’ at that level of the network, with a high value of the

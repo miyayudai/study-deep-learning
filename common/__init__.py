@@ -12,3 +12,4 @@ from . import discriminative_classifiers
 from . import exercises_ch5
 from . import limitations_of_fixed_basis_functions
 from . import basis_limitations
+from . import multilayer_networks
