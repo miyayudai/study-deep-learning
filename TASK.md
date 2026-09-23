@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **49 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **50 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 10.4 Object Detection
-- **担当セクション**: 第10章 10.4 物体検出 (Object Detection)
+- **現在実行中のタスク**: 10.5 Image Segmentation
+- **担当セクション**: 第10章 10.5 画像セグメンテーション (Image Segmentation)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T19:28:00+09:00
-- **直前完了タスク**: 第10章 10.3 学習済みCNNの可視化 (Visualizing Trained CNNs) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T19:30:00+09:00
+- **直前完了タスク**: 第10章 10.4 物体検出 (Object Detection) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -606,19 +606,19 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 10.11 〜 10.18 全8枚)
   - テスト: `tests/test_ch10_visualizing_tra.py`
 
-- [-] **10.4 Object Detection**
+- [x] **10.4 Object Detection**
   - ノートブック: `10/10.4_Object_Detection.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 10.4.1 Bounding boxes
-    - [ ] 10.4.2 Intersection-over-union
-    - [ ] 10.4.3 Sliding windows
-    - [ ] 10.4.4 Detection across scales
-    - [ ] 10.4.5 Non-max suppression
-    - [ ] 10.4.6 Fast region CNNs
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 10.4.1 Bounding boxes
+    - [x] 10.4.2 Intersection-over-union
+    - [x] 10.4.3 Sliding windows
+    - [x] 10.4.4 Detection across scales
+    - [x] 10.4.5 Non-max suppression
+    - [x] 10.4.6 Fast region CNNs
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 10.19 〜 10.25 全7枚)
   - テスト: `tests/test_ch10_object_detectio.py`
 
-- [ ] **10.5 Image Segmentation**
+- [-] **10.5 Image Segmentation**
   - ノートブック: `10/10.5_Image_Segmentation.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 10.5.1 Convolutional segmentation
