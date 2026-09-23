@@ -1,0 +1,288 @@
+Exercises
+
+251
+
+8.3 (?) By using a Taylor expansion, verify that the terms that are O() cancel on the
+right-hand side of (8.25).
+8.4 (? ?) Consider a two-layer network of the form shown in Figure 6.9 with the addition
+of extra parameters corresponding to skip-layer connections that go directly from the
+inputs to the outputs. By extending the discussion of Section 8.1.3, write down the
+equations for the derivatives of the error function with respect to these additional
+parameters.
+8.5 (? ? ?) In Section 8.1.5, we derived a procedure for evaluating the Jacobian matrix of
+a neural network using a backpropagation procedure. Derive an alternative formalism for finding the Jacobian based on forward propagation equations.
+8.6 (? ? ?) Consider a two-layer neural network, and define the quantities
+δk =
+
+∂En
+,
+∂ak
+
+Mkk0 ≡
+
+∂ 2 En
+.
+∂ak ∂ak0
+
+(8.77)
+
+Derive expressions for the elements of the Hessian matrix expressed in terms of δk
+and Mkk0 for elements in which (i) both weights are in the second layer, (ii) both
+weights are in the first layer, and (iii) one weight is in each layer.
+8.7 (? ? ?) Extend the results of Exercise 8.6 for the exact Hessian of a two-layer network
+to include skip-layer connections that go directly from inputs to outputs.
+8.8 (? ?) The outer product approximation to the Hessian matrix for a neural network using a sum-of-squares error function is given by (8.40). Extend this result for multiple
+outputs.
+8.9 (? ?) Consider a squared-loss function of the form
+ZZ
+1
+2
+E(w) =
+{y(x, w) − t} p(x, t) dx dt
+2
+
+(8.78)
+
+where y(x, w) is a parametric function such as a neural network. The result (4.37)
+shows that the function y(x, w) that minimizes this error is given by the conditional
+expectation of t given x. Use this result to show that the second derivative of E with
+respect to two elements wr and ws of the vector w, is given by
+Z
+∂y ∂y
+∂2E
+=
+p(x) dx.
+(8.79)
+∂wr ∂ws
+∂wr ∂ws
+Note that, for a finite sample from p(x), we obtain (8.40).
+8.10 (? ?) Derive the expression (8.41) for the outer product approximation of a Hessian
+matrix for a network having a single output with a logistic-sigmoid output-unit activation function and a cross-entropy error function, corresponding to the result (8.40)
+for the sum-of-squares error function.
+
+252
+
+8. BACKPROPAGATION
+8.11 (? ?) Derive an expression for the outer product approximation of a Hessian matrix
+for a network having K outputs with a softmax output-unit activation function and
+a cross-entropy error function, corresponding to the result (8.40) for the sum-ofsquares error function.
+8.12 (? ? ?) Consider the matrix identity
+M + vv
+
+
+T −1
+
+=M
+
+−1
+
+
+(M−1 v) vT M−1
+−
+,
+1 + vT M−1 v
+
+(8.80)
+
+which is simply a special case of the Woodbury identity (A.7). By applying (8.80)
+to the outer product approximation (8.40) for a Hessian matrix, derive a formula that
+allows the inverse of the Hessian matrix to be computed by making one pass through
+the training data and updating the inverse Hessian with each data point. Note that
+the algorithm can initialized using H = αI where α is a small constant, and that the
+results are not particularly sensitive to the precise value of α.
+8.13 (? ?) Verify that the derivative of (8.47) is given by (8.48).
+8.14 (? ?) The logistic map is a function defined by the iterative relation Ln+1 (x) =
+4Ln (x) (1 − Ln (x)) with L1 (x) = x. Write down the evaluation trace equations for
+L2 (x), L3 (x), and L4 (x), and then write down expressions for the corresponding
+derivatives L01 (x), L02 (x), L03 (x), and L04 (x). Do not simplify the expressions but
+instead simply note how the complexity of the formulae for the derivatives grows
+much more rapidly than the expressions for the functions themselves.
+8.15 (? ?) Starting from the evaluation trace equations (8.50) to (8.56) for the example
+function (8.49), use (8.57) to derive the forward-mode tangent variable evaluation
+equations (8.58) to (8.64).
+8.16 (? ?) Starting from the evaluation trace equations (8.50) to (8.56) for the example
+function (8.49), and referring to Figure 8.4, use (8.69) to derive the reverse-mode
+adjoint variable evaluation equations (8.70) to (8.76).
+8.17 (? ? ?) Consider the example function (8.49). Write down an expression for ∂f /∂x1
+and evaluate this function for x1 = 1 and x2 = 2. Now use the evaluation trace equations (8.50) to (8.56) to evaluate the variables v1 to v7 and then use the evaluation
+trace equations of forward-mode automatic differentiation to evaluate the tangent
+variables v̇1 to v̇7 and to confirm that the resulting value of ∂f /∂x1 agrees with that
+found directly. Similarly, use the evaluation trace equations of reverse-mode automatic differentiation (8.70) to (8.76) to evaluate the adjoint variables v 7 to v 1 and
+again confirm that the resulting value of ∂f /∂x1 agrees with that found directly.
+8.18 (? ?) By expressing an arbitrary vector r = (r1 , . . . , rD )T as a linear combination of
+the unit vectors ei , where i = 1, . . . , D, show that the product of the Jacobian of a
+function with r in the form (8.67) can be evaluated using a single pass of forwardmode automatic differentiation by setting ẋ = r.
+
+9
+Regularization
+
+Section 1.2
+
+We introduced the concept of regularization when discussing polynomial curve fitting as a way to reduce over-fitting by discouraging the parameters of the model from
+taking values with a large magnitude. This involved adding a simple penalty term to
+the error function to give a regularized error function in the form
+λ
+e
+E(w)
+= E(w) + wT w
+2
+
+Section 4.3
+
+(9.1)
+
+where w is the vector of model parameters, E(w) is the unregularized error function,
+and the regularization hyperparameter λ controls the strength of the regularization
+effect. An improvement in predictive accuracy with such a regularizer can be understood in terms of the bias–variance trade-off through the reduction in the variance of
+the solution at the expense of some increase in bias. In this chapter we will explore
+regularization in depth and will discuss several different approaches to regulariza© The Author(s), under exclusive license to Springer Nature Switzerland AG 2024
+C. M. Bishop, H. Bishop, Deep Learning, https://doi.org/10.1007/978-3-031-45468-4_9
+
+253
+
+254
+
+9. REGULARIZATION
+tion. We will also look more broadly at the important role of bias in achieving good
+generalization from finite training data sets.
+In a practical application, it is very unlikely that the process that generates the
+data will correspond precisely to a particular neural network architecture, and so
+any given neural network will only ever represent an approximation to the true data
+generator. Larger networks can provide closer approximations, but this comes at the
+risk of over-fitting. In practice, we find that the best generalization results are almost
+always obtained by using a larger network combined with some form of regularization. In this chapter we explore several alternative regularization techniques including early stopping, model averaging, dropout, data augmentation, and parameter
+sharing. Multiple forms of regularization can be used together if desired. For example, error function regularization of the form (9.1) is often used alongside dropout.
+
+9.1. Inductive Bias
+Section 1.2.4
+
+Section 1.2.5
+Section 4.3
+
+When we compared the predictive error of polynomials of various orders for the sinusoidal synthetic data problem, we saw that the smallest generalization error was
+achieved using a polynomial of intermediate complexity, being neither too simple
+nor too flexible. A similar result was found when we used a regularization term of
+the form (9.1) to control model complexity, as an intermediate value of the regularization coefficient λ gave the best predictions for new input values. Insight into this
+result came from the bias–variance decomposition, where we saw that an appropriate
+level of bias in the model was important to allow generalization from finite data sets.
+Simple models with high bias are unable to capture the variation in the underlying
+data generation process, whereas highly flexible models with low bias are prone to
+over-fitting leading to poor generalization. As the size of the data set grows, we can
+afford to use more flexible models having less bias without incurring excessive variance, thereby leading to improved generalization. Note that in a practical setting, our
+choice of model might also be influenced by factors such as memory usage or speed
+of execution. Here we ignore such ancillary considerations and focus on the core
+goal of achieving good predictive performance, in other words good generalization.
+
+9.1.1
+
+Inverse problems
+
+This issue of model choice lies at the heart of machine learning and can be
+traced to the fact that most machine learning tasks are examples of inverse problems. Given a conditional distribution p(t|x) along with a finite set of input points
+{x1 , . . . , xN }, it is straightforward, at least in principle, to sample corresponding
+values {t1 , . . . , tN } from that distribution. In machine learning, however, we have
+to solve the inverse of this problem, namely to infer an entire distribution given only a
+finite number of samples. This is intrinsically ill-posed, as there are infinitely many
+distributions which could potentially have been responsible for generating the observed training data. In fact any distribution that has a non-zero probability density
+at the observed target values is a candidate.
+
+9.1. Inductive Bias
+
+Chapter 10
+
+Section 6.3.4
+
+For machine learning to be useful, however, we need to make predictions for
+new values of x, and therefore we need a way to choose a specific distribution from
+amongst the infinitely many possibilities. The preference for one choice over others is called inductive bias, or prior knowledge, and plays a central role in machine
+learning. Prior knowledge may come from background information that helps constrain the space of solutions. For many applications, small changes in the input
+values should lead to small changes in the output values, and so we should bias our
+solutions towards those with smoothly varying functions. Regularization terms of
+the form (9.1) encourage the model weights to have a smaller magnitude and hence
+introduce a bias towards functions that vary more slowly with changes in the inputs.
+Likewise, when detecting objects in images, we can introduce prior knowledge that
+the identity of an object is generally independent of its location within the image.
+This is known as translation invariance, and incorporating this into our solution can
+greatly simplify the task of building a system with good generalization. However,
+care must be taken not to incorporate biases or constraints that are inconsistent with
+the underlying process that generates the data. For example, assuming that the relationship between outputs and inputs is linear when in fact there are significant
+nonlinearities can lead to a system that produces inaccurate answers.
+Techniques such as transfer learning and multi-task learning can also be viewed
+from the perspective of regularization. When training data for a particular task is
+limited, additional data from a different, but related, task can be used to help determine the learnable parameters in a neural network. The assumption of similarity
+between the tasks represents a more sophisticated form of inductive bias compared
+to simple regularization, and this explains the improved performance resulting from
+the use of the additional data.
+
+9.1.2
+
+Chapter 10
+
+255
+
+No free lunch theorem
+
+The core focus of this book is on the important class of machine learning models called deep neural networks. These are highly flexible models and have revolutionized many fields including computer vision, speech recognition, and natural
+language processing. In fact, they have become the framework of choice for the
+great majority of machine learning applications. It might appear, therefore, that they
+represent a ‘universal’ learning algorithm able to solve all tasks. However, even very
+flexible neural networks contain important inductive biases. For example, convolutional neural networks encode specific forms of inductive bias, including translation
+equivariance, that are especially useful in applications involving images.
+The no free lunch theorem (Wolpert, 1996), named from the expression ‘There’s
+no such thing as a free lunch,’ states that every learning algorithm is as good as any
+other when averaged over all possible problems. If a particular model or algorithm
+is better than average on some problems, it must be worse than average on others.
+However, this is a rather theoretical notion as the space of possible problems here
+includes relationships between input and output that would be very uncharacteristic
+of any plausible practical application. For example, we have already noted that most
+examples of practical interest exhibit some degree of smoothness, in which small
+changes in the input values are associated, for the most part, with small changes in
+
+256
+
+Chapter 7
+
+9. REGULARIZATION
+the target values. Models such as neural networks, and indeed most widely used
+machine learning techniques, exhibit this form of inductive bias, and therefore to
+some degree, they have broad applicability.
+Although the no free lunch theorem is somewhat theoretical, it does highlight
+the central importance of bias in determining the performance of a machine learning
+algorithm. It is not possible to learn ‘purely from data’ in the absence of any bias. In
+practice, bias may be implicit. For example, every neural network has a finite number
+of parameters, which therefore limits the functions that it can represent. However,
+bias may also be encoded explicitly as a reflection of prior knowledge relating to the
+specific type of problem being solved.
+In trying to find general-purpose learning algorithms, we are really seeking inductive biases that are appropriate to the broad classes of applications that will be
+encountered in practice. For any given application, however, better results can be obtained if it is possible to incorporate stronger inductive biases that are specific to that
+application. The perspective of model-based machine learning (Winn et al., 2023)
+advocates making all the assumptions in machine learning models explicit so that
+the appropriate choices can be made for inductive biases.
+We have seen that inductive bias can be incorporated through the form of distribution, for example by specifying that the output is a linear function of a fixed
+set of specific basis functions. It can also be incorporated through the addition of
+a regularization term to the error function used during training. Yet another way to
+control the complexity of a neural network is through the training process itself. We
+will see that deep neural networks can give good generalization even when the number of adjustable parameters exceeds the number of training data points, provided
+the training process is set up correctly. Part of the skill in applying deep learning to
+real-world problems is in the careful design of inductive bias and the incorporation
+of prior knowledge.
+
+9.1.3
+
+Symmetry and invariance
+
+In many applications of machine learning, the predictions should be unchanged,
+or invariant, under one or more transformations of the input variables. For example,
+when classifying an object in two-dimensional images, such as a cat or dog, a particular object should be assigned the same classification irrespective of its position
+within the image. This is known as translation invariance. Likewise changes to the
+size of the object within the image should also leave its classification unchanged.
+This is called scale invariance. Exploiting such symmetries to create inductive biases can greatly improve the performance of machine learning models and forms the
+subject of geometric deep learning (Bronstein et al., 2021).
+Transformations, such as a translation or scaling, that leave particular properties
+unchanged, represent symmetries. The set of all transformations corresponding to a
+particular symmetry form a mathematical structure called a group. A group consists
+of a set of elements A, B, C, . . . together with a binary operation for composing pairs
+of elements together, which we denote using the notation A ◦ B. The following four
+axioms hold for a group:
+
+

@@ -24,3 +24,4 @@ from . import normalization
 from . import exercises_ch7
 from . import evaluation_of_gradients
 from . import automatic_differentiation
+from . import exercises_ch8

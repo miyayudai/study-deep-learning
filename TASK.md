@@ -77,7 +77,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 完了 (`[x]`) |
 | **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 完了 (`[x]`) |
 | **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 完了 (`[x]`) |
-| **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 進行中 (2/3 ユニット完了) |
+| **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 完了 (`[x]`) |
 | **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 未着手 |
 | **第10章** | 畳み込みネットワーク (Convolutional Networks) | 6 | 24 | Figure 10.1 〜 10.32 (全32枚) | 全13問 | 未着手 |
 | **第11章** | 構造化分布 (Structured Distributions) | 3 | 15 | Figure 11.1 〜 11.32 (全32枚) | 全20問 | 未着手 |
@@ -504,7 +504,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 8.4, 8.5)
   - テスト: `tests/test_ch8_automatic_differentiation.py`
 
-- [-] **第8章 演習問題 (Exercises 8.1 〜 8.18, 全18問)**
+- [x] **第8章 演習問題 (Exercises 8.1 〜 8.18, 全18問)**
   - ノートブック: `8/8_Exercises.ipynb`
   - 形式: 理論問題は証明ロジック＋穴埋め・選択式、実装問題はコード穴埋め＋自己採点アサーション
   - テスト: `tests/test_ch8_exercises.py`
@@ -516,7 +516,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `9/`
 - 再現図版目標: Figure 9.1 〜 9.17 (全17枚)
 
-- [ ] **9.1 Inductive Bias**
+- [-] **9.1 Inductive Bias**
   - ノートブック: `9/9.1_Inductive_Bias.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 9.1.1 Inverse problems
