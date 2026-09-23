@@ -78,7 +78,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 完了 (`[x]`) |
 | **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 完了 (`[x]`) |
 | **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 完了 (`[x]`) |
-| **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 進行中 (3/7 ユニット完了) |
+| **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 進行中 (4/7 ユニット完了) |
 | **第10章** | 畳み込みネットワーク (Convolutional Networks) | 6 | 24 | Figure 10.1 〜 10.32 (全32枚) | 全13問 | 未着手 |
 | **第11章** | 構造化分布 (Structured Distributions) | 3 | 15 | Figure 11.1 〜 11.32 (全32枚) | 全20問 | 未着手 |
 | **第12章** | トランスフォーマー (Transformers) | 4 | 25 | Figure 12.1 〜 12.27 (全27枚) | 全16問 | 未着手 |
@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **42 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **43 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 9.4 Parameter Sharing
-- **担当セクション**: 第9章 9.4 パラメータ共有 (Parameter Sharing)
+- **現在実行中のタスク**: 9.5 Residual Connections
+- **担当セクション**: 第9章 9.5 残差結合 (Residual Connections)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T18:23:00+09:00
-- **直前完了タスク**: 第9章 9.3 学習曲線 (Learning Curves) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T18:31:00+09:00
+- **直前完了タスク**: 第9章 9.4 パラメータ共有 (Parameter Sharing) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -542,14 +542,14 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 9.7, 9.8, 9.9, 9.10, 9.11)
   - テスト: `tests/test_ch9_learning_curves.py`
 
-- [-] **9.4 Parameter Sharing**
+- [x] **9.4 Parameter Sharing**
   - ノートブック: `9/9.4_Parameter_Sharing.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 9.4.1 Soft weight sharing
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 9.4.1 Soft weight sharing
+  - 図版再現: `result/` への該当Figureプロット保存 (fig_9_soft_weight_sharing_prior, fig_9_soft_weight_sharing_clustering, fig_9_hard_vs_soft_comparison)
   - テスト: `tests/test_ch9_parameter_shari.py`
 
-- [ ] **9.5 Residual Connections**
+- [-] **9.5 Residual Connections**
   - ノートブック: `9/9.5_Residual_Connections.ipynb`
   - 小節: （単独構成）
   - 図版再現: `result/` への該当Figureプロット保存
