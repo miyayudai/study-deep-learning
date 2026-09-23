@@ -15,3 +15,4 @@ from . import basis_limitations
 from . import multilayer_networks
 from . import deep_networks
 from . import error_functions
+from . import mixture_density
