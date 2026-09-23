@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **48 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **49 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 10.3 Visualizing Trained CNNs
-- **担当セクション**: 第10章 10.3 学習済みCNNの可視化 (Visualizing Trained CNNs)
+- **現在実行中のタスク**: 10.4 Object Detection
+- **担当セクション**: 第10章 10.4 物体検出 (Object Detection)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T19:25:00+09:00
-- **直前完了タスク**: 第10章 10.2 畳み込みフィルタ (Convolutional Filters) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T19:28:00+09:00
+- **直前完了タスク**: 第10章 10.3 学習済みCNNの可視化 (Visualizing Trained CNNs) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -595,18 +595,18 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 10.1 〜 10.10 全10枚)
   - テスト: `tests/test_ch10_convolutional_f.py`
 
-- [-] **10.3 Visualizing Trained CNNs**
+- [x] **10.3 Visualizing Trained CNNs**
   - ノートブック: `10/10.3_Visualizing_Trained_CNNs.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 10.3.1 Visual cortex
-    - [ ] 10.3.2 Visualizing trained filters
-    - [ ] 10.3.3 Saliency maps
-    - [ ] 10.3.4 Adversarial attacks
-    - [ ] 10.3.5 Synthetic images
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 10.3.1 Visual cortex
+    - [x] 10.3.2 Visualizing trained filters
+    - [x] 10.3.3 Saliency maps
+    - [x] 10.3.4 Adversarial attacks
+    - [x] 10.3.5 Synthetic images
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 10.11 〜 10.18 全8枚)
   - テスト: `tests/test_ch10_visualizing_tra.py`
 
-- [ ] **10.4 Object Detection**
+- [-] **10.4 Object Detection**
   - ノートブック: `10/10.4_Object_Detection.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 10.4.1 Bounding boxes
