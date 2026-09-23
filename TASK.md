@@ -95,11 +95,11 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 6.3 Deep Networks
-- **担当セクション**: 第6章 6.3 深層ネットワーク (Deep Networks)
+- **現在実行中のタスク**: 6.4 Error Functions
+- **担当セクション**: 第6章 6.4 誤差関数 (Error Functions)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T12:16:00+09:00
-- **直前完了タスク**: 6.2 Multilayer Networks (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T12:26:00+09:00
+- **直前完了タスク**: 6.3 Deep Networks (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -392,20 +392,20 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 6.9 〜 6.12)
   - テスト: `tests/test_ch6_multilayer_netw.py`
 
-- [-] **6.3 Deep Networks**
+- [x] **6.3 Deep Networks**
   - ノートブック: `6/6.3_Deep_Networks.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 6.3.1 Hierarchical representations
-    - [ ] 6.3.2 Distributed representations
-    - [ ] 6.3.3 Representation learning
-    - [ ] 6.3.4 Transfer learning
-    - [ ] 6.3.5 Contrastive learning
-    - [ ] 6.3.6 General network architectures
-    - [ ] 6.3.7 Tensors
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 6.3.1 Hierarchical representations
+    - [x] 6.3.2 Distributed representations
+    - [x] 6.3.3 Representation learning
+    - [x] 6.3.4 Transfer learning
+    - [x] 6.3.5 Contrastive learning
+    - [x] 6.3.6 General network architectures
+    - [x] 6.3.7 Tensors
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 6.13 〜 6.15)
   - テスト: `tests/test_ch6_deep_networks.py`
 
-- [ ] **6.4 Error Functions**
+- [-] **6.4 Error Functions**
   - ノートブック: `6/6.4_Error_Functions.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 6.4.1 Regression

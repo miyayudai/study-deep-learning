@@ -1,0 +1,532 @@
+
+=== PDF PAGE 204 (Book Page 186) ===
+186
+
+6. DEEP NEURAL NETWORKS
+feeding into a particular hidden unit, then, for a given input data point, the sign
+of the pre-activation of the hidden unit will be reversed, and therefore so too will
+the activation, because tanh is an odd function, so that tanh(−a) = − tanh(a).
+This transformation can be exactly compensated for by changing the sign of all the
+weights leading out of that hidden unit. Thus, by changing the signs of a particular
+group of weights (and a bias), the input–output mapping function represented by
+the network is unchanged, and so we have found two different weight vectors that
+give rise to the same mapping function. For M hidden units, there will be M such
+‘sign-flip’ symmetries, and thus, any given weight vector will be one of a set 2M
+equivalent weight vectors .
+Similarly, imagine that we interchange the values of all of the weights (and the
+bias) leading both into and out of a particular hidden unit with the corresponding
+values of the weights (and bias) associated with a different hidden unit. Again, this
+clearly leaves the network input–output mapping function unchanged, but it corresponds to a different choice of weight vector. For M hidden units, any given
+weight vector will belong to a set of M × (M − 1) × · · · × 2 × 1 = M ! equivalent
+weight vectors associated with this interchange symmetry, corresponding to the M !
+different orderings of the hidden units. The network will therefore have an overall
+weight-space symmetry factor of M ! 2M . For networks with more than two layers
+of weights, the total level of symmetry will be given by the product of such factors,
+one for each layer of hidden units.
+It turns out that these factors account for all the symmetries in weight space
+(except for possible accidental symmetries due to specific choices for the weight
+values). Furthermore, the existence of these symmetries is not a particular property
+of the tanh function but applies to a wide range of activation functions (Kurková and
+Kainen, 1994). In general, these symmetries in weight space are of little practical
+consequence, since network training aims to find a specific setting for the parameters,
+and the existence of other, equivalent, settings is of little consequence. However,
+weight-space symmetries do play a role when Bayesian methods are used to evaluate
+the probability distribution over networks of different sizes (Bishop, 2006).
+
+6.3. Deep Networks
+
+Chapter 7
+
+We have motivated the development of neural networks by making the basis functions of a linear regression or classification model themselves be governed by learnable parameters, giving rise to the two-layer network model shown in Figure 6.9. For
+many years, this was the most widely used architecture, primarily because it proved
+difficult to train networks with more than two layers effectively. However, extending neural networks to have more than two layers, known as deep neural networks,
+brings many advantages as we will discuss shortly, and recent advances in techniques
+for training neural networks are effective for networks with many layers.
+We can easily extend the two-layer network architecture (6.12) to any finite number L of layers, in which layer l = 1, . . . , L computes the following function:
+
+(6.19)
+z(l) = h(l) W(l) z(l−1)
+
+
+=== PDF PAGE 205 (Book Page 187) ===
+6.3. Deep Networks
+
+187
+
+where h(l) denotes the activation function associated with layer l, and W(l) denotes
+the corresponding matrix of weight and bias parameters. Also, z(0) = x represents
+the input vector and z(L) = y represents the output vector.
+Note that there has been some confusion in the literature regarding the terminology for counting the number of layers in such networks. Thus, the network in
+Figure 6.9 is sometimes described as a three-layer network (which counts the number of layers of units and treats the inputs as units) or sometimes as a single-hiddenlayer network (which counts the number of layers of hidden units). We recommend
+a terminology in which Figure 6.9 is called a two-layer network, because it is the
+number of layers of learnable weights that is important for determining the network
+properties.
+We have seen that a network of the form shown in Figure 6.9, having two layers
+of learnable parameters, has universal approximation capabilities. However, networks with more than two layers can sometimes represent a given function with far
+fewer parameters than a two-layer network. Montúfar et al. (2014) show that the
+network function divides the input space into a number of regions that is exponential
+in the depth of the network, but which is only polynomial in the width of the hidden
+layers. To represent the same function using a two-layer network would require an
+exponential number of hidden units.
+
+6.3.1
+
+Chapter 10
+
+Hierarchical representations
+
+Although this is an interesting result, a more compelling reason to explore deep
+neural networks is that the network architecture encodes a particular form of inductive bias, namely that the outputs are related to the input space through a hierarchical
+representation. A good example is the task of recognizing objects in images. The
+relationship between the pixels of an image and a high-level concept such as ‘cat’ is
+highly complex and nonlinear, and would be an extremely challenging problem for
+a two-layer network. However, a deep neural network can learn to detect low-level
+features, such as edges, in the early layers, and can then combine these in subsequent layers to make higher-level features such as eyes or whiskers, which in turn
+can be combined in later layers to detect the presence of a cat. This can be viewed
+as a compositional inductive bias, in which higher-level objects, such as a cat, are
+composed of lower-level objects, such as eyes, which in turn have yet lower-level elements such as edges. We can also think of this in reverse by considering the process
+of generating an image starting with low-level features such as edges, then combining these to form simple shapes such as circles, and then combining those in turn to
+form higher-level objects such as cats. At each stage there are many ways to combine different components, giving an exponential gain in the number of possibilities
+with increasing depth.
+
+6.3.2
+
+Distributed representations
+
+Neural networks can take advantage of another form of compositionality called
+a distributed representation. Conceptually, each unit in a hidden layer can be thought
+of as representing a ‘feature’ at that level of the network, with a high value of the
+
+
+=== PDF PAGE 206 (Book Page 188) ===
+188
+
+6. DEEP NEURAL NETWORKS
+
+Chapter 10
+
+activation indicating that the corresponding feature is present and a low value indicating its absence. With M units in a given layer, such a network can represent M
+different features. However, the network could potentially learn a different representation in which combinations of hidden units represent features, thereby potentially
+allowing a hidden layer with M units to represent 2M different features, growing
+exponentially with the number of units. Consider, for example, a network designed
+to process images of faces. Each particular face image may or may not have glasses,
+it may or may not have a hat, and it may or may not have a beard, leading to eight
+different combinations. Although this could be represented by eight units each of
+which ‘turns on’ when it detects the corresponding combination, it could also be
+represented more compactly by just three units, one for each attribute. These can be
+present independently of each other (although statistically their presence is likely to
+be correlated to some degree). Later, we will explore in detail the kinds of internal
+representations that deep learning networks discover for themselves during training.
+
+6.3.3
+
+Section 1.1.1
+
+Section 19.1
+
+Representation learning
+
+We can view the successive layers of a deep neural network as performing transformations of the data, that make it easier to solve the desired task or tasks. For
+example, a neural network that successfully learns to classify skin lesions as benign
+or malignant must have learned to transform the original image data into a new space,
+represented by the outputs of the final layer of hidden units, such that the final layer
+of the network can distinguish the two classes. This final layer can be viewed as a
+simple linear classifier, and so in the representation of the last hidden layer, the two
+classes must be well separated by a linear surface. This ability to discover a nonlinear transformation of the data that makes subsequent tasks easier to solve is called
+representation learning (Bengio, Courville, and Vincent, 2012). The learned representation, sometimes called the embedding space, is given by the outputs of one of
+the hidden layers of the network, so that any input vector, either from the training set
+or from some new data set, can be transformed into this representation by forward
+propagation through the network.
+Representation learning is especially powerful because it allows us to exploit
+unlabelled data. Often it is easy to collect a large quantity of unlabelled data, but
+acquiring the associated labels may be more difficult. For example, a video camera
+on a vehicle can gather large numbers of images of urban scenes as the vehicle is
+driven around a city, but taking those images and identifying relevant objects, such
+as pedestrians and road signs, would require expensive and time-consuming human
+labelling.
+Learning from unlabelled data is called unsupervised learning, and many different algorithms have been developed to do this. For example, a neural network can be
+trained to take images as input and to create the same images as the output. To make
+this into a non-trivial task, the network may use hidden layers with fewer units than
+the number of pixels in the image, thereby forcing the network to learn some kind of
+compression of the images. Only unlabelled data is needed because each image in
+the training set acts as both the input vector and the target vector. Such networks are
+known as autoencoders. The goal is that this type of training will force the network
+
+
+=== PDF PAGE 207 (Book Page 189) ===
+6.3. Deep Networks
+
+Chapter 12
+
+to discover some internal representation for the data that is useful for solving other
+tasks, such as image classification.
+Historically, unsupervised learning played an important role in enabling the first
+deep networks (apart from convolutional networks) to be successfully trained. Each
+layer of the network was first pre-trained using unsupervised learning and then the
+entire network was trained further using gradient-based supervised training. It was
+later discovered that the pre-training phase could be omitted and a deep network
+could be trained from scratch purely using supervised learning given appropriate
+conditions.
+However, pre-training and representation learning remain central to deep learning in other contexts. The most notable example of pre-training is in natural language
+processing in which transformer models are trained on large quantities of text and are
+able to learn highly sophisticated internal representations of language that facilitates
+an impressive range of capabilities at human level and beyond.
+
+6.3.4
+
+Section 1.1.1
+
+Chapter 10
+
+189
+
+Transfer learning
+
+The internal representation learned for one particular task might also be useful
+for related tasks. For example, a network trained on a large labelled data set of
+everyday objects can learn how to transform an image representation into one that is
+much better suited for classifying objects. Then, the final classification layer of the
+network can be retrained using a smaller labelled data set of skin lesion images to
+create a lesion classifier. This is an example of transfer learning (Hospedales et al.,
+2021), which allows higher accuracy to be achieved than if only the lesion image
+data were used for training, because the network can exploit commonalities shared
+by natural images in general. Transfer learning is illustrated in Figure 6.13.
+In general, transfer learning can be used to improve performance on some task
+A, for which training data is in short supply, by using data from a related task B, for
+which data is more plentiful. The two tasks should have the same kind of inputs,
+and there should be some commonality between the tasks so that low-level features,
+or internal representations, learned from task B will be useful for task A. When we
+look at convolutional networks we will see that many image processing tasks require
+similar low-level features corresponding to the early layers of a deep neural network,
+whereas later layers are more specialized to a particular task, making such networks
+well suited to transfer learning applications.
+When data for task A is very scarce, we might simply re-train the final layer of
+the network. In contrast, if there are more data points, it is feasible to retrain several
+layers. The process of learning parameters using one task that are then applied to
+one or more other tasks is called pre-training. Note that for the new task, instead
+of applying stochastic gradient descent to the whole network, it is much more efficient to send the new training data once through the fixed pre-trained network so
+as to evaluate the training inputs in the new representation. Iterative gradient-based
+optimization can then be applied just to the smaller network consisting of the final
+layers. As well as using a pre-trained network as a fixed pre-processor for a different
+task, it is also possible to apply fine-tuning in which the whole network is adapted to
+the data for task A. This is generally done with a very small learning rate for a lim-
+
+
+=== PDF PAGE 208 (Book Page 190) ===
+190
+
+6. DEEP NEURAL NETWORKS
+
+tree
+cat
+
+...
+
+dog
+
+(a)
+
+cancer
+normal
+
+(b)
+Figure 6.13 Schematic illustration of transfer learning. (a) A network is first trained on a task with abundant
+data, such as object classification of natural images. (b) The early layers of the network (shown in red) are
+copied from the first task and the final few layers of the network (shown in blue) are then retrained on a new task
+such as skin lesion classification for which training data is more scarce.
+
+ited number of iterations to ensure that the network does not over-fit to the relatively
+small data set available for the new task.
+A related approach is multitask learning (Caruana, 1997) in which a network
+jointly learns more than one related task at the same time. For example, we might
+wish to construct a spam email filter that allows different users to have different
+classifiers tuned to their particular preferences. The training data may comprise examples of spam email and non-spam email for many different users, but the number
+of examples for any one user may be quite limited, and therefore training a separate
+classifier for each user would give poor results. Instead, we can combine the data
+sets to train a single larger network that might, for example, share early layers but
+have separate learnable parameters for the different users in later layers. Sharing
+data across tasks allows the network to exploit commonalities amongst the tasks,
+thereby improving the accuracy for all users. With a large number of training examples, a deeper network with more parameters can be used, again leading to improved
+performance.
+Learning across multiple tasks can be extended to meta-learning, which is also
+called learning to learn. Whereas multitask learning aims to make predictions for
+a fixed set of tasks, the aim of meta-learning is to make predictions for future tasks
+that were not seen during training. This can be done by not only learning a shared
+
+
+=== PDF PAGE 209 (Book Page 191) ===
+6.3. Deep Networks
+
+191
+
+internal representation across tasks but also by learning the learning algorithm itself
+(Hospedales et al., 2021). Meta-learning can be used to facilitate generalization of,
+for example, a classification model to new classes when there are very few labelled
+examples of the new classes. This is referred to as few-shot learning. When only a
+single labelled example is used it is called one-shot learning.
+
+6.3.5
+
+Contrastive learning
+
+One of the most common and powerful representation learning methods is contrastive learning (Gutmann and Hyvärinen, 2010; Oord, Li, and Vinyals, 2018;
+Chen, Kornblith, et al., 2020). The idea is to learn a representation such that certain pairs of inputs, referred to as positive pairs, are close in the embedding space,
+and other pairs of inputs, called negative pairs, are far apart. The intuition is that
+if we choose our positive pairs in such a way that they are semantically similar and
+choose negative pairs that are semantically dissimilar, then we will learn a representation space in which similar inputs are close, making downstream tasks, such as
+classification, much easier. As with other forms of representation learning, the outputs of the trained network are typically not used directly, and instead the activations
+at some earlier layer are used to form the embedding space. Contrastive learning is
+unlike most other machine learning tasks, in that the error function for a given input
+is defined only with respect to other inputs, instead of having a per-input label or
+target output.
+Suppose we have a given data point x called the anchor, for which we have specified another data point x+ that together with x makes up a positive pair. We must
+−
+also specify a set of data points {x−
+1 , . . . , xN } each of which makes up a negative
+pair with x. We now need a loss function that will reward close proximity between
+the representations of x and x+ while encouraging a large distance between each pair
+{x, x−
+n }. One example of such a function, and the most commonly used loss function for contrastive learning, is called the InfoNCE loss (Gutmann and Hyvärinen,
+2010; Oord, Li, and Vinyals, 2018), where NCE denotes ‘noise contrastive estimation’. Suppose we have a neural network function fw (x) that maps points from the
+input space x to a representation space, governed by learnable parameters w. This
+representation is normalized so that ||fw (x)|| = 1. Then, for a data point x, the
+InfoNCE loss is defined by
+E(w) = − ln
+
+exp{fw (x)T fw (x+ )}
+.
+PN
+exp{fw (x)T fw (x+ )} + n=1 exp{fw (x)T fw (x−
+n )}
+
+(6.20)
+
+We can see that in this function, the cosine similarity fw (x)T fw (x+ ) between the
+representation fw (x) of the anchor and the representation fw (x+ ) of the positive
+example provides our measure of how close the positive pair examples are in the
+learned space, and the same measure is used to assess how close the anchor is to the
+negative examples. Note that the function resembles a classification cross-entropy
+error function in which the cosine similarity of the positive pair gives the logit for
+the label class and the cosine similarities for the negative pairs give the logits for the
+incorrect classes. Also note that the negative pairs are crucial as without them the
+
+
+=== PDF PAGE 210 (Book Page 192) ===
+192
+
+6. DEEP NEURAL NETWORKS
+
+Section 9.1.3
+
+embedding would simply learn the degenerate solution of mapping every point to the
+same representation.
+A particular contrastive learning algorithm is defined predominantly by how the
+positive and negative pairs are chosen, which is how we use our prior knowledge to
+specify what a good representation should be. For example, consider the problem of
+learning representations of images. Here, a common choice is to create positive pairs
+by corrupting the input images in ways that should preserve the semantic information
+of the image while greatly altering the image in the pixel space (Wu et al., 2018; He
+et al., 2019; Chen, Kornblith, et al., 2020). Corruptions are closely related to data
+augmentations, and examples include rotation, translation, and colour shifts. Other
+images from the data set can then be used to create the negative pairs. This approach
+to contrastive learning is known as instance discrimination.
+If, however, we have access to class labels, then we can use images of the same
+class as positive pairs and images of different classes as negative pairs. This relaxes the reliance on specifying the augmentations that the representation should be
+invariant to and also avoids treating two semantically similar images as a negative
+pair. This is referred to as supervised contrastive learning (Khosla et al., 2020) because of the reliance on the class labels, and it can often yield better results than
+simply learning the representation using cross-entropy classification.
+The members of positive and negative pairs do not necessarily have to come
+from the same data modality. In contrastive-language image pretraining, or CLIP
+(Radford et al., 2021), a positive pair consists of an image and its corresponding
+text caption, and two separate functions, one for each modality, are used to map the
+inputs to the same representation space. Negative pairs are then mismatched images
+and captions. This is often referred to as weakly supervised, as it relies on captioned
+images, which are often easier to obtain by scraping data from the internet than by
+manually labelling images with their classes. The loss function in this case is given
+by
+E(w) = −
+−
+
+1
+exp{fw (x+ )T gθ (y+ )}
+ln
+P
+− T
++
+2 exp{fw (x+ )T gθ (y+ )} + N
+n=1 exp{fw (xn ) gθ (y )}
+exp{fw (x+ )T gθ (y+ )}
+1
+(6.21)
+ln
+P
+−
++ T
+2 exp{fw (x+ )T gθ (y+ )} + M
+m=1 exp{fw (x ) gθ (ym )}
+
+where x+ and y+ represent a positive pair in which x is an image and y is its corresponding text caption, fw represents the mapping from images to the representation
+space, and gθ is the mapping from text input to the representation space. We also
+−
+require a set {x−
+1 , . . . , xN } of other images from the data set, for which we can
+−
+assume the text caption y+ is inappropriate, and a set {y1− , . . . , yM
+} of text captions that are similarly mismatched to the input image x. The two terms in the loss
+function ensure that (a) the representation of the image is close to its text caption
+representation relative to other image representations and (b) the text caption representation is close to the representation of the image it describes relative to other
+representations of text captions. Although CLIP uses text and image pairs, any data
+
+
+=== PDF PAGE 211 (Book Page 193) ===
+193
+
+6.3. Deep Networks
+
+fw (x)
+
+fw (x)
+
+−
+
+−
+
+fw (x+ )
+
+gθ (y− )
+
+fw (x )
+
+fw (x )
+
+fw (x+ )
+
+fw (x+ )
+
+gθ (y+ )
+
+‘a bike
+‘a ginger leaning
+cat sat
+on a
+on a wall’ brick wall’
+x
+
+x+
+
+x−
+
+(a)
+
+x
+
+x+
+
+x−
+
+(b)
+
+x+
+
+y+
+
+y−
+
+(c)
+
+Figure 6.14 Illustration of three different contrastive learning paradigms. (a) The instance discrimination approach, where the positive pair is made up of the anchor and an augmented version of the same image. These
+are mapped to points in a normalized space that can be thought of as a unit hypersphere. The coloured arrows
+show that the loss encourages the representations of the positive pair to be closer together but pushes negative
+pairs further apart. (b) Supervised contrastive learning in which the positive pair consists of two different images
+from the same class. (c) The CLIP model in which the positive pair is made up of an image and an associated
+text snippet.
+
+set with paired modalities can be used to learn representations. A comparison of the
+different contrastive learning methods we have discussed is shown in Figure 6.14.
+
+6.3.6
+
+General network architectures
+
+So far, we have explored neural network architectures that are organized into a
+sequence of fully-connected layers. However, because there is a direct correspondence between a network diagram and its mathematical function, we can develop
+more general network mappings by considering more complex network diagrams.
+These must be restricted to a feed-forward architecture, in other words to one having
+no closed directed cycles, to ensure that the outputs are deterministic functions of
+the inputs. This is illustrated with a simple example in Figure 6.15. Each (hidden or
+output) unit in such a network computes a function given by
+
+
+X
+zk = h 
+wkj zj + bk 
+(6.22)
+j∈A(k)
+
+where A(k) denotes the set of ancestors of node k, in other words the set of units
+that send connections to unit k, and bk denotes the associated bias parameter. For
+a given set of values applied to the inputs of the network, successive application of
+(6.22) allows the activations of all units in the network to be evaluated including
+those of the output units.
+
+
+=== PDF PAGE 212 (Book Page 194) ===
+194
+
+6. DEEP NEURAL NETWORKS
+
+Figure 6.15 Example of a neural network
+having a general feed-forward topology. Note
+that each hidden and output unit has an associated bias parameter (omitted for clarity).
+
+outputs
+
+inputs
+x1
+
+z2
+
+y1
+
+z3
+
+y2
+
+z1
+x2
+
+6.3.7 Tensors
+We see that linear algebra plays a central role in neural networks, with quantities
+such as data sets, activations, and network parameters represented as scalars, vectors,
+and matrices. However, we also encounter variables of higher dimensionality. Consider, for example, a data set of N colour images each of which is I pixels high and
+J pixels wide. Each pixel is indexed by its row and column within the image and
+has red, green, and blue values. We have one such value for each image in the data
+set, and so we can represent a particular intensity value by a four-dimensional array
+X with elements xijkn where i ∈ {1, . . . , I} and j ∈ {1, . . . , J } index the row
+and column within the image, k ∈ {1, 2, 3} indexes the red, green, and blue intensities, and n ∈ {1, . . . , N } indexes the particular image within the data set. These
+higher-dimensional arrays are called tensors and include scalars, vectors, and matrices as special cases. We will see many examples of such tensors when we discuss
+more sophisticated neural network architectures later in the book. Massively parallel
+processors such as GPUs are especially well suited to processing tensors.
+
+6.4. Error Functions
+Chapter 4
+Chapter 5
+
+In earlier chapters, we explored linear models for regression and classification, and
+in the process we derived suitable forms for the error functions along with corresponding choices for the output-unit activation function. The same considerations
+for choosing an error function apply for multilayer neural networks, and so for convenience, we will summarize the key points here.
+
+6.4.1 Regression
+
+Section 2.3.4
+
+We start by discussing regression problems, and for the moment we consider
+a single target variable t that can take any real value. Following the discussion of
+regression in single-layer networks, we assume that t has a Gaussian distribution
+with an x-dependent mean, which is given by the output of the neural network, so
+that
+
+p(t|x, w) = N t|y(x, w), σ 2
+(6.23)
+
+
