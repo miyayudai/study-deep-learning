@@ -33,3 +33,4 @@ from . import residual_connections
 from . import model_averaging
 from . import exercises_ch9
 from . import computer_vision
+from . import convolutional_filters
