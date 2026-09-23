@@ -1,0 +1,450 @@
+
+=== PDF PAGE 212 (Book Page 194) ===
+194
+
+6. DEEP NEURAL NETWORKS
+
+Figure 6.15 Example of a neural network
+having a general feed-forward topology. Note
+that each hidden and output unit has an associated bias parameter (omitted for clarity).
+
+outputs
+
+inputs
+x1
+
+z2
+
+y1
+
+z3
+
+y2
+
+z1
+x2
+
+6.3.7 Tensors
+We see that linear algebra plays a central role in neural networks, with quantities
+such as data sets, activations, and network parameters represented as scalars, vectors,
+and matrices. However, we also encounter variables of higher dimensionality. Consider, for example, a data set of N colour images each of which is I pixels high and
+J pixels wide. Each pixel is indexed by its row and column within the image and
+has red, green, and blue values. We have one such value for each image in the data
+set, and so we can represent a particular intensity value by a four-dimensional array
+X with elements xijkn where i ∈ {1, . . . , I} and j ∈ {1, . . . , J } index the row
+and column within the image, k ∈ {1, 2, 3} indexes the red, green, and blue intensities, and n ∈ {1, . . . , N } indexes the particular image within the data set. These
+higher-dimensional arrays are called tensors and include scalars, vectors, and matrices as special cases. We will see many examples of such tensors when we discuss
+more sophisticated neural network architectures later in the book. Massively parallel
+processors such as GPUs are especially well suited to processing tensors.
+
+6.4. Error Functions
+Chapter 4
+Chapter 5
+
+In earlier chapters, we explored linear models for regression and classification, and
+in the process we derived suitable forms for the error functions along with corresponding choices for the output-unit activation function. The same considerations
+for choosing an error function apply for multilayer neural networks, and so for convenience, we will summarize the key points here.
+
+6.4.1 Regression
+
+Section 2.3.4
+
+We start by discussing regression problems, and for the moment we consider
+a single target variable t that can take any real value. Following the discussion of
+regression in single-layer networks, we assume that t has a Gaussian distribution
+with an x-dependent mean, which is given by the output of the neural network, so
+that
+
+p(t|x, w) = N t|y(x, w), σ 2
+(6.23)
+
+
+=== PDF PAGE 213 (Book Page 195) ===
+6.4. Error Functions
+
+Section 6.5
+
+195
+
+where σ 2 is the variance of the Gaussian noise. Of course this is a somewhat restrictive assumption, and in some applications we will need to extend this approach to
+allow for more general distributions. For the conditional distribution given by (6.23),
+it is sufficient to take the output-unit activation function to be the identity, because
+such a network can approximate any continuous function from x to y. Given a data
+set of N i.i.d. observations X = {x1 , . . . , xN }, along with corresponding target
+values t = {t1 , . . . , tN }, we can construct the corresponding likelihood function:
+p(t|X, w, σ 2 ) =
+
+N
+Y
+n=1
+
+p(tn |y(xn , w), σ 2 ).
+
+(6.24)
+
+Note that in the machine learning literature, it is usual to consider the minimization
+of an error function rather than the maximization of the likelihood, and so here we
+will follow this convention. Taking the negative logarithm of the likelihood function
+(6.24), we obtain the error function
+N
+1 X
+N
+N
+{y(xn , w) − tn }2 +
+ln σ 2 +
+ln(2π),
+2
+2σ n=1
+2
+2
+
+(6.25)
+
+which can be used to learn the parameters w and σ 2 . Consider first the determination
+of w. Maximizing the likelihood function is equivalent to minimizing the sum-ofsquares error function given by
+N
+
+E(w) =
+
+Chapter 9
+
+Exercise 6.8
+
+1X
+{y(xn , w) − tn }2
+2 n=1
+
+(6.26)
+
+where we have discarded additive and multiplicative constants. The value of w
+found by minimizing E(w) will be denoted w? . Note that this will typically not
+correspond to the global maximum of the likelihood function because the nonlinearity of the network function y(xn , w) causes the error E(w) to be non-convex,
+and so finding the global optimum is generally infeasible. Moreover, regularization
+terms may be added to the error function and other modifications may be made to
+the training process, so that the resulting solution for the network parameters may
+differ significantly from the maximum likelihood solution.
+Having found w? , the value of σ 2 can be found by minimizing the error function
+(6.25) to give
+N
+1 X
+σ 2? =
+{y(xn , w? ) − tn }2 .
+(6.27)
+N n=1
+Note that this can be evaluated once the iterative optimization required to find w? is
+completed.
+If we have multiple target variables, and we assume that they are independent,
+conditional on x and w, with shared noise variance σ 2 , then the conditional distribution of the target values is given by
+
+p(t|x, w) = N t|y(x, w), σ 2 I .
+(6.28)
+
+
+=== PDF PAGE 214 (Book Page 196) ===
+196
+
+6. DEEP NEURAL NETWORKS
+
+Exercise 6.9
+
+Following the same argument as for a single target variable, we see that maximizing
+the likelihood function with respect to the weights is equivalent to minimizing the
+sum-of-squares error function:
+N
+
+E(w) =
+
+1X
+ky(xn , w) − tn k2 .
+2 n=1
+
+(6.29)
+
+The noise variance is then given by
+N
+
+σ 2? =
+
+Exercise 6.10
+Section 5.4.6
+
+1 X
+ky(xn , w? ) − tn k2
+N K n=1
+
+(6.30)
+
+where K is the dimensionality of the target variable. The assumption of conditional
+independence of the target variables can be dropped at the expense of a slightly more
+complex optimization problem.
+Recall that there is a natural pairing of the error function (given by the negative
+log likelihood) and the output-unit activation function. In regression, we can view the
+network as having an output activation function that is the identity, so that yk = ak .
+The corresponding sum-of-squares error function then has the property
+∂E
+= y k − tk .
+∂ak
+
+6.4.2
+
+Section 5.4.6
+
+(6.31)
+
+Binary classification
+
+Now consider binary classification in which we have a single target variable
+t such that t = 1 denotes class C1 and t = 0 denotes class C2 . Following the
+discussion of canonical link functions, we consider a network having a single output
+whose activation function is a logistic sigmoid (6.13) so that 0 ⩽ y(x, w) ⩽ 1. We
+can interpret y(x, w) as the conditional probability p(C1 |x), with p(C2 |x) given by
+1 − y(x, w). The conditional distribution of targets given inputs is then a Bernoulli
+distribution of the form
+p(t|x, w) = y(x, w)t {1 − y(x, w)}
+
+1−t
+
+.
+
+(6.32)
+
+If we consider a training set of independent observations, then the error function,
+which is given by the negative log likelihood, is then a cross-entropy error of the
+form
+N
+X
+E(w) = −
+{tn ln yn + (1 − tn ) ln(1 − yn )}
+(6.33)
+n=1
+
+Exercise 6.11
+
+where yn denotes y(xn , w). Simard, Steinkraus, and Platt (2003) found that using
+the cross-entropy error function instead of the sum-of-squares for a classification
+problem leads to faster training as well as improved generalization.
+Note that there is no analogue of the noise variance σ 2 in (6.32) because the
+target values are assumed to be correctly labelled. However, the model is easily
+extended to allow for labelling errors by introducing a probability  that the target
+
+
+=== PDF PAGE 215 (Book Page 197) ===
+6.4. Error Functions
+
+197
+
+value t has been flipped to the wrong value (Opper and Winther, 2000). Here  may
+be set in advance, or it may be treated as a hyperparameter whose value is inferred
+from the data.
+If we have K separate binary classifications to perform, then we can use a network having K outputs each of which has a logistic-sigmoid activation function.
+Associated with each output is a binary class label tk ∈ {0, 1}, where k = 1, . . . , K.
+If we assume that the class labels are independent, given the input vector, then the
+conditional distribution of the targets is
+p(t|x, w) =
+
+K
+Y
+k=1
+
+Exercise 6.13
+
+N X
+K
+X
+n=1 k=1
+
+{tnk ln ynk + (1 − tnk ) ln(1 − ynk )}
+
+(6.34)
+
+(6.35)
+
+multiclass classification
+
+Finally, we consider the standard multiclass classification problem in which each
+input is assigned to one of K mutually exclusive classes. The binary target variables
+tk ∈ {0, 1} have a 1-of-K coding scheme indicating the class, and the network
+outputs are interpreted as yk (x, w) = p(tk = 1|x), leading to the error function
+(5.80), which we reproduce here:
+E(w) = −
+
+Section 5.4.4
+
+.
+
+where ynk denotes yk (xn , w). Again, the derivative of the error function with respect to the pre-activation for a particular output unit takes the form (6.31), just as in
+the regression case.
+
+6.4.3
+
+Section 5.1.3
+
+1−tk
+
+Taking the negative logarithm of the corresponding likelihood function then gives
+the following error function:
+E(w) = −
+
+Exercise 6.14
+
+yk (x, w)tk [1 − yk (x, w)]
+
+N X
+K
+X
+
+tkn ln yk (xn , w).
+
+(6.36)
+
+n=1 k=1
+
+The output-unit activation function, which corresponds to the canonical link, is given
+by the softmax function:
+exp(ak (x, w))
+yk (x, w) = X
+,
+exp(aj (x, w))
+
+(6.37)
+
+j
+
+P
+
+Chapter 9
+Exercise 6.15
+
+which satisfies 0 ⩽ yk ⩽ 1 and k yk = 1. Note that the yk (x, w) are unchanged
+if a constant is added to all of the ak (x, w), causing the error function to be constant
+for some directions in weight space. This degeneracy is removed if an appropriate
+regularization term is added to the error function. Once again, the derivative of the
+error function with respect to the pre-activation for a particular output unit takes the
+familiar form (6.31).
+
+
+=== PDF PAGE 216 (Book Page 198) ===
+198
+
+6. DEEP NEURAL NETWORKS
+In summary, there is a natural choice of both output-unit activation function
+and matching error function according to the type of problem being solved. For
+regression, we use linear outputs and a sum-of-squares error, for multiple independent binary classifications, we use logistic sigmoid outputs and a cross-entropy error
+function, and for multi-class classification, we use softmax outputs with the corresponding multi-class cross-entropy error function. For classification problems involving two classes, we can use a single logistic sigmoid output, or alternatively, we
+can use a network with two outputs having a softmax output activation function.
+This procedure is quite general, and by considering other forms of conditional
+distribution, we can derive the associated error functions as the corresponding negative log likelihood. We will see an example of this in the next section when we
+consider multimodal network outputs.
+
+6.5. Mixture Density Networks
+So far in this chapter we have discussed neural networks whose outputs represent
+simple probability distributions comprising either a Gaussian for continuous variables or a binary distribution for discrete variables. We close the chapter by showing
+how a neural network can represent more general conditional probabilities by treating the outputs of the network as the parameters of a more complex distribution, in
+this case a Gaussian mixture model. This is known as a mixture density network,
+and we will see how to define the associated error function and the corresponding
+output-unit activation functions.
+
+6.5.1
+
+Exercise 6.16
+
+Robot kinematics example
+
+The goal of supervised learning is to model a conditional distribution p(t|x),
+which for many simple regression problems is chosen to be Gaussian. However,
+practical machine learning problems can often have significantly non-Gaussian distributions. These can arise, for example, with inverse problems in which the distribution can be multimodal, in which case the Gaussian assumption can lead to very
+poor predictions.
+As a simple illustration of an inverse problem, consider the kinematics of a robot
+arm, as illustrated in Figure 6.16. The forward problem involves finding the end effector position given the joint angles and has a unique solution. However, in practice
+we wish to move the end effector of the robot to a specific position, and to do this we
+must set appropriate joint angles. We therefore need to solve the inverse problem,
+which has two solutions, as seen in Figure 6.16.
+Forward problems often correspond to causality in a physical system and generally have a unique solution. For instance, a specific pattern of symptoms in the
+human body may be caused by the presence of a particular disease. In machine
+learning, however, we typically have to solve an inverse problem, such as trying to
+predict the presence of a disease given a set of symptoms. If the forward problem
+involves a many-to-one mapping, then the inverse problem will have multiple solutions. For instance, several different diseases may result in the same symptoms.
+
+
+=== PDF PAGE 217 (Book Page 199) ===
+6.5. Mixture Density Networks
+Figure 6.16 (a) A two-link robot
+arm, in which the Cartesian coordinates (x1 , x2 ) of the end effector
+are determined uniquely by the two
+joint angles θ1 and θ2 and the (fixed)
+lengths L1 and L2 of the arms. This
+is known as the forward kinematics
+of the arm. (b) In practice, we have
+to find the joint angles that will give
+rise to a desired end effector position. This inverse kinematics has
+two solutions corresponding to ‘elbow up’ and ‘elbow down’.
+
+(x1 , x2 )
+
+L2
+
+199
+
+(x1 , x2 )
+
+θ2
+elbow
+up
+
+L1
+
+elbow
+down
+
+θ1
+(a)
+
+(b)
+
+In the robotics example, the kinematics is defined by geometrical equations, and
+the multimodality is readily apparent. However, in many machine learning problems
+the presence of multimodality, particularly in problems involving spaces of high dimensionality, can be less obvious. For tutorial purposes, however, we will consider
+a simple toy problem for which we can easily visualize the multimodality. The data
+for this problem is generated by sampling a variable x uniformly over the interval
+(0, 1), to give a set of values {xn }, and the corresponding target values tn are obtained by computing the function xn + 0.3 sin(2πxn ) and then adding uniform noise
+over the interval (−0.1, 0.1). The inverse problem is then obtained by keeping the
+same data points but exchanging the roles of x and t. Figure 6.17 shows the data sets
+for the forward and inverse problems, along with the results of fitting two-layer neural networks having six hidden units and a single linear output unit by minimizing
+a sum-of-squares error function. Least squares corresponds to maximum likelihood
+under a Gaussian assumption. We see that this leads to a good model for the forward
+problem but a very poor model for the highly non-Gaussian inverse problem.
+
+6.5.2
+
+Conditional mixture distributions
+
+We therefore seek a general framework for modelling conditional probability
+distributions. This can be achieved by using a mixture model for p(t|x) in which
+Figure 6.17 On the left is the data
+set for a simple forward problem in
+which the red curve shows the result
+of fitting a two-layer neural network
+by minimizing the sum-of-squares
+error function. The corresponding
+inverse problem, shown on the right,
+is obtained by exchanging the roles
+of x and t. Here the same network,
+again trained by minimizing the sumof-squares error function, gives a
+poor fit to the data due to the multimodality of the data set.
+
+1
+
+1
+
+0
+
+0
+0
+
+1
+
+0
+
+1
+
+

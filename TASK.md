@@ -95,11 +95,11 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 6.4 Error Functions
-- **担当セクション**: 第6章 6.4 誤差関数 (Error Functions)
+- **現在実行中のタスク**: 6.5 Mixture Density Networks
+- **担当セクション**: 第6章 6.5 混合密度ネットワーク (Mixture Density Networks)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T12:26:00+09:00
-- **直前完了タスク**: 6.3 Deep Networks (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T12:29:00+09:00
+- **直前完了タスク**: 6.4 Error Functions (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -405,23 +405,23 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 6.13 〜 6.15)
   - テスト: `tests/test_ch6_deep_networks.py`
 
-- [-] **6.4 Error Functions**
+- [x] **6.4 Error Functions**
   - ノートブック: `6/6.4_Error_Functions.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 6.4.1 Regression
-    - [ ] 6.4.2 Binary classification
-    - [ ] 6.4.3 multiclass classification
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 6.4.1 Regression
+    - [x] 6.4.2 Binary classification
+    - [x] 6.4.3 multiclass classification
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 6 Overview)
   - テスト: `tests/test_ch6_error_functions.py`
 
-- [ ] **6.5 Mixture Density Networks**
+- [-] **6.5 Mixture Density Networks**
   - ノートブック: `6/6.5_Mixture_Density_Networks.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 6.5.1 Robot kinematics example
     - [ ] 6.5.2 Conditional mixture distributions
     - [ ] 6.5.3 Gradient optimization
     - [ ] 6.5.4 Predictive distribution
-  - 図版再現: `result/` への該当Figureプロット保存
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 6.16 〜 6.19)
   - テスト: `tests/test_ch6_mixture_density.py`
 
 - [ ] **第6章 演習問題 (Exercises 6.1 〜 6.21, 全21問)**

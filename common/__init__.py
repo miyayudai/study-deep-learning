@@ -14,3 +14,4 @@ from . import limitations_of_fixed_basis_functions
 from . import basis_limitations
 from . import multilayer_networks
 from . import deep_networks
+from . import error_functions
