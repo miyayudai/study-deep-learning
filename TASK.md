@@ -454,16 +454,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (fig_7_2_minibatch_noise, fig_7_2_variance_propagation, fig_7_2_gd_trajectories)
   - テスト: `tests/test_ch7_gradient_descen.py`
 
-- [-] **7.3 Convergence**
+- [x] **7.3 Convergence**
   - ノートブック: `7/7.3_Convergence.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 7.3.1 Momentum
-    - [ ] 7.3.2 Learning rate schedule
-    - [ ] 7.3.3 RMSProp and Adam
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 7.3.1 Momentum
+    - [x] 7.3.2 Learning rate schedule
+    - [x] 7.3.3 RMSProp and Adam
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 7.3, 7.4, 7.5, 7.6)
   - テスト: `tests/test_ch7_convergence.py`
 
-- [ ] **7.4 Normalization**
+- [-] **7.4 Normalization**
   - ノートブック: `7/7.4_Normalization.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 7.4.1 Data normalization
