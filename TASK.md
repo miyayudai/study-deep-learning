@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **50 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **51 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 10.5 Image Segmentation
-- **担当セクション**: 第10章 10.5 画像セグメンテーション (Image Segmentation)
+- **現在実行中のタスク**: 10.6 Style Transfer
+- **担当セクション**: 第10章 10.6 スタイル変換 (Style Transfer)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T19:30:00+09:00
-- **直前完了タスク**: 第10章 10.4 物体検出 (Object Detection) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T19:35:00+09:00
+- **直前完了タスク**: 第10章 10.5 画像セグメンテーション (Image Segmentation) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -618,17 +618,17 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 10.19 〜 10.25 全7枚)
   - テスト: `tests/test_ch10_object_detectio.py`
 
-- [-] **10.5 Image Segmentation**
+- [x] **10.5 Image Segmentation**
   - ノートブック: `10/10.5_Image_Segmentation.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 10.5.1 Convolutional segmentation
-    - [ ] 10.5.2 Up-sampling
-    - [ ] 10.5.3 Fully convolutional networks
-    - [ ] 10.5.4 The U-net architecture
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 10.5.1 Convolutional segmentation
+    - [x] 10.5.2 Up-sampling
+    - [x] 10.5.3 Fully convolutional networks
+    - [x] 10.5.4 The U-net architecture
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 10.26 〜 10.31 全6枚)
   - テスト: `tests/test_ch10_image_segmentat.py`
 
-- [ ] **10.6 Style Transfer**
+- [-] **10.6 Style Transfer**
   - ノートブック: `10/10.6_Style_Transfer.ipynb`
   - 小節: （単独構成）
   - 図版再現: `result/` への該当Figureプロット保存

@@ -36,3 +36,4 @@ from . import computer_vision
 from . import convolutional_filters
 from . import visualizing_cnn
 from . import object_detection
+from . import image_segmentation
