@@ -22,3 +22,4 @@ from . import gradient_descent
 from . import convergence
 from . import normalization
 from . import exercises_ch7
+from . import evaluation_of_gradients

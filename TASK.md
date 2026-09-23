@@ -77,7 +77,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第5章** | 単層ネットワーク: 分類 (Single-layer Networks: Classification) | 4 | 20 | Figure 5.1 〜 5.17 (全17枚) | 全24問 | 完了 (`[x]`) |
 | **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 完了 (`[x]`) |
 | **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 完了 (`[x]`) |
-| **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 進行中 (0/3 ユニット完了) |
+| **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 進行中 (1/3 ユニット完了) |
 | **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 未着手 |
 | **第10章** | 畳み込みネットワーク (Convolutional Networks) | 6 | 24 | Figure 10.1 〜 10.32 (全32枚) | 全13問 | 未着手 |
 | **第11章** | 構造化分布 (Structured Distributions) | 3 | 15 | Figure 11.1 〜 11.32 (全32枚) | 全20問 | 未着手 |
@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **36 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **37 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 8.1 Evaluation of Gradients
-- **担当セクション**: 第8章 8.1 勾配の評価 (Evaluation of Gradients)
+- **現在実行中のタスク**: 8.2 Automatic Differentiation
+- **担当セクション**: 第8章 8.2 自動微分 (Automatic Differentiation)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-23T15:10:00+09:00
-- **直前完了タスク**: 第7章 演習問題 (Exercises 7.1 〜 7.14) (2026-09-23 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-23T15:16:00+09:00
+- **直前完了タスク**: 第8章 8.1 勾配の評価 (Evaluation of Gradients) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -484,25 +484,25 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `8/`
 - 再現図版目標: Figure 8.1 〜 8.5 (全5枚)
 
-- [-] **8.1 Evaluation of Gradients**
+- [x] **8.1 Evaluation of Gradients**
   - ノートブック: `8/8.1_Evaluation_of_Gradients.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 8.1.1 Single-layer networks
-    - [ ] 8.1.2 General feed-forward networks
-    - [ ] 8.1.3 A simple example
-    - [ ] 8.1.4 Numerical differentiation
-    - [ ] 8.1.5 The Jacobian matrix
-    - [ ] 8.1.6 The Hessian matrix
-  - 図版再現: `result/` への該当Figureプロット保存
-  - テスト: `tests/test_ch8_evaluation_of_g.py`
+    - [x] 8.1.1 Single-layer networks
+    - [x] 8.1.2 General feed-forward networks
+    - [x] 8.1.3 A simple example
+    - [x] 8.1.4 Numerical differentiation
+    - [x] 8.1.5 The Jacobian matrix
+    - [x] 8.1.6 The Hessian matrix
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 8.1, 8.2, 8.3)
+  - テスト: `tests/test_ch8_evaluation_of_gradients.py`
 
-- [ ] **8.2 Automatic Differentiation**
+- [-] **8.2 Automatic Differentiation**
   - ノートブック: `8/8.2_Automatic_Differentiation.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 8.2.1 Forward-mode automatic differentiation
     - [ ] 8.2.2 Reverse-mode automatic differentiation
-  - 図版再現: `result/` への該当Figureプロット保存
-  - テスト: `tests/test_ch8_automatic_diffe.py`
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 8.4, 8.5)
+  - テスト: `tests/test_ch8_automatic_differentiation.py`
 
 - [ ] **第8章 演習問題 (Exercises 8.1 〜 8.18, 全18問)**
   - ノートブック: `8/8_Exercises.ipynb`
