@@ -42,3 +42,4 @@ from . import exercises_ch10
 from . import graphical_models
 from . import conditional_independence
 from . import sequence_models
+from . import exercises_ch11
