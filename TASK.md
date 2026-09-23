@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **60 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **61 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 12.4 Multimodal Transformers
-- **担当セクション**: 第12章 12.4 マルチモーダル・トランスフォーマー (Multimodal Transformers)
+- **現在実行中のタスク**: 第12章 演習問題 (Exercises 12.1 〜 12.16)
+- **担当セクション**: 第12章 演習問題 (Exercises 12.1 〜 12.16, 全16問)
 - **ステータス**: 実行中 (`[-]`)
 - **獲得ロックタイムスタンプ**: 2026-09-23T23:30:00+09:00
-- **直前完了タスク**: 第12章 12.3 トランスフォーマー言語モデル (Transformer Language Models) (2026-09-23 完了)
+- **直前完了タスク**: 第12章 12.4 マルチモーダル・トランスフォーマー (Multimodal Transformers) (2026-09-23 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -730,18 +730,18 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 12.15 〜 12.21 全7枚)
   - テスト: `tests/test_ch12_transformer_lan.py`
 
-- [-] **12.4 Multimodal Transformers**
+- [x] **12.4 Multimodal Transformers**
   - ノートブック: `12/12.4_Multimodal_Transformers.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 12.4.1 Vision transformers
-    - [ ] 12.4.2 Generative image transformers
-    - [ ] 12.4.3 Audio data
-    - [ ] 12.4.4 Text-to-speech
-    - [ ] 12.4.5 Vision and language transformers
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 12.4.1 Vision transformers
+    - [x] 12.4.2 Generative image transformers
+    - [x] 12.4.3 Audio data
+    - [x] 12.4.4 Text-to-speech
+    - [x] 12.4.5 Vision and language transformers
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 12.22 〜 12.27 全6枚)
   - テスト: `tests/test_ch12_multimodal_tran.py`
 
-- [ ] **第12章 演習問題 (Exercises 12.1 〜 12.16, 全16問)**
+- [-] **第12章 演習問題 (Exercises 12.1 〜 12.16, 全16問)**
   - ノートブック: `12/12_Exercises.ipynb`
   - 形式: 理論問題は証明ロジック＋穴埋め・選択式、実装問題はコード穴埋め＋自己採点アサーション
   - テスト: `tests/test_ch12_exercises.py`
