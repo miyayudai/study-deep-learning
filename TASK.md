@@ -78,7 +78,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第6章** | 深層ニューラルネットワーク (Deep Neural Networks) | 5 | 22 | Figure 6.1 〜 6.19 (全19枚) | 全21問 | 完了 (`[x]`) |
 | **第7章** | 勾配降下法 (Gradient Descent) | 4 | 15 | Figure 7.1 〜 7.10 (全10枚) | 全14問 | 完了 (`[x]`) |
 | **第8章** | 誤差逆伝播法 (Backpropagation) | 2 | 8 | Figure 8.1 〜 8.5 (全5枚) | 全18問 | 完了 (`[x]`) |
-| **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 未着手 |
+| **第9章** | 正則化 (Regularization) | 6 | 10 | Figure 9.1 〜 9.17 (全17枚) | 全18問 | 進行中 (1/7 ユニット完了) |
 | **第10章** | 畳み込みネットワーク (Convolutional Networks) | 6 | 24 | Figure 10.1 〜 10.32 (全32枚) | 全13問 | 未着手 |
 | **第11章** | 構造化分布 (Structured Distributions) | 3 | 15 | Figure 11.1 〜 11.32 (全32枚) | 全20問 | 未着手 |
 | **第12章** | トランスフォーマー (Transformers) | 4 | 25 | Figure 12.1 〜 12.27 (全27枚) | 全16問 | 未着手 |
@@ -516,17 +516,17 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `9/`
 - 再現図版目標: Figure 9.1 〜 9.17 (全17枚)
 
-- [-] **9.1 Inductive Bias**
+- [x] **9.1 Inductive Bias**
   - ノートブック: `9/9.1_Inductive_Bias.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 9.1.1 Inverse problems
-    - [ ] 9.1.2 No free lunch theorem
-    - [ ] 9.1.3 Symmetry and invariance
-    - [ ] 9.1.4 Equivariance
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 9.1.1 Inverse problems
+    - [x] 9.1.2 No free lunch theorem
+    - [x] 9.1.3 Symmetry and invariance
+    - [x] 9.1.4 Equivariance
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 9.1, 9.2)
   - テスト: `tests/test_ch9_inductive_bias.py`
 
-- [ ] **9.2 Weight Decay**
+- [-] **9.2 Weight Decay**
   - ノートブック: `9/9.2_Weight_Decay.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 9.2.1 Consistent regularizers
