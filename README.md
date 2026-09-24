@@ -141,7 +141,7 @@ pytest tests -v
 | **19** | **自己符号化器** | オートエンコーダ、変分オートエンコーダ (VAE)、再パラメータ化トリック、潜在空間正則化 | Ex 19.1〜19.6 (全6問) | 11 枚 | 待機中 (`[ ]`) |
 | **20** | **拡散モデル** | 前方向拡散過程、スコアベース生成モデル、逆時間SDE、Denoising Diffusion Probabilistic Models (DDPM) | Ex 20.1〜20.20 (全20問) | 9 枚 | 待機中 (`[ ]`) |
 
-**合計: 全20章中16章実装完了・全79冊ノートブック・演習問題全355問網羅・再現図版300枚超を収録！**
+**合計: 全20章中16章実装完了・全80冊ノートブック・演習問題全355問網羅・再現図版300枚超を収録！**
 
 ---
 
@@ -276,6 +276,7 @@ pytest tests -v
 - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16.2_Probabilistic_Latent_Variables.ipynb) `16.2_Probabilistic_Latent_Variables.ipynb`
 - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16.3_Evidence_Lower_Bound.ipynb) `16.3_Evidence_Lower_Bound.ipynb`
 - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16.4_Nonlinear_Latent_Variable_Models.ipynb) `16.4_Nonlinear_Latent_Variable_Models.ipynb`
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16_Exercises.ipynb) `16_Exercises.ipynb`
 
 
 ---
