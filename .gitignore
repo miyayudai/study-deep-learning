@@ -17,3 +17,7 @@ env/
 # Temporary scratch files
 scratch/
 
+# Build and egg-info
+*.egg-info/
+build/
+dist/
