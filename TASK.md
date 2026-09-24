@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **67 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **68 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 14.2 Markov Chain Monte Carlo
-- **担当セクション**: 第14章 14.2 マルコフ連鎖モンテカルロ法 (Markov Chain Monte Carlo)
+- **現在実行中のタスク**: 14.3 Langevin Sampling
+- **担当セクション**: 第14章 14.3 ランジュバンサンプリング (Langevin Sampling)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-24T11:51:00+09:00
-- **直前完了タスク**: 第14章 14.1 基本サンプリング法 (Basic Sampling Algorithms) (2026-09-24 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-24T12:00:00+09:00
+- **直前完了タスク**: 第14章 14.2 マルコフ連鎖モンテカルロ法 (Markov Chain Monte Carlo) (2026-09-24 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -811,24 +811,24 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 14.1 〜 14.8 全8枚)
   - テスト: `tests/test_ch14_basic_sampling_.py`
 
-- [-] **14.2 Markov Chain Monte Carlo**
+- [x] **14.2 Markov Chain Monte Carlo**
   - ノートブック: `14/14.2_Markov_Chain_Monte_Carlo.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 14.2.1 The Metropolis algorithm
-    - [ ] 14.2.2 Markov chains
-    - [ ] 14.2.3 The Metropolis–Hastings algorithm
-    - [ ] 14.2.4 Gibbs sampling
-    - [ ] 14.2.5 Ancestral sampling
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 14.2.1 The Metropolis algorithm
+    - [x] 14.2.2 Markov chains
+    - [x] 14.2.3 The Metropolis–Hastings algorithm
+    - [x] 14.2.4 Gibbs sampling
+    - [x] 14.2.5 Ancestral sampling
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 14.9 〜 14.12 全4枚)
   - テスト: `tests/test_ch14_markov_chain_mo.py`
 
-- [ ] **14.3 Langevin Sampling**
+- [-] **14.3 Langevin Sampling**
   - ノートブック: `14/14.3_Langevin_Sampling.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 14.3.1 Energy-based models
     - [ ] 14.3.2 Maximizing the likelihood
     - [ ] 14.3.3 Langevin dynamics
-  - 図版再現: `result/` への該当Figureプロット保存
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 14.13, 14.14)
   - テスト: `tests/test_ch14_langevin_sampli.py`
 
 - [ ] **第14章 演習問題 (Exercises 14.1 〜 14.18, 全18問)**
