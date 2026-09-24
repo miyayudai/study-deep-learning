@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **62 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **63 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 13.1 Machine Learning on Graphs
-- **担当セクション**: 第13章 13.1 グラフ上の機械学習 (Machine Learning on Graphs)
+- **現在実行中のタスク**: 13.2 Neural Message-Passing
+- **担当セクション**: 第13章 13.2 ニューラル・メッセージパッシング (Neural Message-Passing)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-24T00:30:00+09:00
-- **直前完了タスク**: 第12章 演習問題 (Exercises 12.1 〜 12.16) (2026-09-24 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-24T11:17:00+09:00
+- **直前完了タスク**: 第13章 13.1 グラフ上の機械学習 (Machine Learning on Graphs) (2026-09-24 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -753,16 +753,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `13/`
 - 再現図版目標: Figure 13.1 〜 13.5 (全5枚)
 
-- [-] **13.1 Machine Learning on Graphs**
+- [x] **13.1 Machine Learning on Graphs**
   - ノートブック: `13/13.1_Machine_Learning_on_Graphs.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 13.1.1 Graph properties
-    - [ ] 13.1.2 Adjacency matrix
-    - [ ] 13.1.3 Permutation equivariance
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 13.1.1 Graph properties
+    - [x] 13.1.2 Adjacency matrix
+    - [x] 13.1.3 Permutation equivariance
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 13.1 〜 13.2 全2枚)
   - テスト: `tests/test_ch13_machine_learnin.py`
 
-- [ ] **13.2 Neural Message-Passing**
+- [-] **13.2 Neural Message-Passing**
   - ノートブック: `13/13.2_Neural_Message_Passing.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 13.2.1 Convolutional filters

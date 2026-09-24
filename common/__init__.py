@@ -48,3 +48,4 @@ from . import natural_language
 from . import transformer_language_models
 from . import multimodal_transformers
 from . import exercises_ch12
+from . import machine_learning_on_graphs
