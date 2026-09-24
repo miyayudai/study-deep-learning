@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **66 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **67 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 14.1 Basic Sampling Algorithms
-- **担当セクション**: 第14章 14.1 基本サンプリング法 (Basic Sampling Algorithms)
+- **現在実行中のタスク**: 14.2 Markov Chain Monte Carlo
+- **担当セクション**: 第14章 14.2 マルコフ連鎖モンテカルロ法 (Markov Chain Monte Carlo)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-24T11:40:00+09:00
-- **直前完了タスク**: 第13章 演習問題 (Exercises 13.1 〜 13.10) (2026-09-24 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-24T11:51:00+09:00
+- **直前完了タスク**: 第14章 14.1 基本サンプリング法 (Basic Sampling Algorithms) (2026-09-24 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -799,19 +799,19 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `14/`
 - 再現図版目標: Figure 14.1 〜 14.14 (全14枚)
 
-- [-] **14.1 Basic Sampling Algorithms**
+- [x] **14.1 Basic Sampling Algorithms**
   - ノートブック: `14/14.1_Basic_Sampling_Algorithms.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 14.1.1 Expectations
-    - [ ] 14.1.2 Standard distributions
-    - [ ] 14.1.3 Rejection sampling
-    - [ ] 14.1.4 Adaptive rejection sampling
-    - [ ] 14.1.5 Importance sampling
-    - [ ] 14.1.6 Sampling-importance-resampling
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 14.1.1 Expectations
+    - [x] 14.1.2 Standard distributions
+    - [x] 14.1.3 Rejection sampling
+    - [x] 14.1.4 Adaptive rejection sampling
+    - [x] 14.1.5 Importance sampling
+    - [x] 14.1.6 Sampling-importance-resampling
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 14.1 〜 14.8 全8枚)
   - テスト: `tests/test_ch14_basic_sampling_.py`
 
-- [ ] **14.2 Markov Chain Monte Carlo**
+- [-] **14.2 Markov Chain Monte Carlo**
   - ノートブック: `14/14.2_Markov_Chain_Monte_Carlo.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 14.2.1 The Metropolis algorithm

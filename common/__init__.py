@@ -52,3 +52,4 @@ from . import machine_learning_on_graphs
 from . import neural_message_passing
 from . import general_graph_networks
 from . import exercises_ch13
+from . import basic_sampling
