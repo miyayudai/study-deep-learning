@@ -56,3 +56,4 @@ from . import basic_sampling
 from . import markov_chain_monte_carlo
 from . import langevin_sampling
 from . import exercises_ch14
+from . import kmeans_clustering
