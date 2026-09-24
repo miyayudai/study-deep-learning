@@ -64,3 +64,4 @@ from . import exercises_ch15
 from . import principal_component_analysis
 from . import probabilistic_latent_variables
 from . import evidence_lower_bound_continuous
+from . import nonlinear_latent_variables

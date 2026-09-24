@@ -85,21 +85,20 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第13章** | グラフニューラルネットワーク (Graph Neural Networks) | 3 | 16 | Figure 13.1 〜 13.5 (全5枚) | 全10問 | 完了 (`[x]`) |
 | **第14章** | サンプリング (Sampling) | 3 | 14 | Figure 14.1 〜 14.14 (全14枚) | 全18問 | 完了 (`[x]`) |
 | **第15章** | 離散潜在変数 (Discrete Latent Variables) | 4 | 11 | Figure 15.1 〜 15.16 (全16枚) | 全24問 | 完了 (`[x]`) |
-| **第16章** | 連続潜在変数 (Continuous Latent Variables) | 4 | 16 | Figure 16.1 〜 16.29 (全29枚) | 全23問 | 進行中 (`[-]`) |
+| **第16章** | 連続潜在変数 (Continuous Latent Variables) | 4 | 16 | Figure 16.1 〜 16.29 (全29枚) | 全26問 | 進行中 (`[-]`) |
 | **第17章** | 生成対抗ネットワーク (Generative Adversarial Networks) | 4 | 12 | Figure 17.1 〜 17.13 (全13枚) | 全12問 | 未着手 |
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **78 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **79 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 第16章 16.4 非線形潜在変数モデル (Nonlinear Latent Variable Models)
-- **担当セクション**: 第16章 16.4 非線形潜在変数モデル (Nonlinear Latent Variable Models)
-- **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-24T16:35:00+09:00
-- **直前完了タスク**: 第16章 16.3 証拠下界 (Evidence Lower Bound) (2026-09-24 完了)
+- **現在実行中のタスク**: なし (待機中 / 予約タスク取得可能)
+- **担当セクション**: なし
+- **ステータス**: アイドル (`[ ]`)
+- **直前完了タスク**: 第16章 16.4 非線形潜在変数モデル (Nonlinear Latent Variable Models) (2026-09-24 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -922,14 +921,14 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 16.10)
   - テスト: `tests/test_ch16_evidence_lower_.py`
 
-- [-] **16.4 Nonlinear Latent Variable Models**
+- [x] **16.4 Nonlinear Latent Variable Models**
   - ノートブック: `16/16.4_Nonlinear_Latent_Variable_Models.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 16.4.1 Nonlinear manifolds
-    - [ ] 16.4.2 Likelihood function
-    - [ ] 16.4.3 Discrete data
-    - [ ] 16.4.4 Four approaches to generative modelling
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 16.4.1 Nonlinear manifolds
+    - [x] 16.4.2 Likelihood function
+    - [x] 16.4.3 Discrete data
+    - [x] 16.4.4 Four approaches to generative modelling
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 16.11, 16.12, 16.13, 16.14, 16.15)
   - テスト: `tests/test_ch16_nonlinear_laten.py`
 
 - [ ] **第16章 演習問題 (Exercises 16.1 〜 16.26, 全26問)**
