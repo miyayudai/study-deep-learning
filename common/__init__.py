@@ -60,3 +60,4 @@ from . import kmeans_clustering
 from . import mixtures_of_gaussians
 from . import expectation_maximization
 from . import evidence_lower_bound
+from . import exercises_ch15
