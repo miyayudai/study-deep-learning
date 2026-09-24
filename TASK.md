@@ -82,7 +82,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第10章** | 畳み込みネットワーク (Convolutional Networks) | 6 | 24 | Figure 10.1 〜 10.32 (全32枚) | 全13問 | 完了 (`[x]`) |
 | **第11章** | 構造化分布 (Structured Distributions) | 3 | 15 | Figure 11.1 〜 11.32 (全32枚) | 全20問 | 完了 (`[x]`) |
 | **第12章** | トランスフォーマー (Transformers) | 4 | 25 | Figure 12.1 〜 12.27 (全27枚) | 全16問 | 進行中 (`[-]`) |
-| **第13章** | グラフニューラルネットワーク (Graph Neural Networks) | 3 | 16 | Figure 13.1 〜 13.5 (全5枚) | 全10問 | 未着手 |
+| **第13章** | グラフニューラルネットワーク (Graph Neural Networks) | 3 | 16 | Figure 13.1 〜 13.5 (全5枚) | 全10問 | 進行中 |
 | **第14章** | サンプリング (Sampling) | 4 | 12 | Figure 14.1 〜 14.13 (全13枚) | 全17問 | 未着手 |
 | **第15章** | 離散潜在変数 (Discrete Latent Variables) | 3 | 17 | Figure 15.1 〜 15.19 (全19枚) | 全18問 | 未着手 |
 | **第16章** | 連続潜在変数 (Continuous Latent Variables) | 4 | 16 | Figure 16.1 〜 16.29 (全29枚) | 全23問 | 未着手 |
@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **63 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **64 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 13.2 Neural Message-Passing
-- **担当セクション**: 第13章 13.2 ニューラル・メッセージパッシング (Neural Message-Passing)
+- **現在実行中のタスク**: 13.3 General Graph Networks
+- **担当セクション**: 第13章 13.3 一般化グラフネットワーク (General Graph Networks)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-24T11:17:00+09:00
-- **直前完了タスク**: 第13章 13.1 グラフ上の機械学習 (Machine Learning on Graphs) (2026-09-24 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-24T11:26:00+09:00
+- **直前完了タスク**: 第13章 13.2 ニューラル・メッセージパッシング (Neural Message-Passing) (2026-09-24 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -762,20 +762,20 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 13.1 〜 13.2 全2枚)
   - テスト: `tests/test_ch13_machine_learnin.py`
 
-- [-] **13.2 Neural Message-Passing**
+- [x] **13.2 Neural Message-Passing**
   - ノートブック: `13/13.2_Neural_Message_Passing.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 13.2.1 Convolutional filters
-    - [ ] 13.2.2 Graph convolutional networks
-    - [ ] 13.2.3 Aggregation operators
-    - [ ] 13.2.4 Update operators
-    - [ ] 13.2.5 Node classification
-    - [ ] 13.2.6 Edge classification
-    - [ ] 13.2.7 Graph classification
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 13.2.1 Convolutional filters
+    - [x] 13.2.2 Graph convolutional networks
+    - [x] 13.2.3 Aggregation operators
+    - [x] 13.2.4 Update operators
+    - [x] 13.2.5 Node classification
+    - [x] 13.2.6 Edge classification
+    - [x] 13.2.7 Graph classification
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 13.3 〜 13.4 全2枚)
   - テスト: `tests/test_ch13_neural_message_.py`
 
-- [ ] **13.3 General Graph Networks**
+- [-] **13.3 General Graph Networks**
   - ノートブック: `13/13.3_General_Graph_Networks.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 13.3.1 Graph attention networks
@@ -784,7 +784,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
     - [ ] 13.3.4 Over-smoothing
     - [ ] 13.3.5 Regularization
     - [ ] 13.3.6 Geometric deep learning
-  - 図版再現: `result/` への該当Figureプロット保存
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 13.5)
   - テスト: `tests/test_ch13_general_graph_n.py`
 
 - [ ] **第13章 演習問題 (Exercises 13.1 〜 13.10, 全10問)**
