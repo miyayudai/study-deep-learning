@@ -90,13 +90,13 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **75 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **76 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 第16章 16.1 主成分分析 (Principal Component Analysis)
-- **担当セクション**: 第16章 16.1 主成分分析 (Principal Component Analysis)
+- **現在実行中のタスク**: 第16章 16.2 確率的潜在変数 (Probabilistic Latent Variables)
+- **担当セクション**: 第16章 16.2 確率的潜在変数 (Probabilistic Latent Variables)
 - **ステータス**: 実行中 (`[-]`)
 - **獲得ロックタイムスタンプ**: 2026-09-24T12:58:00+09:00
 - **直前完了タスク**: 第15章 演習問題 (Exercises 15.1 〜 15.24, 全24問) (2026-09-24 完了)
@@ -890,18 +890,18 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `16/`
 - 再現図版目標: Figure 16.1 〜 16.15 (全15枚)
 
-- [-] **16.1 Principal Component Analysis**
+- [x] **16.1 Principal Component Analysis**
   - ノートブック: `16/16.1_Principal_Component_Analysis.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 16.1.1 Maximum variance formulation
-    - [ ] 16.1.2 Minimum-error formulation
-    - [ ] 16.1.3 Data compression
-    - [ ] 16.1.4 Data whitening
-    - [ ] 16.1.5 High-dimensional data
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 16.1.1 Maximum variance formulation
+    - [x] 16.1.2 Minimum-error formulation
+    - [x] 16.1.3 Data compression
+    - [x] 16.1.4 Data whitening
+    - [x] 16.1.5 High-dimensional data
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 16.1 〜 16.6)
   - テスト: `tests/test_ch16_principal_compo.py`
 
-- [ ] **16.2 Probabilistic Latent Variables**
+- [-] **16.2 Probabilistic Latent Variables**
   - ノートブック: `16/16.2_Probabilistic_Latent_Variables.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 16.2.1 Generative model
