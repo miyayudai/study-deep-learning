@@ -58,3 +58,4 @@ from . import langevin_sampling
 from . import exercises_ch14
 from . import kmeans_clustering
 from . import mixtures_of_gaussians
+from . import expectation_maximization

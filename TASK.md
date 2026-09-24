@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **72 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **73 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 15.3 Expectation–Maximization Algorithm
-- **担当セクション**: 第15章 15.3 期待値最大化法 (Expectation–Maximization Algorithm)
+- **現在実行中のタスク**: 15.4 Evidence Lower Bound
+- **担当セクション**: 第15章 15.4 変分下界 (Evidence Lower Bound)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-24T12:29:00+09:00
-- **直前完了タスク**: 第15章 15.2 混合ガウスモデル (Mixtures of Gaussians) (2026-09-24 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-24T12:36:00+09:00
+- **直前完了タスク**: 第15章 15.3 期待値最大化法 (Expectation–Maximization Algorithm) (2026-09-24 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -858,16 +858,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存
   - テスト: `tests/test_ch15_mixtures_of_gau.py`
 
-- [-] **15.3 Expectation–Maximization Algorithm**
+- [x] **15.3 Expectation–Maximization Algorithm**
   - ノートブック: `15/15.3_Expectation_Maximization_Algorithm.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 15.3.1 Gaussian mixtures
-    - [ ] 15.3.2 Relation to K-means
-    - [ ] 15.3.3 Mixtures of Bernoulli distributions
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 15.3.1 Gaussian mixtures
+    - [x] 15.3.2 Relation to K-means
+    - [x] 15.3.3 Mixtures of Bernoulli distributions
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 15.7, 15.8, 15.9, 15.12)
   - テスト: `tests/test_ch15_expectation_max.py`
 
-- [ ] **15.4 Evidence Lower Bound**
+- [-] **15.4 Evidence Lower Bound**
   - ノートブック: `15/15.4_Evidence_Lower_Bound.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 15.4.1 EM revisited
