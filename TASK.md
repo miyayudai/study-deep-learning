@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 未着手 |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 未着手 |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **64 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **65 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 13.3 General Graph Networks
-- **担当セクション**: 第13章 13.3 一般化グラフネットワーク (General Graph Networks)
+- **現在実行中のタスク**: 第13章 演習問題 (Exercises 13.1 〜 13.10)
+- **担当セクション**: 第13章 演習問題 (Exercises 13.1 〜 13.10, 全10問)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-24T11:26:00+09:00
-- **直前完了タスク**: 第13章 13.2 ニューラル・メッセージパッシング (Neural Message-Passing) (2026-09-24 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-24T11:32:00+09:00
+- **直前完了タスク**: 第13章 13.3 一般化グラフネットワーク (General Graph Networks) (2026-09-24 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -775,19 +775,19 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 13.3 〜 13.4 全2枚)
   - テスト: `tests/test_ch13_neural_message_.py`
 
-- [-] **13.3 General Graph Networks**
+- [x] **13.3 General Graph Networks**
   - ノートブック: `13/13.3_General_Graph_Networks.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 13.3.1 Graph attention networks
-    - [ ] 13.3.2 Edge embeddings
-    - [ ] 13.3.3 Graph embeddings
-    - [ ] 13.3.4 Over-smoothing
-    - [ ] 13.3.5 Regularization
-    - [ ] 13.3.6 Geometric deep learning
-  - 図版再現: `result/` への該当Figureプロット保存 (Figure 13.5)
+    - [x] 13.3.1 Graph attention networks
+    - [x] 13.3.2 Edge embeddings
+    - [x] 13.3.3 Graph embeddings
+    - [x] 13.3.4 Over-smoothing
+    - [x] 13.3.5 Regularization
+    - [x] 13.3.6 Geometric deep learning
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 13.5 全1枚)
   - テスト: `tests/test_ch13_general_graph_n.py`
 
-- [ ] **第13章 演習問題 (Exercises 13.1 〜 13.10, 全10問)**
+- [-] **第13章 演習問題 (Exercises 13.1 〜 13.10, 全10問)**
   - ノートブック: `13/13_Exercises.ipynb`
   - 形式: 理論問題は証明ロジック＋穴埋め・選択式、実装問題はコード穴埋め＋自己採点アサーション
   - テスト: `tests/test_ch13_exercises.py`
