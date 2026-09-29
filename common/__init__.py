@@ -78,3 +78,4 @@ from . import variational_autoencoders
 from . import exercises_ch19
 from . import forward_encoder
 from . import reverse_decoder
+from . import score_matching

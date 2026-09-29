@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 完了 (`[x]`) |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 完了 (`[x]`) |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 進行中 (`[-]`) |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **92 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **93 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 第20章 20.3 スコアマッチング (Score Matching)
-- **担当セクション**: 20.3 Score Matching (20.3.1 〜 20.3.4)
+- **現在実行中のタスク**: 第20章 20.4 誘導拡散 (Guided Diffusion)
+- **担当セクション**: 20.4 Guided Diffusion (20.4.1, 20.4.2)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-29T13:02:00+09:00
-- **直前完了タスク**: 第20章 20.2 逆向きデコーダ (Reverse Decoder) (2026-09-29 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-29T13:05:00+09:00
+- **直前完了タスク**: 第20章 20.3 スコアマッチング (Score Matching) (2026-09-29 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -1054,17 +1054,17 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 20.5, 20.6, 20.7)
   - テスト: `tests/test_ch20_reverse_decoder.py`
 
-- [-] **20.3 Score Matching**
+- [x] **20.3 Score Matching**
   - ノートブック: `20/20.3_Score_Matching.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 20.3.1 Score loss function
-    - [ ] 20.3.2 Modified score loss
-    - [ ] 20.3.3 Noise variance
-    - [ ] 20.3.4 Stochastic differential equations
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 20.3.1 Score loss function
+    - [x] 20.3.2 Modified score loss
+    - [x] 20.3.3 Noise variance
+    - [x] 20.3.4 Stochastic differential equations
+  - 図版再現: `result/` への該当プロット保存 (Score Vector Field, SDE/ODE)
   - テスト: `tests/test_ch20_score_matching.py`
 
-- [ ] **20.4 Guided Diffusion**
+- [-] **20.4 Guided Diffusion**
   - ノートブック: `20/20.4_Guided_Diffusion.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 20.4.1 Classifier guidance
