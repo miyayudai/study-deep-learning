@@ -72,3 +72,4 @@ from . import exercises_ch17
 from . import coupling_flows
 from . import autoregressive_flows
 from . import continuous_flows
+from . import exercises_ch18

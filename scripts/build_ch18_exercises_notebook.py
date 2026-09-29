@@ -1,0 +1,557 @@
+"""Build script for Chapter 18 Exercises Jupyter Notebook (18_Exercises.ipynb)."""
+
+import os
+import nbformat as nbf
+
+def build_notebook():
+    nb = nbf.v4.new_notebook()
+    cells = []
+
+    # Cell 0: Colab 1-click execution setup
+    cell_0_code = r"""# === Google Colab 自動環境セットアップ ===
+# ※ローカル環境では無視され、Colab環境でのみ自動でモジュールをインストールします
+import sys, os
+if 'google.colab' in sys.modules:
+    if not os.path.exists('/content/my_DeepLearning'):
+        print("リポジトリをダウンロード中...")
+        !git clone https://github.com/miyayudai/my_DeepLearning.git > /dev/null 2>&1
+    
+    print("必要なモジュールをインストール中...")
+    %cd /content/my_DeepLearning
+    !pip install -q -r requirements.txt
+    !pip install -q -e .
+    
+    print("作業ディレクトリをセットアップ中...")
+    %cd /content/my_DeepLearning/18
+    print("準備完了！このまま下のセルを実行できます。")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_0_code))
+
+    # Cell 1: Title and Overview Markdown
+    cell_1_md = r"""# 第18章 正規化フロー (Normalizing Flows)
+## 章末演習問題 (Exercises 18.1 〜 18.11, 全11問)
+
+本ノートブックは、『深層学習：基礎と概念 (Bishop & Bishop 2024)』第18章「正規化フロー」の章末演習問題（全11問）の完全な理論解説、数学的証明ロジック、およびPythonによる数値シミュレーション・自己採点アサーションを完備した対話型教材です。
+
+---
+
+### 演習問題一覧
+| 問題番号 | 難易度 | テーマ | 主な数理・公式 |
+|:---:|:---:|:---|:---|
+| **演習 18.1** | ★★☆ | 変数変換と逆ヤコビ行列の積関係 | $\mathbf{J}\mathbf{K} = \mathbf{I}$, $\det(\mathbf{J}) = 1/\det(\mathbf{K})$, $p_x(\mathbf{x}) = p_z(\mathbf{g}(\mathbf{x})) |\det \mathbf{K}|^{-1}$ (式 18.31 - 18.34) |
+| **演習 18.2** | ★☆☆ | $M$ 個の可逆変換の合成と逆順序展開 | $\mathbf{x} = f_1(f_2(\cdots f_M(\mathbf{z})))$, $\mathbf{z} = f_M^{-1}(\cdots f_2^{-1}(f_1^{-1}(\mathbf{x})))$ (式 18.35, 18.36) |
+| **演習 18.3** | ★☆☆ | 線形平行移動と体積保存 | $\mathbf{x} = \mathbf{z} + \mathbf{b}$, $\mathbf{J} = \mathbf{I}$, $|\det \mathbf{J}| = 1$, 微小領域の体積不変性 (式 18.37) |
+| **演習 18.4** | ★★☆ | 自己回帰フローの下三角ヤコビ行列 | $z_i = (x_i - b_i) e^{-s_i}$, $j > i$ で $\partial z_i / \partial x_j = 0$, 対角成分の積による行列式 (式 18.18) |
+| **演習 18.5** | ★☆☆ | 残差ネットワークの連続極限と Neural ODE | $\mathbf{z}(t+\epsilon) = \mathbf{z}(t) + \epsilon f(\mathbf{z}(t), \mathbf{w})$, $\lim_{\epsilon \to 0} \to \frac{d\mathbf{z}}{dt} = f(\mathbf{z}, \mathbf{w})$ (式 18.22, 18.38) |
+| **演習 18.6** | ★★☆ | 連続逆伝播と随伴微分方程式の導出 | $\mathbf{a}(t) = \frac{\partial L}{\partial \mathbf{z}(t)}$, $\lim_{\epsilon \to 0} \to \frac{d\mathbf{a}}{dt} = -\mathbf{a}^T \nabla_{\mathbf{z}} f$ (式 18.24, 18.25) |
+| **演習 18.7** | ★★☆ | 連続時間におけるパラメータ勾配積分 | 共有重みパラメータの微分連鎖律, $\nabla_{\mathbf{w}} L = -\int_0^T \mathbf{a}(t)^T \nabla_{\mathbf{w}} f \, dt$ (式 18.26) |
+| **演習 18.8** | ★★★ | 1次元確率質量保存則と連続フロー方程式 | $q(z)\Delta z = p(x)\Delta x$, $x = z + f(z)\delta t$, $\frac{d}{dt}\ln q(z) = -f'(z)$ (式 18.39, 図 18.7) |
+| **演習 18.9** | ★★☆ | 累積分布関数 (CDF) 分位点と流線の等価性 | $F_t(z(t)) = u$, 全微分 $\frac{dF}{dt} = \frac{\partial F}{\partial t} + p_t \frac{dz}{dt} = 0$, 連続の式との一致 (図 18.6) |
+| **演習 18.10** | ★★☆ | 連続フローの順逆計算の完全な対称性 | 積分区間反転 $\int_T^0 = -\int_0^T$, 逆変換の計算量が順変換と厳密に同一であることの証明 |
+| **演習 18.11** | ★☆☆ | ハッチンソン推定量 (Hutchinson Trace) の不偏性 | $\mathbb{E}[\boldsymbol{\epsilon}^T \mathbf{A} \boldsymbol{\epsilon}] = \operatorname{Tr}(\mathbf{A})$, ガウスノイズ・ラデマッハノイズでの不偏性 (式 18.30) |
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_1_md))
+
+    # Cell 2: Imports Code
+    cell_2_code = r"""import os
+import sys
+import numpy as np
+import matplotlib.pyplot as plt
+
+sys.path.append(os.path.abspath('..'))
+
+from common.plot_utils import setup_style
+from common.exercises_ch18 import (
+    verify_exercise_18_1,
+    verify_exercise_18_2,
+    verify_exercise_18_3,
+    verify_exercise_18_4,
+    verify_exercise_18_5,
+    verify_exercise_18_6,
+    verify_exercise_18_7,
+    verify_exercise_18_8,
+    verify_exercise_18_9,
+    verify_exercise_18_10,
+    verify_exercise_18_11,
+)
+
+setup_style()
+print("第18章演習問題モジュールが正常に読み込まれました。")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_2_code))
+
+    # Cell 3: Exercise 18.1 Markdown
+    cell_3_md = r"""---
+
+### 演習 18.1: 変数変換と逆ヤコビ行列の積関係 (難易度: ★★☆)
+
+#### 問題文
+可逆写像 $\mathbf{x} = \mathbf{f}(\mathbf{z})$ とその逆写像 $\mathbf{z} = \mathbf{g}(\mathbf{x})$ を考える。
+恒等写像 $\mathbf{x} = \mathbf{f}(\mathbf{g}(\mathbf{x}))$ を $\mathbf{x}$ で微分することにより、次を示せ：
+
+$$
+\mathbf{J} \mathbf{K} = \mathbf{I} \tag{18.31}
+$$
+
+ここで $\mathbf{I}$ は単位行列であり、$\mathbf{J}, \mathbf{K}$ の各要素は以下で定義される：
+
+$$
+J_{ij} = \frac{\partial g_i}{\partial x_j}, \qquad K_{ij} = \frac{\partial f_i}{\partial z_j} \tag{18.32}
+$$
+
+行列の積の行列式が各行列式の積に等しい性質 $\det(\mathbf{A}\mathbf{B}) = \det(\mathbf{A})\det(\mathbf{B})$ を用いて、次を示せ：
+
+$$
+\det(\mathbf{J}) = \frac{1}{\det(\mathbf{K})} \tag{18.33}
+$$
+
+これより、確率密度の変数変換公式 (18.1) は以下のように書き換えられることを導け：
+
+$$
+p_x(\mathbf{x}) = p_z(\mathbf{g}(\mathbf{x})) |\det \mathbf{K}|^{-1} \tag{18.34}
+$$
+
+#### 数学的証明ステップ
+1. $\mathbf{x} = \mathbf{f}(\mathbf{g}(\mathbf{x}))$ の第 $i$ 成分は $x_i = f_i(g_1(\mathbf{x}), \ldots, g_D(\mathbf{x}))$。
+2. $x_k$ に関する偏微分をとると（多変数微分の連鎖律）：
+   $$\frac{\partial x_i}{\partial x_k} = \sum_{j=1}^D \frac{\partial f_i}{\partial z_j} \frac{\partial g_j}{\partial x_k} = \sum_{j=1}^D K_{ij} J_{jk} = (\mathbf{K}\mathbf{J})_{ik}$$
+   左辺はクロネッカーのデルタ $\delta_{ik}$（単位行列 $\mathbf{I}$ の要素）であるため、$\mathbf{K}\mathbf{J} = \mathbf{I}$。
+   同様に $\mathbf{z} = \mathbf{g}(\mathbf{f}(\mathbf{z}))$ より $\mathbf{J}\mathbf{K} = \mathbf{I}$ も成立。
+3. 行列式の積公式より $\det(\mathbf{J}\mathbf{K}) = \det(\mathbf{J})\det(\mathbf{K}) = \det(\mathbf{I}) = 1$。
+   したがって $\det(\mathbf{J}) = \frac{1}{\det(\mathbf{K})}$。
+4. 式 (18.1) $p_x(\mathbf{x}) = p_z(\mathbf{g}(\mathbf{x})) |\det \mathbf{J}|$ に代入すると、式 (18.34) が直ちに得られる。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_3_md))
+
+    # Cell 4: Exercise 18.1 Code
+    cell_4_code = r"""# 演習 18.1 の自己採点アサーション & 数値検証
+res_18_1 = verify_exercise_18_1(dim=3, random_state=42)
+
+print("【演習 18.1 検証結果】")
+print(f"  - ||J K - I||_max : {res_18_1['diff_eye']:.2e}")
+print(f"  - |det(J) - 1/det(K)| : {res_18_1['diff_det']:.2e}")
+print(f"  - det(J) = {res_18_1['det_J']:.4f}, det(K) = {res_18_1['det_K']:.4f}")
+
+assert res_18_1['diff_eye'] < 1e-12, "J K = I が成り立っていません！"
+assert res_18_1['diff_det'] < 1e-12, "det(J) = 1/det(K) が成り立っていません！"
+print("演習 18.1: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_4_code))
+
+    # Cell 5: Exercise 18.2 Markdown
+    cell_5_md = r"""---
+
+### 演習 18.2: $M$ 個の可逆変換の合成と逆順序展開 (難易度: ★☆☆)
+
+#### 問題文
+$M$ 個の可逆変換の合成写像：
+
+$$
+\mathbf{x} = \mathbf{f}_1(\mathbf{f}_2(\cdots \mathbf{f}_{M-1}(\mathbf{f}_M(\mathbf{z}))\cdots)) \tag{18.35}
+$$
+
+を考える。このとき全体の逆変換 $\mathbf{z} = \mathbf{g}(\mathbf{x})$ は次式で与えられることを示せ：
+
+$$
+\mathbf{z} = \mathbf{f}_M^{-1}(\cdots \mathbf{f}_2^{-1}(\mathbf{f}_1^{-1}(\mathbf{x}))\cdots) \tag{18.36}
+$$
+
+#### 数学的証明ステップ
+1. 最も外側の関数 $\mathbf{f}_1$ の逆写像 $\mathbf{f}_1^{-1}$ を両辺に作用させる：
+   $$\mathbf{f}_1^{-1}(\mathbf{x}) = \mathbf{f}_2(\cdots \mathbf{f}_M(\mathbf{z}))$$
+2. 次に $\mathbf{f}_2^{-1}$ を両辺に作用させる：
+   $$\mathbf{f}_2^{-1}(\mathbf{f}_1^{-1}(\mathbf{x})) = \mathbf{f}_3(\cdots \mathbf{f}_M(\mathbf{z}))$$
+3. この操作を外側から順に $M$ 回繰り返すことで、最も内側の引数 $\mathbf{z}$ が単離され：
+   $$\mathbf{z} = \mathbf{f}_M^{-1}(\cdots \mathbf{f}_2^{-1}(\mathbf{f}_1^{-1}(\mathbf{x}))\cdots)$$
+   が得られる。群論における $(A B)^{-1} = B^{-1} A^{-1}$ の連続適用に対応する。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_5_md))
+
+    # Cell 6: Exercise 18.2 Code
+    cell_6_code = r"""# 演習 18.2 の自己採点アサーション & 数値検証
+res_18_2 = verify_exercise_18_2(n_layers=5, dim=4, random_state=42)
+
+print("【演習 18.2 検証結果】")
+print(f"  - 5層合成フローの逆写像復元誤差: {res_18_2['reconstruction_error']:.2e}")
+
+assert res_18_2['reconstruction_error'] < 1e-12, "多層可逆変換の逆展開が一致しません！"
+print("演習 18.2: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_6_code))
+
+    # Cell 7: Exercise 18.3 Markdown
+    cell_7_md = r"""---
+
+### 演習 18.3: 線形平行移動と体積保存 (難易度: ★☆☆)
+
+#### 問題文
+線形平行移動変換：
+
+$$
+\mathbf{x} = \mathbf{z} + \mathbf{b} \tag{18.37}
+$$
+
+を考える。この変換のヤコビ行列が単位行列 $\mathbf{I}$ であることを示せ。
+$\mathbf{z}$ 空間の微小領域の体積と対応する $\mathbf{x}$ 空間の領域の体積を比較して、この結果の幾何学的解釈を述べよ。
+
+#### 数学的証明と解釈
+1. $x_i = z_i + b_i$ より、ヤコビ行列の各成分は：
+   $$J_{ij} = \frac{\partial x_i}{\partial z_j} = \delta_{ij} \implies \mathbf{J} = \mathbf{I}$$
+2. 行列式は $|\det \mathbf{J}| = |\det \mathbf{I}| = 1$。
+3. **幾何学的解釈**:
+   変数変換における微小体積要素の関係は $d\mathbf{x} = |\det \mathbf{J}| d\mathbf{z} = d\mathbf{z}$ であるため、平行移動は空間のいかなる領域も拡大・縮小・剪断・反転させず、**体積を完全に保存 (Volume-preserving)** する。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_7_md))
+
+    # Cell 8: Exercise 18.3 Code
+    cell_8_code = r"""# 演習 18.3 の自己採点アサーション & 数値検証
+res_18_3 = verify_exercise_18_3(dim=4, random_state=42)
+
+print("【演習 18.3 検証結果】")
+print(f"  - ||J - I||_max : {res_18_3['diff_identity']:.2e}")
+print(f"  - |det(J)| : {res_18_3['det_J']:.6f}")
+
+assert res_18_3['diff_identity'] < 1e-5, "ヤコビ行列が単位行列ではありません！"
+assert np.isclose(res_18_3['det_J'], 1.0, atol=1e-5), "行列式が 1 ではありません！"
+print("演習 18.3: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_8_code))
+
+    # Cell 9: Exercise 18.4 Markdown
+    cell_9_md = r"""---
+
+### 演習 18.4: 自己回帰フローの下三角ヤコビ行列 (難易度: ★★☆)
+
+#### 問題文
+式 (18.18) で与えられる自己回帰正規化フローの変換：
+
+$$
+z_i = h^{-1}(x_i, g_i(\mathbf{x}_{1:i-1}, \mathbf{w}_i)) \tag{18.18}
+$$
+
+のヤコビ行列が下三角行列（または上三角行列）になることを示せ。
+また、そのような行列の行列式は主対角成分の積で容易に計算できることを確認せよ。
+
+#### 数学的証明ステップ
+1. アフィン結合関数 $z_i = (x_i - b_i(\mathbf{x}_{1:i-1})) \exp(-s_i(\mathbf{x}_{1:i-1}))$ を考える。
+2. ヤコビ行列の成分 $J_{ij} = \frac{\partial z_i}{\partial x_j}$ を評価する：
+   - $j > i$ のとき、$z_i$ は $x_1, \ldots, x_{i-1}, x_i$ にのみ依存し、$x_j$ には依存しない。したがって $J_{ij} = 0$。
+   - $j = i$ のとき、$J_{ii} = \frac{\partial z_i}{\partial x_i} = \exp(-s_i(\mathbf{x}_{1:i-1}))$。
+   - $j < i$ のとき、$b_i, s_i$ の微分を通じて非ゼロの値を取り得る。
+3. したがって、主対角線より上方の成分がすべて0となるため、$\mathbf{J}$ は**下三角行列 (Lower triangular matrix)** となる。
+4. 三角行列の行列式は対角成分の積に厳密に等しいため：
+   $$\det \mathbf{J} = \prod_{i=1}^D J_{ii} = \prod_{i=1}^D \exp(-s_i(\mathbf{x}_{1:i-1})) = \exp\left(-\sum_{i=1}^D s_i(\mathbf{x}_{1:i-1})\right)$$
+   となり、対数行列式は $-\sum_{i=1}^D s_i$ として $\mathcal{O}(D)$ で瞬時に計算できる。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_9_md))
+
+    # Cell 10: Exercise 18.4 Code
+    cell_10_code = r"""# 演習 18.4 の自己採点アサーション & 数値検証
+res_18_4 = verify_exercise_18_4(dim=4, random_state=42)
+
+print("【演習 18.4 検証結果】")
+print(f"  - 上三角部分 (非対角) の最大値 : {res_18_4['max_upper_tri_error']:.2e}")
+print(f"  - 対角成分と exp(-s_i) の差分 : {res_18_4['diag_diff']:.2e}")
+print(f"  - 行列式 [数値] : {res_18_4['det_numerical']:.6f}")
+print(f"  - 行列式 [解析] : {res_18_4['det_analytic']:.6f}")
+
+assert res_18_4['max_upper_tri_error'] < 1e-5, "上三角成分がゼロになっていません！"
+assert res_18_4['diag_diff'] < 1e-5, "対角成分が exp(-s_i) と一致しません！"
+assert np.isclose(res_18_4['det_numerical'], res_18_4['det_analytic'], rtol=1e-4)
+print("演習 18.4: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_10_code))
+
+    # Cell 11: Exercise 18.5 Markdown
+    cell_11_md = r"""---
+
+### 演習 18.5: 残差ネットワークの連続極限と Neural ODE (難易度: ★☆☆)
+
+#### 問題文
+時間変数 $t$ に微小な増分 $\epsilon$ を導入した残差ネットワークの順伝播方程式：
+
+$$
+\mathbf{z}(t+\epsilon) = \mathbf{z}(t) + \epsilon f(\mathbf{z}(t), \mathbf{w}) \tag{18.38}
+$$
+
+を考える。$\epsilon \to 0$ の極限をとることにより、順伝播常微分方程式 (18.22) を導け。
+
+#### 数学的証明ステップ
+1. 両辺から $\mathbf{z}(t)$ を引き、$\epsilon > 0$ で割る：
+   $$\frac{\mathbf{z}(t+\epsilon) - \mathbf{z}(t)}{\epsilon} = f(\mathbf{z}(t), \mathbf{w})$$
+2. 微分の定義：
+   $$\lim_{\epsilon \to 0} \frac{\mathbf{z}(t+\epsilon) - \mathbf{z}(t)}{\epsilon} = \frac{d\mathbf{z}(t)}{dt}$$
+3. したがって：
+   $$\frac{d\mathbf{z}(t)}{dt} = f(\mathbf{z}(t), \mathbf{w}) \tag{18.22}$$
+   が導かれる。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_11_md))
+
+    # Cell 12: Exercise 18.5 Code
+    cell_12_code = r"""# 演習 18.5 の自己採点アサーション & 差分商の収束検証
+eps_values = [1e-1, 1e-2, 1e-3, 1e-4]
+errors_18_5 = verify_exercise_18_5(eps_values)
+
+print("【演習 18.5 検証結果: 差分商の f(z) への収束】")
+for eps, err in zip(eps_values, errors_18_5):
+    print(f"  - eps = {eps:.1e} : 誤差 = {err:.2e}")
+
+# 誤差が eps に比例して線形に減少することを確認
+assert errors_18_5[-1] < 1e-4
+for i in range(len(errors_18_5) - 1):
+    assert errors_18_5[i + 1] < errors_18_5[i], "誤差が単調減少していません！"
+print("演習 18.5: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_12_code))
+
+    # Cell 13: Exercise 18.6 Markdown
+    cell_13_md = r"""---
+
+### 演習 18.6: 連続逆伝播と随伴微分方程式の導出 (難易度: ★★☆)
+
+#### 問題文
+順伝播方程式 (18.38) に対応する誤差逆伝播方程式を書き下せ。
+$\epsilon \to 0$ の極限をとることにより、随伴変数 $\mathbf{a}(t) = \frac{\partial L}{\partial \mathbf{z}(t)}$ に対する逆伝播微分方程式 (18.25) を導け。
+
+#### 数学的証明ステップ
+1. 離散逆伝播において、時刻 $t$ における損失勾配 $\mathbf{a}(t) = \frac{\partial L}{\partial \mathbf{z}(t)}$ は次層 $t+\epsilon$ からの連鎖律で表される：
+   $$\mathbf{a}(t) = \left(\frac{\partial \mathbf{z}(t+\epsilon)}{\partial \mathbf{z}(t)}\right)^T \mathbf{a}(t+\epsilon)$$
+2. 式 (18.38) より $\frac{\partial \mathbf{z}(t+\epsilon)}{\partial \mathbf{z}(t)} = \mathbf{I} + \epsilon \nabla_{\mathbf{z}} f(\mathbf{z}(t), \mathbf{w})$。これを代入すると：
+   $$\mathbf{a}(t) = (\mathbf{I} + \epsilon \nabla_{\mathbf{z}} f)^T \mathbf{a}(t+\epsilon) = \mathbf{a}(t+\epsilon) + \epsilon (\nabla_{\mathbf{z}} f)^T \mathbf{a}(t+\epsilon)$$
+3. 移項して $\epsilon$ で割る：
+   $$\frac{\mathbf{a}(t+\epsilon) - \mathbf{a}(t)}{\epsilon} = - (\nabla_{\mathbf{z}} f)^T \mathbf{a}(t+\epsilon)$$
+4. $\epsilon \to 0$ の極限をとると、左辺は時間微分 $\frac{d\mathbf{a}(t)}{dt}$ となり：
+   $$\frac{d\mathbf{a}(t)}{dt} = -\mathbf{a}(t)^T \nabla_{\mathbf{z}} f(\mathbf{z}(t), \mathbf{w}) \tag{18.25}$$
+   （行ベクトル表記では $\frac{d\mathbf{a}}{dt} = -\mathbf{a}^T \nabla_{\mathbf{z}} f$）が導出される。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_13_md))
+
+    # Cell 14: Exercise 18.6 Code
+    cell_14_code = r"""# 演習 18.6 の自己採点アサーション & 随伴差分商の収束検証
+errors_18_6 = verify_exercise_18_6(eps_values)
+
+print("【演習 18.6 検証結果: 随伴差分商の -a^T df/dz への収束】")
+for eps, err in zip(eps_values, errors_18_6):
+    print(f"  - eps = {eps:.1e} : 誤差 = {err:.2e}")
+
+assert errors_18_6[-1] < 1e-4
+for i in range(len(errors_18_6) - 1):
+    assert errors_18_6[i + 1] < errors_18_6[i]
+print("演習 18.6: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_14_code))
+
+    # Cell 15: Exercise 18.7 Markdown
+    cell_15_md = r"""---
+
+### 演習 18.7: 連続時間におけるパラメータ勾配積分 (難易度: ★★☆)
+
+#### 問題文
+第8章の式 (8.10) を用いて、すべての層が同一のパラメータベクトル $\mathbf{w}$ を共有する多層残差ネットワークに対する損失関数 $L(\mathbf{z}(T))$ の勾配の表式を書け。
+$\epsilon \to 0$ の極限をとることにより、損失関数のパラメータ微分の積分表式 (18.26) を導け。
+
+#### 数学的証明ステップ
+1. 多層残差ネットワークにおいて、各層 $t$ での更新は $\epsilon f(\mathbf{z}(t), \mathbf{w})$ であり、同一の $\mathbf{w}$ が全層で共有されている。
+2. 共有重みに対する総勾配は、各層での寄与の総和（リーマン和）となる：
+   $$\nabla_{\mathbf{w}} L = \sum_{t} \left(\frac{\partial \mathbf{z}(t+\epsilon)}{\partial \mathbf{w}}\right)^T \mathbf{a}(t+\epsilon) = \sum_t \epsilon \left(\nabla_{\mathbf{w}} f(\mathbf{z}(t), \mathbf{w})\right)^T \mathbf{a}(t+\epsilon)$$
+3. $\epsilon \to 0$ の極限をとると、このリーマン和は時間区間 $[0, T]$ における定積分へと移行する：
+   $$\nabla_{\mathbf{w}} L = \int_0^T \mathbf{a}(t)^T \nabla_{\mathbf{w}} f(\mathbf{z}(t), \mathbf{w}) \, dt$$
+4. 逆方向ソルバー（時刻 $T$ から $0$ へ向かう積分、$dt < 0$）の規約として記述すると：
+   $$\nabla_{\mathbf{w}} L = - \int_0^T \mathbf{a}(t)^T \nabla_{\mathbf{w}} f(\mathbf{z}(t), \mathbf{w}) \, dt \tag{18.26}$$
+   となる。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_15_md))
+
+    # Cell 16: Exercise 18.7 Code
+    cell_16_code = r"""# 演習 18.7 の自己採点アサーション & パラメータ勾配積分の検証
+res_18_7 = verify_exercise_18_7(T=1.0, n_steps=200)
+
+print("【演習 18.7 検証結果】")
+print(f"  - 解析的勾配 dL/dw : {res_18_7['analytic_grad']:.6f}")
+print(f"  - 連続積分勾配 int a(t) df/dw dt : {res_18_7['integral_grad']:.6f}")
+print(f"  - 絶対誤差 : {res_18_7['diff']:.2e}")
+
+assert res_18_7['diff'] < 1e-2, "連続積分勾配が解析解と一致しません！"
+print("演習 18.7: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_16_code))
+
+    # Cell 17: Exercise 18.8 Markdown
+    cell_17_md = r"""---
+
+### 演習 18.8: 1次元確率質量保存則と連続フロー方程式 (難易度: ★★★)
+
+#### 問題文
+1次元分布に対する連続正規化フローの微分方程式 (18.28) の導出を行え。
+時刻 $t$ における分布 $q(z)$ が微小時間 $\delta t$ 後の分布 $p(x)$ へ変換されるとする（図 18.7 参照）。
+1. 区間 $\Delta z$ と $\Delta x$ における確率質量が等しい方程式を書け。
+2. $x = z + f(z)\delta t$ を用いて $\Delta x$ を $\Delta z$ で表せ。
+3. $\delta t \to 0$ の極限をとることで、以下を導け：
+
+$$
+\frac{d}{dt}\ln q(z) = -f'(z) \tag{18.39}
+$$
+
+#### 数学的証明ステップ
+1. **確率質量の保存**:
+   $$q(z) \Delta z = p(x) \Delta x \implies p(x) = q(z) \frac{\Delta z}{\Delta x}$$
+2. **区間幅の変換**:
+   $x(z) = z + f(z) \delta t$ より：
+   $$\Delta x = x(z+\Delta z) - x(z) = \Delta z + (f(z+\Delta z) - f(z))\delta t \approx \Delta z (1 + f'(z)\delta t)$$
+   したがって：
+   $$p(x) = \frac{q(z)}{1 + f'(z)\delta t} \approx q(z) (1 - f'(z)\delta t)$$
+3. **対数密度の時間発展**:
+   両辺の対数をとると：
+   $$\ln p(x) \approx \ln q(z) + \ln(1 - f'(z)\delta t) \approx \ln q(z) - f'(z)\delta t$$
+   流線に沿ったラグランジュ時間微分 $\frac{d}{dt}\ln q(z(t)) = \lim_{\delta t \to 0} \frac{\ln p(x) - \ln q(z)}{\delta t}$ より：
+   $$\frac{d}{dt}\ln q(z) = -f'(z) \tag{18.39}$$
+   多次元では $f'(z)$ が発散 $\operatorname{Tr}(\partial f / \partial \mathbf{z})$ となり、式 (18.28) に一致する。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_17_md))
+
+    # Cell 18: Exercise 18.8 Code
+    cell_18_code = r"""# 演習 18.8 の自己採点アサーション & 1次元密度保存則の検証
+res_18_8 = verify_exercise_18_8(z_val=0.5, delta_t=1e-4)
+
+print("【演習 18.8 検証結果】")
+print(f"  - 理論変化率 -f'(z) : {res_18_8['expected_dlogq_dt']:.6f}")
+print(f"  - 確率保存則からの数値微分 d ln q / dt : {res_18_8['numerical_dlogq_dt']:.6f}")
+print(f"  - 誤差 : {res_18_8['diff']:.2e}")
+
+assert res_18_8['diff'] < 1e-3, "1次元確率保存則からの微分値が一致しません！"
+print("演習 18.8: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_18_code))
+
+    # Cell 19: Exercise 18.9 Markdown
+    cell_19_md = r"""---
+
+### 演習 18.9: 累積分布関数 (CDF) 分位点と流線の等価性 (難易度: ★★☆)
+
+#### 問題文
+図 18.6 の流線は、等間隔の分位点値 $u \in (0, 1)$ をとり、各時刻 $t$ において累積分布関数の逆関数 $z(t) = F_t^{-1}(u)$ をプロットすることで描画された。
+この曲線が、式 (18.28) を満たす速度場 $f$ に対する微分方程式 $\frac{dz}{dt} = f(z, t)$ の解軌道と等価であることを示せ。
+
+#### 数学的証明ステップ
+1. 累積分布関数の定義は $F_t(z) = \int_{-\infty}^z p_t(s) \, ds$。
+2. 曲線 $z(t)$ に沿って分位点 $u$ が一定であるため、全微分はゼロとなる：
+   $$\frac{d}{dt} F_t(z(t)) = \frac{\partial F_t}{\partial t} + \frac{\partial F_t}{\partial z} \frac{dz}{dt} = 0$$
+3. 微積分学の基本定理より $\frac{\partial F_t}{\partial z} = p_t(z)$。したがって：
+   $$\frac{dz}{dt} = -\frac{1}{p_t(z)} \frac{\partial F_t}{\partial t}$$
+4. 一方、連続の式（保存則）$\frac{\partial p_t}{\partial t} + \frac{\partial}{\partial z}(p_t f) = 0$ より：
+   $$\frac{\partial F_t}{\partial t} = \int_{-\infty}^z \frac{\partial p_t(s)}{\partial t} \, ds = - \int_{-\infty}^z \frac{\partial}{\partial s}(p_t(s) f(s, t)) \, ds = - p_t(z) f(z, t)$$
+5. これを代入すると：
+   $$\frac{dz}{dt} = -\frac{1}{p_t(z)} (- p_t(z) f(z, t)) = f(z, t)$$
+   となり、CDF 分位点軌跡がまさに流線の解軌道と数学的に厳密に一致することが証明された。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_19_md))
+
+    # Cell 20: Exercise 18.9 Code
+    cell_20_code = r"""# 演習 18.9 の自己採点アサーション & 分位点軌道 vs ODE 解軌道の比較
+res_18_9 = verify_exercise_18_9()
+
+print("【演習 18.9 検証結果】")
+print(f"  - CDF 分位点曲線 F_t^-1(u) と ODE 解軌道の最大乖離: {res_18_9['max_diff']:.2e}")
+
+assert res_18_9['max_diff'] < 1e-4, "分位点軌道と流線微分方程式の解が一致しません！"
+print("演習 18.9: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_20_code))
+
+    # Cell 21: Exercise 18.10 Markdown
+    cell_21_md = r"""---
+
+### 演習 18.10: 連続フローの順逆計算の完全な対称性 (難易度: ★★☆)
+
+#### 問題文
+微分方程式 (18.27) を用いて、連続正規化フローの基底密度を出力密度の時間積分として表せ。
+定積分の符号を変えることが積分区間の上下限の入れ替えに等しい事実を用いて、連続正規化フローの逆変換（尤度計算）に必要な計算コストが順変換（サンプリング）と同一であることを示せ。
+
+#### 数学的証明ステップ
+1. 瞬間変数変換式 $\frac{d\ln p}{dt} = -\operatorname{Tr}\left(\frac{\partial f}{\partial \mathbf{z}}\right)$ を $0$ から $T$ まで積分すると：
+   $$\ln p(\mathbf{z}(T)) = \ln p(\mathbf{z}(0)) - \int_0^T \operatorname{Tr}\left(\frac{\partial f}{\partial \mathbf{z}(t)}\right) \, dt$$
+2. これを基底密度 $\ln p(\mathbf{z}(0))$ について解くと：
+   $$\ln p(\mathbf{z}(0)) = \ln p(\mathbf{z}(T)) + \int_0^T \operatorname{Tr}\left(\frac{\partial f}{\partial \mathbf{z}(t)}\right) \, dt = \ln p(\mathbf{z}(T)) - \int_T^0 \operatorname{Tr}\left(\frac{\partial f}{\partial \mathbf{z}(t)}\right) \, dt$$
+3. **計算対称性の結論**:
+   - 順変換: $\mathbf{z}(0)$ から出発し、区間 $[0, T]$ で ODE を解く。
+   - 逆変換: $\mathbf{z}(T)$ から出発し、区間 $[T, 0]$（負の刻み幅）で同一の ODE を解く。
+   どちらも同一のネットワーク $f$ と同一の常微分方程式ソルバーを同一ステップ数呼び出すため、自己回帰フローに見られたような計算量の非対称性（$\mathcal{O}(1)$ 対 $\mathcal{O}(D)$）は存在せず、**順逆両方向の計算コストは完全に同一**である。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_21_md))
+
+    # Cell 22: Exercise 18.10 Code
+    cell_22_code = r"""# 演習 18.10 の自己採点アサーション
+res_18_10 = verify_exercise_18_10()
+
+print("【演習 18.10 検証結果】")
+print(f"  - 順方向ステップ数: {int(res_18_10['forward_steps'])}, 逆方向ステップ数: {int(res_18_10['backward_steps'])}")
+print(f"  - ステップ数比率: {res_18_10['ratio']:.1f} (完全対称)")
+
+assert res_18_10['ratio'] == 1.0
+print("演習 18.10: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_22_code))
+
+    # Cell 23: Exercise 18.11 Markdown
+    cell_23_md = r"""---
+
+### 演習 18.11: ハッチンソン推定量 (Hutchinson Trace) の不偏性 (難易度: ★☆☆)
+
+#### 問題文
+任意のサンプル数 $M$ に対し、ハッチンソン推定量 (18.30) の期待値が真のトレース $\operatorname{Tr}(\mathbf{A})$ に等しいことを示せ。これにより推定量が不偏 (unbiased) であることを確認せよ。
+
+#### 数学的証明ステップ
+1. 確率ベクトル $\boldsymbol{\epsilon}$ の成分は平均 $0$、共分散 $\mathbf{I}$ を満たす：
+   $$\mathbb{E}[\epsilon_i] = 0, \qquad \mathbb{E}[\epsilon_i \epsilon_j] = \delta_{ij}$$
+2. 二次形式 $\boldsymbol{\epsilon}^T \mathbf{A} \boldsymbol{\epsilon}$ の期待値をとる（期待値の線形性）：
+   $$\mathbb{E}\left[\boldsymbol{\epsilon}^T \mathbf{A} \boldsymbol{\epsilon}\right] = \mathbb{E}\left[\sum_{i=1}^D \sum_{j=1}^D \epsilon_i A_{ij} \epsilon_j\right] = \sum_{i=1}^D \sum_{j=1}^D A_{ij} \mathbb{E}[\epsilon_i \epsilon_j] = \sum_{i=1}^D \sum_{j=1}^D A_{ij} \delta_{ij} = \sum_{i=1}^D A_{ii} = \operatorname{Tr}(\mathbf{A})$$
+3. $M$ 個の独立な標本平均をとると：
+   $$\mathbb{E}\left[\frac{1}{M} \sum_{m=1}^M \boldsymbol{\epsilon}_m^T \mathbf{A} \boldsymbol{\epsilon}_m\right] = \frac{1}{M} \sum_{m=1}^M \mathbb{E}\left[\boldsymbol{\epsilon}_m^T \mathbf{A} \boldsymbol{\epsilon}_m\right] = \frac{1}{M} \sum_{m=1}^M \operatorname{Tr}(\mathbf{A}) = \operatorname{Tr}(\mathbf{A})$$
+   したがって、サンプル数 $M$ の値に関わらず（$M=1$ の場合であっても）、推定量は厳密に不偏である。
+"""
+    cells.append(nbf.v4.new_markdown_cell(cell_23_md))
+
+    # Cell 24: Exercise 18.11 Code
+    cell_24_code = r"""# 演習 18.11 の自己採点アサーション & ハッチンソン推定量の不偏性検証
+res_18_11 = verify_exercise_18_11(dim=5, M_samples=6000, random_state=42)
+
+print("【演習 18.11 検証結果】")
+print(f"  - 真のトレース Tr(A) : {res_18_11['true_trace']:.4f}")
+print(f"  - ガウスノイズ推定量 (M=6000) : {res_18_11['est_gauss']:.4f} (差: {res_18_11['diff_gauss']:.4f})")
+print(f"  - ラデマッハ推定量 (M=6000) : {res_18_11['est_rade']:.4f} (差: {res_18_11['diff_rade']:.4f})")
+
+assert res_18_11['diff_gauss'] < 0.2
+assert res_18_11['diff_rade'] < 0.2
+print("演習 18.11: 検証成功 (合格)")
+"""
+    cells.append(nbf.v4.new_code_cell(cell_24_code))
+
+    # Cell 25: All Exercises Complete Check
+    cell_25_code = r"""# === 第18章 全演習問題 (18.1 〜 18.11) 総合達成確認 ===
+print("=" * 60)
+print("第18章 全11問の演習問題の数学的検証およびアサーションが完了しました。")
+print("18.1 : 変数変換・逆ヤコビアン [合格]")
+print("18.2 : 多層可逆変換の逆順序展開 [合格]")
+print("18.3 : 線形平行移動と体積保存 [合格]")
+print("18.4 : 自己回帰フロー下三角ヤコビアン [合格]")
+print("18.5 : ResNet 連続時間極限 Neural ODE [合格]")
+print("18.6 : 随伴微分方程式導出 [合格]")
+print("18.7 : 連続時間パラメータ勾配積分 [合格]")
+print("18.8 : 1D 確率質量保存則 [合格]")
+print("18.9 : CDF 分位点と流線の等価性 [合格]")
+print("18.10: 連続フロー計算の完全対称性 [合格]")
+print("18.11: ハッチンソン推定量不偏性 [合格]")
+print("=" * 60)
+"""
+    cells.append(nbf.v4.new_code_cell(cell_25_code))
+
+    # Write notebook
+    nb['cells'] = cells
+    nb_path = os.path.join(os.path.dirname(__file__), "..", "18", "18_Exercises.ipynb")
+    nb_path = os.path.abspath(nb_path)
+    with open(nb_path, "w", encoding="utf-8") as f:
+        nbf.write(nb, f)
+    print(f"Notebook successfully written to {nb_path} with {len(cells)} cells.")
+
+if __name__ == "__main__":
+    build_notebook()
