@@ -66,3 +66,4 @@ from . import probabilistic_latent_variables
 from . import evidence_lower_bound_continuous
 from . import nonlinear_latent_variables
 from . import exercises_ch16
+from . import adversarial_training
