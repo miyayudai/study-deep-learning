@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 完了 (`[x]`) |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 進行中 (`[-]`) |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **87 / 96 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **88 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 第19章 19.1 決定論的自己符号化器 (Deterministic Autoencoders)
-- **担当セクション**: 第19章 19.1 Deterministic Autoencoders (19.1.1 〜 19.1.5)
+- **現在実行中のタスク**: 第19章 19.2 変分自己符号化器 (Variational Autoencoders)
+- **担当セクション**: 第19章 19.2 Variational Autoencoders (19.2.1 〜 19.2.2)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-29T12:35:00+09:00
-- **直前完了タスク**: 第18章 演習問題 (Exercises 18.1 〜 18.11, 全11問) (2026-09-29 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-29T12:45:00+09:00
+- **直前完了タスク**: 第19章 19.1 決定論的自己符号化器 (Deterministic Autoencoders) (2026-09-29 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -1004,18 +1004,18 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `19/`
 - 再現図版目標: Figure 19.1 〜 19.11 (全11枚)
 
-- [-] **19.1 Deterministic Autoencoders**
+- [x] **19.1 Deterministic Autoencoders**
   - ノートブック: `19/19.1_Deterministic_Autoencoders.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 19.1.1 Linear autoencoders
-    - [ ] 19.1.2 Deep autoencoders
-    - [ ] 19.1.3 Sparse autoencoders
-    - [ ] 19.1.4 Denoising autoencoders
-    - [ ] 19.1.5 Masked autoencoders
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 19.1.1 Linear autoencoders
+    - [x] 19.1.2 Deep autoencoders
+    - [x] 19.1.3 Sparse autoencoders
+    - [x] 19.1.4 Denoising autoencoders
+    - [x] 19.1.5 Masked autoencoders
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 19.1, 19.2, 19.3, 19.4, 19.5, 19.6)
   - テスト: `tests/test_ch19_deterministic_a.py`
 
-- [ ] **19.2 Variational Autoencoders**
+- [-] **19.2 Variational Autoencoders**
   - ノートブック: `19/19.2_Variational_Autoencoders.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 19.2.1 Amortized inference
