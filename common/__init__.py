@@ -74,3 +74,4 @@ from . import autoregressive_flows
 from . import continuous_flows
 from . import exercises_ch18
 from . import deterministic_autoencoders
+from . import variational_autoencoders
