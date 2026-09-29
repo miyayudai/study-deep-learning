@@ -81,3 +81,4 @@ from . import reverse_decoder
 from . import score_matching
 from . import guided_diffusion
 from . import exercises_ch20
+from . import linear_algebra
