@@ -88,18 +88,18 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第16章** | 連続潜在変数 (Continuous Latent Variables) | 4 | 16 | Figure 16.1 〜 16.29 (全29枚) | 全26問 | 完了 (`[x]`) |
 | **第17章** | 生成対抗ネットワーク (Generative Adversarial Networks) | 2 | 3 | Figure 17.1 〜 17.10 (全10枚) | 全3問 | 完了 (`[x]`) |
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 完了 (`[x]`) |
-| **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 進行中 (`[-]`) |
-| **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 未着手 |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **89 / 96 ユニット完了** |
+| **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 完了 (`[x]`) |
+| **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 進行中 (`[-]`) |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **90 / 96 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: 第19章 演習問題 (Exercises 19.1 〜 19.6, 全6問)
-- **担当セクション**: 第19章 演習問題 (Exercises 19.1 〜 19.6, 全6問)
+- **現在実行中のタスク**: 第20章 20.1 前向きエンコーダ (Forward Encoder)
+- **担当セクション**: 20.1 Forward Encoder (20.1.1, 20.1.2)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-29T12:50:00+09:00
-- **直前完了タスク**: 第19章 19.2 変分自己符号化器 (Variational Autoencoders) (2026-09-29 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-29T12:56:00+09:00
+- **直前完了タスク**: 第19章 演習問題 (Exercises 19.1 〜 19.6, 全6問) (2026-09-29 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -1015,15 +1015,15 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
   - 図版再現: `result/` への該当Figureプロット保存 (Figure 19.1, 19.2, 19.3, 19.4, 19.5, 19.6)
   - テスト: `tests/test_ch19_deterministic_a.py`
 
-- [-] **19.2 Variational Autoencoders**
+- [x] **19.2 Variational Autoencoders**
   - ノートブック: `19/19.2_Variational_Autoencoders.ipynb`
   - 小節一覧（網羅必須）:
-    - [ ] 19.2.1 Amortized inference
-    - [ ] 19.2.2 The reparameterization trick
-  - 図版再現: `result/` への該当Figureプロット保存
+    - [x] 19.2.1 Amortized inference
+    - [x] 19.2.2 The reparameterization trick
+  - 図版再現: `result/` への該当Figureプロット保存 (Figure 19.7, 19.8, 19.9, 19.10, 19.11)
   - テスト: `tests/test_ch19_variational_aut.py`
 
-- [ ] **第19章 演習問題 (Exercises 19.1 〜 19.6, 全6問)**
+- [x] **第19章 演習問題 (Exercises 19.1 〜 19.6, 全6問)**
   - ノートブック: `19/19_Exercises.ipynb`
   - 形式: 理論問題は証明ロジック＋穴埋め・選択式、実装問題はコード穴埋め＋自己採点アサーション
   - テスト: `tests/test_ch19_exercises.py`
@@ -1035,7 +1035,7 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 - ディレクトリ: `20/`
 - 再現図版目標: Figure 20.1 〜 20.9 (全9枚)
 
-- [ ] **20.1 Forward Encoder**
+- [-] **20.1 Forward Encoder**
   - ノートブック: `20/20.1_Forward_Encoder.ipynb`
   - 小節一覧（網羅必須）:
     - [ ] 20.1.1 Diffusion kernel
