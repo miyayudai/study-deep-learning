@@ -90,16 +90,16 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 | **第18章** | 正規化フロー (Normalizing Flows) | 3 | 3 | Figure 18.1 〜 18.7 (全7枚) | 全11問 | 完了 (`[x]`) |
 | **第19章** | 自己符号化器 (Autoencoders) | 2 | 7 | Figure 19.1 〜 19.11 (全11枚) | 全6問 | 完了 (`[x]`) |
 | **第20章** | 拡散モデル (Diffusion Models) | 4 | 13 | Figure 20.1 〜 20.9 (全9枚) | 全20問 | 完了 (`[x]`) |
-| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **96 / 98 ユニット完了** |
+| **合計** | 全20章 + 付録 | **76節** | **281小節** | **約300枚** | **全355問** | **97 / 98 ユニット完了** |
 
 ---
 
 ## 現在の実行ステータス (Active Lock)
-- **現在実行中のタスク**: Appendix B 変分法 (Calculus of Variations)
-- **担当セクション**: Appendix B 変分法 (Calculus of Variations)
+- **現在実行中のタスク**: Appendix C ラグランジュの未定乗数法 (Lagrange Multipliers)
+- **担当セクション**: Appendix C ラグランジュの未定乗数法 (Lagrange Multipliers)
 - **ステータス**: 実行中 (`[-]`)
-- **獲得ロックタイムスタンプ**: 2026-09-29T13:17:00+09:00
-- **直前完了タスク**: Appendix A 線形代数 (Linear Algebra) (2026-09-29 完了)
+- **獲得ロックタイムスタンプ**: 2026-09-29T13:22:00+09:00
+- **直前完了タスク**: Appendix B 変分法 (Calculus of Variations) (2026-09-29 完了)
 ※上記が「なし」以外の場合、新しいタスクの開始・割り込みは厳禁（排他ロック中）。
 
 ---
@@ -1092,10 +1092,10 @@ AIエージェントはこのファイルを読み込み、以下の「AIエー�
 
 #### Appendix B: 変分法 (Calculus of Variations)
 
-- [-] **Appendix B 変分法 (Calculus of Variations)**
+- [x] **Appendix B 変分法 (Calculus of Variations)**
   - ノートブック: `appendix/appendix_b.ipynb`
 
 #### Appendix C: ラグランジュの未定乗数法 (Lagrange Multipliers)
 
-- [ ] **Appendix C ラグランジュの未定乗数法 (Lagrange Multipliers)**
+- [-] **Appendix C ラグランジュの未定乗数法 (Lagrange Multipliers)**
   - ノートブック: `appendix/appendix_c.ipynb`
