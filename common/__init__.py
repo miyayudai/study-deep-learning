@@ -83,3 +83,4 @@ from . import guided_diffusion
 from . import exercises_ch20
 from . import linear_algebra
 from . import calculus_of_variations
+from . import lagrange_multipliers
