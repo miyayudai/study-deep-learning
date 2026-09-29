@@ -71,3 +71,4 @@ from . import image_gans
 from . import exercises_ch17
 from . import coupling_flows
 from . import autoregressive_flows
+from . import continuous_flows
