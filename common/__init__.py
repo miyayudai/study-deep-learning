@@ -70,3 +70,4 @@ from . import adversarial_training
 from . import image_gans
 from . import exercises_ch17
 from . import coupling_flows
+from . import autoregressive_flows
