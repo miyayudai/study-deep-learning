@@ -143,8 +143,8 @@ my_DeepLearning/
 ### 1. リポジトリのクローンと環境構築
 
 ```bash
-git clone git@github.com:miyayudai/my_DeepLearning.git
-cd my_DeepLearning
+git clone git@github.com:miyayudai/study-deep-learning.git
+cd study-deep-learning
 
 # 仮想環境の作成と有効化
 python3 -m venv .venv
@@ -189,7 +189,7 @@ for ch in sorted(by_ch.keys()):
     for nb in by_ch[ch]:
         fname = os.path.basename(nb)
         base = os.path.splitext(fname)[0]
-        colab_url = f"https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/{nb}"
+        colab_url = f"https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/{nb}"
         badge = f"[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]({colab_url})"
         content.append(f"| [`{fname}`]({nb}) | {base.replace('_', ' ')} | {badge} |\n")
 

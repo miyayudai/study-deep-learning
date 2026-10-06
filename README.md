@@ -71,8 +71,8 @@ my_DeepLearning/
 ### 1. リポジトリのクローンと環境構築
 
 ```bash
-git clone git@github.com:miyayudai/my_DeepLearning.git
-cd my_DeepLearning
+git clone git@github.com:miyayudai/study-deep-learning.git
+cd study-deep-learning
 
 # 仮想環境の作成と有効化
 python3 -m venv .venv
@@ -127,204 +127,204 @@ pytest tests/ -v
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`1.1_The_Impact_of_Deep_Learning.ipynb`](1/1.1_The_Impact_of_Deep_Learning.ipynb) | 1.1 The Impact of Deep Learning | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/1/1.1_The_Impact_of_Deep_Learning.ipynb) |
-| [`1.2_A_Tutorial_Example.ipynb`](1/1.2_A_Tutorial_Example.ipynb) | 1.2 A Tutorial Example | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/1/1.2_A_Tutorial_Example.ipynb) |
-| [`1.3_A_Brief_History_of_Machine_Learning.ipynb`](1/1.3_A_Brief_History_of_Machine_Learning.ipynb) | 1.3 A Brief History of Machine Learning | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/1/1.3_A_Brief_History_of_Machine_Learning.ipynb) |
+| [`1.1_The_Impact_of_Deep_Learning.ipynb`](1/1.1_The_Impact_of_Deep_Learning.ipynb) | 1.1 The Impact of Deep Learning | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/1/1.1_The_Impact_of_Deep_Learning.ipynb) |
+| [`1.2_A_Tutorial_Example.ipynb`](1/1.2_A_Tutorial_Example.ipynb) | 1.2 A Tutorial Example | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/1/1.2_A_Tutorial_Example.ipynb) |
+| [`1.3_A_Brief_History_of_Machine_Learning.ipynb`](1/1.3_A_Brief_History_of_Machine_Learning.ipynb) | 1.3 A Brief History of Machine Learning | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/1/1.3_A_Brief_History_of_Machine_Learning.ipynb) |
 
 ### 第2章 確率の基礎 (Probabilities)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`2.1_The_Rules_of_Probability.ipynb`](2/2.1_The_Rules_of_Probability.ipynb) | 2.1 The Rules of Probability | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/2/2.1_The_Rules_of_Probability.ipynb) |
-| [`2.2_Probability_Densities.ipynb`](2/2.2_Probability_Densities.ipynb) | 2.2 Probability Densities | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/2/2.2_Probability_Densities.ipynb) |
-| [`2.3_The_Gaussian_Distribution.ipynb`](2/2.3_The_Gaussian_Distribution.ipynb) | 2.3 The Gaussian Distribution | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/2/2.3_The_Gaussian_Distribution.ipynb) |
-| [`2.4_Transformation_of_Densities.ipynb`](2/2.4_Transformation_of_Densities.ipynb) | 2.4 Transformation of Densities | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/2/2.4_Transformation_of_Densities.ipynb) |
-| [`2.5_Information_Theory.ipynb`](2/2.5_Information_Theory.ipynb) | 2.5 Information Theory | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/2/2.5_Information_Theory.ipynb) |
-| [`2.6_Bayesian_Probabilities.ipynb`](2/2.6_Bayesian_Probabilities.ipynb) | 2.6 Bayesian Probabilities | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/2/2.6_Bayesian_Probabilities.ipynb) |
-| [`2_Exercises.ipynb`](2/2_Exercises.ipynb) | 2 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/2/2_Exercises.ipynb) |
+| [`2.1_The_Rules_of_Probability.ipynb`](2/2.1_The_Rules_of_Probability.ipynb) | 2.1 The Rules of Probability | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/2/2.1_The_Rules_of_Probability.ipynb) |
+| [`2.2_Probability_Densities.ipynb`](2/2.2_Probability_Densities.ipynb) | 2.2 Probability Densities | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/2/2.2_Probability_Densities.ipynb) |
+| [`2.3_The_Gaussian_Distribution.ipynb`](2/2.3_The_Gaussian_Distribution.ipynb) | 2.3 The Gaussian Distribution | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/2/2.3_The_Gaussian_Distribution.ipynb) |
+| [`2.4_Transformation_of_Densities.ipynb`](2/2.4_Transformation_of_Densities.ipynb) | 2.4 Transformation of Densities | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/2/2.4_Transformation_of_Densities.ipynb) |
+| [`2.5_Information_Theory.ipynb`](2/2.5_Information_Theory.ipynb) | 2.5 Information Theory | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/2/2.5_Information_Theory.ipynb) |
+| [`2.6_Bayesian_Probabilities.ipynb`](2/2.6_Bayesian_Probabilities.ipynb) | 2.6 Bayesian Probabilities | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/2/2.6_Bayesian_Probabilities.ipynb) |
+| [`2_Exercises.ipynb`](2/2_Exercises.ipynb) | 2 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/2/2_Exercises.ipynb) |
 
 ### 第3章 基本分布 (Standard Distributions)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`3.1_Discrete_Variables.ipynb`](3/3.1_Discrete_Variables.ipynb) | 3.1 Discrete Variables | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/3/3.1_Discrete_Variables.ipynb) |
-| [`3.2_The_Multivariate_Gaussian.ipynb`](3/3.2_The_Multivariate_Gaussian.ipynb) | 3.2 The Multivariate Gaussian | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/3/3.2_The_Multivariate_Gaussian.ipynb) |
-| [`3.3_Periodic_Variables.ipynb`](3/3.3_Periodic_Variables.ipynb) | 3.3 Periodic Variables | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/3/3.3_Periodic_Variables.ipynb) |
-| [`3.4_The_Exponential_Family.ipynb`](3/3.4_The_Exponential_Family.ipynb) | 3.4 The Exponential Family | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/3/3.4_The_Exponential_Family.ipynb) |
-| [`3.5_Nonparametric_Methods.ipynb`](3/3.5_Nonparametric_Methods.ipynb) | 3.5 Nonparametric Methods | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/3/3.5_Nonparametric_Methods.ipynb) |
-| [`3_Exercises.ipynb`](3/3_Exercises.ipynb) | 3 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/3/3_Exercises.ipynb) |
+| [`3.1_Discrete_Variables.ipynb`](3/3.1_Discrete_Variables.ipynb) | 3.1 Discrete Variables | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/3/3.1_Discrete_Variables.ipynb) |
+| [`3.2_The_Multivariate_Gaussian.ipynb`](3/3.2_The_Multivariate_Gaussian.ipynb) | 3.2 The Multivariate Gaussian | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/3/3.2_The_Multivariate_Gaussian.ipynb) |
+| [`3.3_Periodic_Variables.ipynb`](3/3.3_Periodic_Variables.ipynb) | 3.3 Periodic Variables | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/3/3.3_Periodic_Variables.ipynb) |
+| [`3.4_The_Exponential_Family.ipynb`](3/3.4_The_Exponential_Family.ipynb) | 3.4 The Exponential Family | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/3/3.4_The_Exponential_Family.ipynb) |
+| [`3.5_Nonparametric_Methods.ipynb`](3/3.5_Nonparametric_Methods.ipynb) | 3.5 Nonparametric Methods | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/3/3.5_Nonparametric_Methods.ipynb) |
+| [`3_Exercises.ipynb`](3/3_Exercises.ipynb) | 3 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/3/3_Exercises.ipynb) |
 
 ### 第4章 単層ネットワーク: 回帰 (Single-layer Networks: Regression)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`4.1_Linear_Regression.ipynb`](4/4.1_Linear_Regression.ipynb) | 4.1 Linear Regression | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/4/4.1_Linear_Regression.ipynb) |
-| [`4.2_Decision_theory.ipynb`](4/4.2_Decision_theory.ipynb) | 4.2 Decision theory | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/4/4.2_Decision_theory.ipynb) |
-| [`4.3_The_Bias_Variance_Trade_off.ipynb`](4/4.3_The_Bias_Variance_Trade_off.ipynb) | 4.3 The Bias Variance Trade off | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/4/4.3_The_Bias_Variance_Trade_off.ipynb) |
-| [`4_Exercises.ipynb`](4/4_Exercises.ipynb) | 4 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/4/4_Exercises.ipynb) |
+| [`4.1_Linear_Regression.ipynb`](4/4.1_Linear_Regression.ipynb) | 4.1 Linear Regression | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/4/4.1_Linear_Regression.ipynb) |
+| [`4.2_Decision_theory.ipynb`](4/4.2_Decision_theory.ipynb) | 4.2 Decision theory | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/4/4.2_Decision_theory.ipynb) |
+| [`4.3_The_Bias_Variance_Trade_off.ipynb`](4/4.3_The_Bias_Variance_Trade_off.ipynb) | 4.3 The Bias Variance Trade off | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/4/4.3_The_Bias_Variance_Trade_off.ipynb) |
+| [`4_Exercises.ipynb`](4/4_Exercises.ipynb) | 4 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/4/4_Exercises.ipynb) |
 
 ### 第5章 単層ネットワーク: 分類 (Single-layer Networks: Classification)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`5.1_Discriminant_Functions.ipynb`](5/5.1_Discriminant_Functions.ipynb) | 5.1 Discriminant Functions | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/5/5.1_Discriminant_Functions.ipynb) |
-| [`5.2_Decision_Theory.ipynb`](5/5.2_Decision_Theory.ipynb) | 5.2 Decision Theory | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/5/5.2_Decision_Theory.ipynb) |
-| [`5.3_Generative_Classifiers.ipynb`](5/5.3_Generative_Classifiers.ipynb) | 5.3 Generative Classifiers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/5/5.3_Generative_Classifiers.ipynb) |
-| [`5.4_Discriminative_Classifiers.ipynb`](5/5.4_Discriminative_Classifiers.ipynb) | 5.4 Discriminative Classifiers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/5/5.4_Discriminative_Classifiers.ipynb) |
-| [`5_Exercises.ipynb`](5/5_Exercises.ipynb) | 5 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/5/5_Exercises.ipynb) |
+| [`5.1_Discriminant_Functions.ipynb`](5/5.1_Discriminant_Functions.ipynb) | 5.1 Discriminant Functions | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/5/5.1_Discriminant_Functions.ipynb) |
+| [`5.2_Decision_Theory.ipynb`](5/5.2_Decision_Theory.ipynb) | 5.2 Decision Theory | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/5/5.2_Decision_Theory.ipynb) |
+| [`5.3_Generative_Classifiers.ipynb`](5/5.3_Generative_Classifiers.ipynb) | 5.3 Generative Classifiers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/5/5.3_Generative_Classifiers.ipynb) |
+| [`5.4_Discriminative_Classifiers.ipynb`](5/5.4_Discriminative_Classifiers.ipynb) | 5.4 Discriminative Classifiers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/5/5.4_Discriminative_Classifiers.ipynb) |
+| [`5_Exercises.ipynb`](5/5_Exercises.ipynb) | 5 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/5/5_Exercises.ipynb) |
 
 ### 第6章 深層ニューラルネットワーク (Deep Neural Networks)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`6.1_Limitations_of_Fixed_Basis_Functions.ipynb`](6/6.1_Limitations_of_Fixed_Basis_Functions.ipynb) | 6.1 Limitations of Fixed Basis Functions | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/6/6.1_Limitations_of_Fixed_Basis_Functions.ipynb) |
-| [`6.2_Multilayer_Networks.ipynb`](6/6.2_Multilayer_Networks.ipynb) | 6.2 Multilayer Networks | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/6/6.2_Multilayer_Networks.ipynb) |
-| [`6.3_Deep_Networks.ipynb`](6/6.3_Deep_Networks.ipynb) | 6.3 Deep Networks | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/6/6.3_Deep_Networks.ipynb) |
-| [`6.4_Error_Functions.ipynb`](6/6.4_Error_Functions.ipynb) | 6.4 Error Functions | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/6/6.4_Error_Functions.ipynb) |
-| [`6.5_Mixture_Density_Networks.ipynb`](6/6.5_Mixture_Density_Networks.ipynb) | 6.5 Mixture Density Networks | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/6/6.5_Mixture_Density_Networks.ipynb) |
-| [`6_Exercises.ipynb`](6/6_Exercises.ipynb) | 6 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/6/6_Exercises.ipynb) |
+| [`6.1_Limitations_of_Fixed_Basis_Functions.ipynb`](6/6.1_Limitations_of_Fixed_Basis_Functions.ipynb) | 6.1 Limitations of Fixed Basis Functions | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/6/6.1_Limitations_of_Fixed_Basis_Functions.ipynb) |
+| [`6.2_Multilayer_Networks.ipynb`](6/6.2_Multilayer_Networks.ipynb) | 6.2 Multilayer Networks | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/6/6.2_Multilayer_Networks.ipynb) |
+| [`6.3_Deep_Networks.ipynb`](6/6.3_Deep_Networks.ipynb) | 6.3 Deep Networks | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/6/6.3_Deep_Networks.ipynb) |
+| [`6.4_Error_Functions.ipynb`](6/6.4_Error_Functions.ipynb) | 6.4 Error Functions | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/6/6.4_Error_Functions.ipynb) |
+| [`6.5_Mixture_Density_Networks.ipynb`](6/6.5_Mixture_Density_Networks.ipynb) | 6.5 Mixture Density Networks | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/6/6.5_Mixture_Density_Networks.ipynb) |
+| [`6_Exercises.ipynb`](6/6_Exercises.ipynb) | 6 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/6/6_Exercises.ipynb) |
 
 ### 第7章 勾配降下法 (Gradient Descent)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`7.1_Error_Surfaces.ipynb`](7/7.1_Error_Surfaces.ipynb) | 7.1 Error Surfaces | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/7/7.1_Error_Surfaces.ipynb) |
-| [`7.2_Gradient_Descent_Optimization.ipynb`](7/7.2_Gradient_Descent_Optimization.ipynb) | 7.2 Gradient Descent Optimization | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/7/7.2_Gradient_Descent_Optimization.ipynb) |
-| [`7.3_Convergence.ipynb`](7/7.3_Convergence.ipynb) | 7.3 Convergence | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/7/7.3_Convergence.ipynb) |
-| [`7.4_Normalization.ipynb`](7/7.4_Normalization.ipynb) | 7.4 Normalization | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/7/7.4_Normalization.ipynb) |
-| [`7_Exercises.ipynb`](7/7_Exercises.ipynb) | 7 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/7/7_Exercises.ipynb) |
+| [`7.1_Error_Surfaces.ipynb`](7/7.1_Error_Surfaces.ipynb) | 7.1 Error Surfaces | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/7/7.1_Error_Surfaces.ipynb) |
+| [`7.2_Gradient_Descent_Optimization.ipynb`](7/7.2_Gradient_Descent_Optimization.ipynb) | 7.2 Gradient Descent Optimization | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/7/7.2_Gradient_Descent_Optimization.ipynb) |
+| [`7.3_Convergence.ipynb`](7/7.3_Convergence.ipynb) | 7.3 Convergence | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/7/7.3_Convergence.ipynb) |
+| [`7.4_Normalization.ipynb`](7/7.4_Normalization.ipynb) | 7.4 Normalization | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/7/7.4_Normalization.ipynb) |
+| [`7_Exercises.ipynb`](7/7_Exercises.ipynb) | 7 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/7/7_Exercises.ipynb) |
 
 ### 第8章 誤差逆伝播法 (Backpropagation)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`8.1_Evaluation_of_Gradients.ipynb`](8/8.1_Evaluation_of_Gradients.ipynb) | 8.1 Evaluation of Gradients | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/8/8.1_Evaluation_of_Gradients.ipynb) |
-| [`8.2_Automatic_Differentiation.ipynb`](8/8.2_Automatic_Differentiation.ipynb) | 8.2 Automatic Differentiation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/8/8.2_Automatic_Differentiation.ipynb) |
-| [`8_Exercises.ipynb`](8/8_Exercises.ipynb) | 8 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/8/8_Exercises.ipynb) |
+| [`8.1_Evaluation_of_Gradients.ipynb`](8/8.1_Evaluation_of_Gradients.ipynb) | 8.1 Evaluation of Gradients | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/8/8.1_Evaluation_of_Gradients.ipynb) |
+| [`8.2_Automatic_Differentiation.ipynb`](8/8.2_Automatic_Differentiation.ipynb) | 8.2 Automatic Differentiation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/8/8.2_Automatic_Differentiation.ipynb) |
+| [`8_Exercises.ipynb`](8/8_Exercises.ipynb) | 8 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/8/8_Exercises.ipynb) |
 
 ### 第9章 正則化 (Regularization)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`9.1_Inductive_Bias.ipynb`](9/9.1_Inductive_Bias.ipynb) | 9.1 Inductive Bias | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/9/9.1_Inductive_Bias.ipynb) |
-| [`9.2_Weight_Decay.ipynb`](9/9.2_Weight_Decay.ipynb) | 9.2 Weight Decay | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/9/9.2_Weight_Decay.ipynb) |
-| [`9.3_Learning_Curves.ipynb`](9/9.3_Learning_Curves.ipynb) | 9.3 Learning Curves | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/9/9.3_Learning_Curves.ipynb) |
-| [`9.4_Parameter_Sharing.ipynb`](9/9.4_Parameter_Sharing.ipynb) | 9.4 Parameter Sharing | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/9/9.4_Parameter_Sharing.ipynb) |
-| [`9.5_Residual_Connections.ipynb`](9/9.5_Residual_Connections.ipynb) | 9.5 Residual Connections | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/9/9.5_Residual_Connections.ipynb) |
-| [`9.6_Model_Averaging.ipynb`](9/9.6_Model_Averaging.ipynb) | 9.6 Model Averaging | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/9/9.6_Model_Averaging.ipynb) |
-| [`9_Exercises.ipynb`](9/9_Exercises.ipynb) | 9 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/9/9_Exercises.ipynb) |
+| [`9.1_Inductive_Bias.ipynb`](9/9.1_Inductive_Bias.ipynb) | 9.1 Inductive Bias | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/9/9.1_Inductive_Bias.ipynb) |
+| [`9.2_Weight_Decay.ipynb`](9/9.2_Weight_Decay.ipynb) | 9.2 Weight Decay | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/9/9.2_Weight_Decay.ipynb) |
+| [`9.3_Learning_Curves.ipynb`](9/9.3_Learning_Curves.ipynb) | 9.3 Learning Curves | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/9/9.3_Learning_Curves.ipynb) |
+| [`9.4_Parameter_Sharing.ipynb`](9/9.4_Parameter_Sharing.ipynb) | 9.4 Parameter Sharing | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/9/9.4_Parameter_Sharing.ipynb) |
+| [`9.5_Residual_Connections.ipynb`](9/9.5_Residual_Connections.ipynb) | 9.5 Residual Connections | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/9/9.5_Residual_Connections.ipynb) |
+| [`9.6_Model_Averaging.ipynb`](9/9.6_Model_Averaging.ipynb) | 9.6 Model Averaging | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/9/9.6_Model_Averaging.ipynb) |
+| [`9_Exercises.ipynb`](9/9_Exercises.ipynb) | 9 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/9/9_Exercises.ipynb) |
 
 ### 第10章 畳み込みネットワーク (Convolutional Networks)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`10.1_Computer_Vision.ipynb`](10/10.1_Computer_Vision.ipynb) | 10.1 Computer Vision | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/10/10.1_Computer_Vision.ipynb) |
-| [`10.2_Convolutional_Filters.ipynb`](10/10.2_Convolutional_Filters.ipynb) | 10.2 Convolutional Filters | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/10/10.2_Convolutional_Filters.ipynb) |
-| [`10.3_Visualizing_Trained_CNNs.ipynb`](10/10.3_Visualizing_Trained_CNNs.ipynb) | 10.3 Visualizing Trained CNNs | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/10/10.3_Visualizing_Trained_CNNs.ipynb) |
-| [`10.4_Object_Detection.ipynb`](10/10.4_Object_Detection.ipynb) | 10.4 Object Detection | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/10/10.4_Object_Detection.ipynb) |
-| [`10.5_Image_Segmentation.ipynb`](10/10.5_Image_Segmentation.ipynb) | 10.5 Image Segmentation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/10/10.5_Image_Segmentation.ipynb) |
-| [`10.6_Style_Transfer.ipynb`](10/10.6_Style_Transfer.ipynb) | 10.6 Style Transfer | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/10/10.6_Style_Transfer.ipynb) |
-| [`10_Exercises.ipynb`](10/10_Exercises.ipynb) | 10 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/10/10_Exercises.ipynb) |
+| [`10.1_Computer_Vision.ipynb`](10/10.1_Computer_Vision.ipynb) | 10.1 Computer Vision | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/10/10.1_Computer_Vision.ipynb) |
+| [`10.2_Convolutional_Filters.ipynb`](10/10.2_Convolutional_Filters.ipynb) | 10.2 Convolutional Filters | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/10/10.2_Convolutional_Filters.ipynb) |
+| [`10.3_Visualizing_Trained_CNNs.ipynb`](10/10.3_Visualizing_Trained_CNNs.ipynb) | 10.3 Visualizing Trained CNNs | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/10/10.3_Visualizing_Trained_CNNs.ipynb) |
+| [`10.4_Object_Detection.ipynb`](10/10.4_Object_Detection.ipynb) | 10.4 Object Detection | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/10/10.4_Object_Detection.ipynb) |
+| [`10.5_Image_Segmentation.ipynb`](10/10.5_Image_Segmentation.ipynb) | 10.5 Image Segmentation | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/10/10.5_Image_Segmentation.ipynb) |
+| [`10.6_Style_Transfer.ipynb`](10/10.6_Style_Transfer.ipynb) | 10.6 Style Transfer | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/10/10.6_Style_Transfer.ipynb) |
+| [`10_Exercises.ipynb`](10/10_Exercises.ipynb) | 10 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/10/10_Exercises.ipynb) |
 
 ### 第11章 構造化分布 (Structured Distributions)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`11.1_Graphical_Models.ipynb`](11/11.1_Graphical_Models.ipynb) | 11.1 Graphical Models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/11/11.1_Graphical_Models.ipynb) |
-| [`11.2_Conditional_Independence.ipynb`](11/11.2_Conditional_Independence.ipynb) | 11.2 Conditional Independence | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/11/11.2_Conditional_Independence.ipynb) |
-| [`11.3_Sequence_Models.ipynb`](11/11.3_Sequence_Models.ipynb) | 11.3 Sequence Models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/11/11.3_Sequence_Models.ipynb) |
-| [`11_Exercises.ipynb`](11/11_Exercises.ipynb) | 11 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/11/11_Exercises.ipynb) |
+| [`11.1_Graphical_Models.ipynb`](11/11.1_Graphical_Models.ipynb) | 11.1 Graphical Models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/11/11.1_Graphical_Models.ipynb) |
+| [`11.2_Conditional_Independence.ipynb`](11/11.2_Conditional_Independence.ipynb) | 11.2 Conditional Independence | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/11/11.2_Conditional_Independence.ipynb) |
+| [`11.3_Sequence_Models.ipynb`](11/11.3_Sequence_Models.ipynb) | 11.3 Sequence Models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/11/11.3_Sequence_Models.ipynb) |
+| [`11_Exercises.ipynb`](11/11_Exercises.ipynb) | 11 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/11/11_Exercises.ipynb) |
 
 ### 第12章 トランスフォーマー (Transformers)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`12.1_Attention.ipynb`](12/12.1_Attention.ipynb) | 12.1 Attention | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/12/12.1_Attention.ipynb) |
-| [`12.2_Natural_Language.ipynb`](12/12.2_Natural_Language.ipynb) | 12.2 Natural Language | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/12/12.2_Natural_Language.ipynb) |
-| [`12.3_Transformer_Language_Models.ipynb`](12/12.3_Transformer_Language_Models.ipynb) | 12.3 Transformer Language Models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/12/12.3_Transformer_Language_Models.ipynb) |
-| [`12.4_Multimodal_Transformers.ipynb`](12/12.4_Multimodal_Transformers.ipynb) | 12.4 Multimodal Transformers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/12/12.4_Multimodal_Transformers.ipynb) |
-| [`12_Exercises.ipynb`](12/12_Exercises.ipynb) | 12 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/12/12_Exercises.ipynb) |
+| [`12.1_Attention.ipynb`](12/12.1_Attention.ipynb) | 12.1 Attention | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/12/12.1_Attention.ipynb) |
+| [`12.2_Natural_Language.ipynb`](12/12.2_Natural_Language.ipynb) | 12.2 Natural Language | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/12/12.2_Natural_Language.ipynb) |
+| [`12.3_Transformer_Language_Models.ipynb`](12/12.3_Transformer_Language_Models.ipynb) | 12.3 Transformer Language Models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/12/12.3_Transformer_Language_Models.ipynb) |
+| [`12.4_Multimodal_Transformers.ipynb`](12/12.4_Multimodal_Transformers.ipynb) | 12.4 Multimodal Transformers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/12/12.4_Multimodal_Transformers.ipynb) |
+| [`12_Exercises.ipynb`](12/12_Exercises.ipynb) | 12 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/12/12_Exercises.ipynb) |
 
 ### 第13章 グラフニューラルネットワーク (Graph Neural Networks)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`13.1_Machine_Learning_on_Graphs.ipynb`](13/13.1_Machine_Learning_on_Graphs.ipynb) | 13.1 Machine Learning on Graphs | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/13/13.1_Machine_Learning_on_Graphs.ipynb) |
-| [`13.2_Neural_Message_Passing.ipynb`](13/13.2_Neural_Message_Passing.ipynb) | 13.2 Neural Message Passing | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/13/13.2_Neural_Message_Passing.ipynb) |
-| [`13.3_General_Graph_Networks.ipynb`](13/13.3_General_Graph_Networks.ipynb) | 13.3 General Graph Networks | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/13/13.3_General_Graph_Networks.ipynb) |
-| [`13_Exercises.ipynb`](13/13_Exercises.ipynb) | 13 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/13/13_Exercises.ipynb) |
+| [`13.1_Machine_Learning_on_Graphs.ipynb`](13/13.1_Machine_Learning_on_Graphs.ipynb) | 13.1 Machine Learning on Graphs | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/13/13.1_Machine_Learning_on_Graphs.ipynb) |
+| [`13.2_Neural_Message_Passing.ipynb`](13/13.2_Neural_Message_Passing.ipynb) | 13.2 Neural Message Passing | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/13/13.2_Neural_Message_Passing.ipynb) |
+| [`13.3_General_Graph_Networks.ipynb`](13/13.3_General_Graph_Networks.ipynb) | 13.3 General Graph Networks | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/13/13.3_General_Graph_Networks.ipynb) |
+| [`13_Exercises.ipynb`](13/13_Exercises.ipynb) | 13 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/13/13_Exercises.ipynb) |
 
 ### 第14章 サンプリング (Sampling)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`14.1_Basic_Sampling_Algorithms.ipynb`](14/14.1_Basic_Sampling_Algorithms.ipynb) | 14.1 Basic Sampling Algorithms | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/14/14.1_Basic_Sampling_Algorithms.ipynb) |
-| [`14.2_Markov_Chain_Monte_Carlo.ipynb`](14/14.2_Markov_Chain_Monte_Carlo.ipynb) | 14.2 Markov Chain Monte Carlo | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/14/14.2_Markov_Chain_Monte_Carlo.ipynb) |
-| [`14.3_Langevin_Sampling.ipynb`](14/14.3_Langevin_Sampling.ipynb) | 14.3 Langevin Sampling | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/14/14.3_Langevin_Sampling.ipynb) |
-| [`14_Exercises.ipynb`](14/14_Exercises.ipynb) | 14 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/14/14_Exercises.ipynb) |
+| [`14.1_Basic_Sampling_Algorithms.ipynb`](14/14.1_Basic_Sampling_Algorithms.ipynb) | 14.1 Basic Sampling Algorithms | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/14/14.1_Basic_Sampling_Algorithms.ipynb) |
+| [`14.2_Markov_Chain_Monte_Carlo.ipynb`](14/14.2_Markov_Chain_Monte_Carlo.ipynb) | 14.2 Markov Chain Monte Carlo | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/14/14.2_Markov_Chain_Monte_Carlo.ipynb) |
+| [`14.3_Langevin_Sampling.ipynb`](14/14.3_Langevin_Sampling.ipynb) | 14.3 Langevin Sampling | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/14/14.3_Langevin_Sampling.ipynb) |
+| [`14_Exercises.ipynb`](14/14_Exercises.ipynb) | 14 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/14/14_Exercises.ipynb) |
 
 ### 第15章 離散潜在変数 (Discrete Latent Variables)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`15.1_K_means_Clustering.ipynb`](15/15.1_K_means_Clustering.ipynb) | 15.1 K means Clustering | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/15/15.1_K_means_Clustering.ipynb) |
-| [`15.2_Mixtures_of_Gaussians.ipynb`](15/15.2_Mixtures_of_Gaussians.ipynb) | 15.2 Mixtures of Gaussians | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/15/15.2_Mixtures_of_Gaussians.ipynb) |
-| [`15.3_Expectation_Maximization_Algorithm.ipynb`](15/15.3_Expectation_Maximization_Algorithm.ipynb) | 15.3 Expectation Maximization Algorithm | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/15/15.3_Expectation_Maximization_Algorithm.ipynb) |
-| [`15.4_Evidence_Lower_Bound.ipynb`](15/15.4_Evidence_Lower_Bound.ipynb) | 15.4 Evidence Lower Bound | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/15/15.4_Evidence_Lower_Bound.ipynb) |
-| [`15_Exercises.ipynb`](15/15_Exercises.ipynb) | 15 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/15/15_Exercises.ipynb) |
+| [`15.1_K_means_Clustering.ipynb`](15/15.1_K_means_Clustering.ipynb) | 15.1 K means Clustering | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/15/15.1_K_means_Clustering.ipynb) |
+| [`15.2_Mixtures_of_Gaussians.ipynb`](15/15.2_Mixtures_of_Gaussians.ipynb) | 15.2 Mixtures of Gaussians | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/15/15.2_Mixtures_of_Gaussians.ipynb) |
+| [`15.3_Expectation_Maximization_Algorithm.ipynb`](15/15.3_Expectation_Maximization_Algorithm.ipynb) | 15.3 Expectation Maximization Algorithm | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/15/15.3_Expectation_Maximization_Algorithm.ipynb) |
+| [`15.4_Evidence_Lower_Bound.ipynb`](15/15.4_Evidence_Lower_Bound.ipynb) | 15.4 Evidence Lower Bound | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/15/15.4_Evidence_Lower_Bound.ipynb) |
+| [`15_Exercises.ipynb`](15/15_Exercises.ipynb) | 15 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/15/15_Exercises.ipynb) |
 
 ### 第16章 連続潜在変数 (Continuous Latent Variables)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`16.1_Principal_Component_Analysis.ipynb`](16/16.1_Principal_Component_Analysis.ipynb) | 16.1 Principal Component Analysis | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16.1_Principal_Component_Analysis.ipynb) |
-| [`16.2_Probabilistic_Latent_Variables.ipynb`](16/16.2_Probabilistic_Latent_Variables.ipynb) | 16.2 Probabilistic Latent Variables | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16.2_Probabilistic_Latent_Variables.ipynb) |
-| [`16.3_Evidence_Lower_Bound.ipynb`](16/16.3_Evidence_Lower_Bound.ipynb) | 16.3 Evidence Lower Bound | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16.3_Evidence_Lower_Bound.ipynb) |
-| [`16.4_Nonlinear_Latent_Variable_Models.ipynb`](16/16.4_Nonlinear_Latent_Variable_Models.ipynb) | 16.4 Nonlinear Latent Variable Models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16.4_Nonlinear_Latent_Variable_Models.ipynb) |
-| [`16_Exercises.ipynb`](16/16_Exercises.ipynb) | 16 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/16/16_Exercises.ipynb) |
+| [`16.1_Principal_Component_Analysis.ipynb`](16/16.1_Principal_Component_Analysis.ipynb) | 16.1 Principal Component Analysis | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/16/16.1_Principal_Component_Analysis.ipynb) |
+| [`16.2_Probabilistic_Latent_Variables.ipynb`](16/16.2_Probabilistic_Latent_Variables.ipynb) | 16.2 Probabilistic Latent Variables | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/16/16.2_Probabilistic_Latent_Variables.ipynb) |
+| [`16.3_Evidence_Lower_Bound.ipynb`](16/16.3_Evidence_Lower_Bound.ipynb) | 16.3 Evidence Lower Bound | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/16/16.3_Evidence_Lower_Bound.ipynb) |
+| [`16.4_Nonlinear_Latent_Variable_Models.ipynb`](16/16.4_Nonlinear_Latent_Variable_Models.ipynb) | 16.4 Nonlinear Latent Variable Models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/16/16.4_Nonlinear_Latent_Variable_Models.ipynb) |
+| [`16_Exercises.ipynb`](16/16_Exercises.ipynb) | 16 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/16/16_Exercises.ipynb) |
 
 ### 第17章 敵対的生成ネットワーク (Generative Adversarial Networks)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`17.1_Adversarial_Training.ipynb`](17/17.1_Adversarial_Training.ipynb) | 17.1 Adversarial Training | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/17/17.1_Adversarial_Training.ipynb) |
-| [`17.2_Image_GANs.ipynb`](17/17.2_Image_GANs.ipynb) | 17.2 Image GANs | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/17/17.2_Image_GANs.ipynb) |
-| [`17_Exercises.ipynb`](17/17_Exercises.ipynb) | 17 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/17/17_Exercises.ipynb) |
+| [`17.1_Adversarial_Training.ipynb`](17/17.1_Adversarial_Training.ipynb) | 17.1 Adversarial Training | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/17/17.1_Adversarial_Training.ipynb) |
+| [`17.2_Image_GANs.ipynb`](17/17.2_Image_GANs.ipynb) | 17.2 Image GANs | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/17/17.2_Image_GANs.ipynb) |
+| [`17_Exercises.ipynb`](17/17_Exercises.ipynb) | 17 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/17/17_Exercises.ipynb) |
 
 ### 第18章 正規化フロー (Normalizing Flows)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`18.1_Coupling_Flows.ipynb`](18/18.1_Coupling_Flows.ipynb) | 18.1 Coupling Flows | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/18/18.1_Coupling_Flows.ipynb) |
-| [`18.2_Autoregressive_Flows.ipynb`](18/18.2_Autoregressive_Flows.ipynb) | 18.2 Autoregressive Flows | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/18/18.2_Autoregressive_Flows.ipynb) |
-| [`18.3_Continuous_Flows.ipynb`](18/18.3_Continuous_Flows.ipynb) | 18.3 Continuous Flows | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/18/18.3_Continuous_Flows.ipynb) |
-| [`18_Exercises.ipynb`](18/18_Exercises.ipynb) | 18 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/18/18_Exercises.ipynb) |
+| [`18.1_Coupling_Flows.ipynb`](18/18.1_Coupling_Flows.ipynb) | 18.1 Coupling Flows | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/18/18.1_Coupling_Flows.ipynb) |
+| [`18.2_Autoregressive_Flows.ipynb`](18/18.2_Autoregressive_Flows.ipynb) | 18.2 Autoregressive Flows | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/18/18.2_Autoregressive_Flows.ipynb) |
+| [`18.3_Continuous_Flows.ipynb`](18/18.3_Continuous_Flows.ipynb) | 18.3 Continuous Flows | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/18/18.3_Continuous_Flows.ipynb) |
+| [`18_Exercises.ipynb`](18/18_Exercises.ipynb) | 18 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/18/18_Exercises.ipynb) |
 
 ### 第19章 自己符号化器 (Autoencoders)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`19.1_Deterministic_Autoencoders.ipynb`](19/19.1_Deterministic_Autoencoders.ipynb) | 19.1 Deterministic Autoencoders | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/19/19.1_Deterministic_Autoencoders.ipynb) |
-| [`19.2_Variational_Autoencoders.ipynb`](19/19.2_Variational_Autoencoders.ipynb) | 19.2 Variational Autoencoders | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/19/19.2_Variational_Autoencoders.ipynb) |
-| [`19_Exercises.ipynb`](19/19_Exercises.ipynb) | 19 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/19/19_Exercises.ipynb) |
+| [`19.1_Deterministic_Autoencoders.ipynb`](19/19.1_Deterministic_Autoencoders.ipynb) | 19.1 Deterministic Autoencoders | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/19/19.1_Deterministic_Autoencoders.ipynb) |
+| [`19.2_Variational_Autoencoders.ipynb`](19/19.2_Variational_Autoencoders.ipynb) | 19.2 Variational Autoencoders | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/19/19.2_Variational_Autoencoders.ipynb) |
+| [`19_Exercises.ipynb`](19/19_Exercises.ipynb) | 19 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/19/19_Exercises.ipynb) |
 
 ### 第20章 拡散モデル (Diffusion Models)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`20.1_Forward_Encoder.ipynb`](20/20.1_Forward_Encoder.ipynb) | 20.1 Forward Encoder | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/20/20.1_Forward_Encoder.ipynb) |
-| [`20.2_Reverse_Decoder.ipynb`](20/20.2_Reverse_Decoder.ipynb) | 20.2 Reverse Decoder | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/20/20.2_Reverse_Decoder.ipynb) |
-| [`20.3_Score_Matching.ipynb`](20/20.3_Score_Matching.ipynb) | 20.3 Score Matching | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/20/20.3_Score_Matching.ipynb) |
-| [`20.4_Guided_Diffusion.ipynb`](20/20.4_Guided_Diffusion.ipynb) | 20.4 Guided Diffusion | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/20/20.4_Guided_Diffusion.ipynb) |
-| [`20_Exercises.ipynb`](20/20_Exercises.ipynb) | 20 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/20/20_Exercises.ipynb) |
+| [`20.1_Forward_Encoder.ipynb`](20/20.1_Forward_Encoder.ipynb) | 20.1 Forward Encoder | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/20/20.1_Forward_Encoder.ipynb) |
+| [`20.2_Reverse_Decoder.ipynb`](20/20.2_Reverse_Decoder.ipynb) | 20.2 Reverse Decoder | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/20/20.2_Reverse_Decoder.ipynb) |
+| [`20.3_Score_Matching.ipynb`](20/20.3_Score_Matching.ipynb) | 20.3 Score Matching | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/20/20.3_Score_Matching.ipynb) |
+| [`20.4_Guided_Diffusion.ipynb`](20/20.4_Guided_Diffusion.ipynb) | 20.4 Guided Diffusion | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/20/20.4_Guided_Diffusion.ipynb) |
+| [`20_Exercises.ipynb`](20/20_Exercises.ipynb) | 20 Exercises | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/20/20_Exercises.ipynb) |
 
 ### 付録 (Appendices A-C)
 
 | ノートブック | 内容 | Colab で開く |
 |---|---|:---:|
-| [`appendix_a.ipynb`](appendix/appendix_a.ipynb) | appendix a | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/appendix/appendix_a.ipynb) |
-| [`appendix_b.ipynb`](appendix/appendix_b.ipynb) | appendix b | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/appendix/appendix_b.ipynb) |
-| [`appendix_c.ipynb`](appendix/appendix_c.ipynb) | appendix c | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/my_DeepLearning/blob/main/appendix/appendix_c.ipynb) |
+| [`appendix_a.ipynb`](appendix/appendix_a.ipynb) | appendix a | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/appendix/appendix_a.ipynb) |
+| [`appendix_b.ipynb`](appendix/appendix_b.ipynb) | appendix b | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/appendix/appendix_b.ipynb) |
+| [`appendix_c.ipynb`](appendix/appendix_c.ipynb) | appendix c | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miyayudai/study-deep-learning/blob/main/appendix/appendix_c.ipynb) |
 
 ---
 
